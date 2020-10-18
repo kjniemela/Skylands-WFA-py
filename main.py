@@ -76,13 +76,15 @@ cursor = pygame.transform.scale(pygame.image.load('assets/cursor.png'), (16*scal
 
 ###SOUND###
 vol = 0.1
+playMusic = False
 
-pygame.mixer.init()
-menuMusic = pygame.mixer.Sound("assets/The Light - The Album Leaf.wav")
-gameMusic = pygame.mixer.Sound("assets/music.ogg")
-gameMusic.set_volume(0.4*vol)
-menuMusic.set_volume(1*vol)
-curChannel = menuMusic.play(-1)
+if playMusic:
+    pygame.mixer.init()
+    menuMusic = pygame.mixer.Sound("assets/The Light - The Album Leaf.wav")
+    gameMusic = pygame.mixer.Sound("assets/music.ogg")
+    gameMusic.set_volume(0.4*vol)
+    menuMusic.set_volume(1*vol)
+    curChannel = menuMusic.play(-1)
 
 clock = pygame.time.Clock()
 
@@ -310,17 +312,27 @@ while run:
         break
 
     drawGameWindow()
-menuMusic.fadeout(1000)
+if playMusic:
+    menuMusic.fadeout(1000)
 if run:
     alpha = 255
-    while alpha > 0 and curChannel.get_busy():
-        clock.tick(60)
-        if alpha > 0:
-            alpha -= 20#4
-        menu.set_alpha(alpha)
-        drawGameWindow()
+    if playMusic:
+        while alpha > 0 and curChannel.get_busy():
+            clock.tick(60)
+            if alpha > 0:
+                alpha -= 20#4
+            menu.set_alpha(alpha)
+            drawGameWindow()
+    else:
+        while alpha > 0:
+            clock.tick(60)
+            if alpha > 0:
+                alpha -= 20#4
+            menu.set_alpha(alpha)
+            drawGameWindow()
     gameState = "inGame"
-    gameMusic.play(-1)
+    if playMusic:
+        gameMusic.play(-1)
 while run:
     clock.tick(60)
     for event in pygame.event.get():
