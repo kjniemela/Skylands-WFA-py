@@ -172,7 +172,7 @@ while run:
     if abs(player.xVel) < 0.01:
         player.xVel = 0
     if not player.touchingPlatform:
-        player.yVel -= 1
+        player.yVel -= 1 #fix wall climbing
     
     if keys[pygame.K_w] and player.touchingPlatform and player.jumping == 0:
         player.jumping = 1

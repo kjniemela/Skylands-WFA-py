@@ -33,3 +33,24 @@ def loadEntityTextures(scale):
         shoaldierLeft[i[0]] = pygame.transform.flip(shoaldierRight[i[0]], False, True)
 
     #print(shoaldierRight, shoaldierLeft)
+
+class Shoaldier:
+    def __init__(self, level, x, y):
+        self.level = level
+        self.x = x
+        self.y = y
+        self.width = 40
+        self.height = 60
+        self.xVel = 0
+        self.yVel = 0
+        self.walkFrame = 0
+        self.facing = 1
+        self.touchingPlatform = False
+        self.jumping = 0
+        self.rightArm = 0
+        self.leftArm = 0
+        self.rightHand = 0
+        self.leftHand = 0
+        self.gunX = 0
+        self.gunY = 0
+        self.gunCooldown = 0

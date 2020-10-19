@@ -167,10 +167,10 @@ class Player:
                 if self.upTouching > 0 and self.upTouching <= self.yVel:
                     self.yVel = 0
                     self.y -= math.ceil(self.upTouching)
-                if self.rightTouching > 0 and self.rightTouching <= self.xVel: #this needs to be the relative xVel between the player and the platform
+                if self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel: #this needs to be the relative xVel between the player and the platform
                     self.xVel = 0
                     self.x -= math.ceil(self.rightTouching)
-                if self.leftTouching > 0 and self.leftTouching <= -self.xVel: #this needs to be the relative xVel between the player and the platform
+                if self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= -self.xVel: #this needs to be the relative xVel between the player and the platform
                     self.xVel = 0
                     self.x += math.ceil(self.leftTouching)
 
