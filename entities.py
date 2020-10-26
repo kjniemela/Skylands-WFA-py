@@ -1,6 +1,8 @@
 from time import time
 import math
 
+from player import Bullet
+
 def Sin(x):
     return math.sin(math.radians(x))
 def Cos(x):
@@ -16,7 +18,7 @@ except ModuleNotFoundError:
 
 shoaldier = {1: {}, -1: {}}
 globalTextures = {1: {}, -1: {}}
-def loadEntityTextures(scale, textures):
+def loadEntityTextures(textures):
     global shoaldier
     global globalTextures
 
@@ -40,6 +42,11 @@ def loadEntityTextures(scale, textures):
     for i in shoaldierTextures:
         shoaldier[1][i[0]] = pygame.image.load('assets/shoaldier/%s.png'%(i[0]))
         shoaldier[-1][i[0]] = pygame.transform.flip(shoaldier[1][i[0]], True, False)
+def loadEntitySounds(vol):
+    global shoaldier_fire
+
+    shoaldier_fire = pygame.mixer.Sound("assets/GDFSER-fire2.wav")
+    shoaldier_fire.set_volume(1*vol)
 
 def blitRotateCenter(surf, image, angle, pos, camPos):
 
@@ -48,32 +55,82 @@ def blitRotateCenter(surf, image, angle, pos, camPos):
 
     surf.blit(rotated_image, (new_rect.topleft[0] + pos[0] - camPos[0], new_rect.topleft[1] + pos[1] + camPos[1]))
 
-class Shoaldier:
+class Entity:
+    width = 1
+    heightHead = 1
+    heightBody = 1
+    xVel = 0
+    yVel = 0
+    facing = 1
+    touchingPlatform = False
+    jumping = 0
     def __init__(self, level, x, y):
         self.level = level
         self.player = level.player
         self.x = x
         self.y = y
-        self.width = 40
-        self.height = 60
-        self.xVel = 0
-        self.yVel = 0
-        self.walkFrame = 0
-        self.facing = 1
+    def check_inside(self, x, y):
+        if self.x<x and self.x+(self.width)>x and self.y+(self.heightHead)>y and self.y-(self.heightBody)<y:
+            return (True, (self.x+(self.width/2))-x, self.y-y)
+        else:
+            return (False, 0, 0)
+    def get_touching(self, level):
         self.touchingPlatform = False
-        self.jumping = 0
+        self.rightTouching = 0
+        self.leftTouching = 0
+        self.upTouching = 0
+        self.downTouching = 0
+        for platform in level.platforms:
+            if self.x<platform.x+platform.w and\
+            self.x+(self.width)>platform.x and\
+            self.y+(self.heightHead)>platform.y-platform.h and\
+            self.y-(self.heightBody)<platform.y:
+                self.touchingPlatform = True
+                self.rightTouching = (self.x+(self.width))-platform.x
+                self.leftTouching = (platform.x+platform.w)-self.x
+                self.upTouching = (self.y+(self.heightHead))-(platform.y-platform.h)
+                self.downTouching = platform.y-(self.y-(self.heightBody))
+                if self.downTouching > 0 and self.downTouching <= -(self.yVel-1):
+                    if self.yVel < -20:
+                        dmg = math.ceil((abs(self.yVel)-11)/8)
+                        self.yVel = 0
+                        self.damage(dmg, 0) #FALL DAMAGE
+                    else:
+                        self.yVel = 0
+                    self.y += math.ceil(self.downTouching)-1
+                    self.jumping = 0
+                if self.upTouching > 0 and self.upTouching <= self.yVel:
+                    self.yVel = 0
+                    self.y -= math.ceil(self.upTouching)
+                if self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel: #this needs to be the relative xVel between the player and the platform
+                    self.xVel = 0
+                    self.x -= math.ceil(self.rightTouching)
+                if self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= -self.xVel: #this needs to be the relative xVel between the player and the platform
+                    self.xVel = 0
+                    self.x += math.ceil(self.leftTouching)
+
+class Shoaldier(Entity):
+    def __init__(self, level, x, y):
+        super().__init__(level, x, y)
+        self.width = 40
+        self.heightHead = 24
+        self.heightBody = 48
+        self.walkFrame = 0
         self.rightArm = 0
         self.leftArm = 0
         self.rightHand = 0
         self.leftHand = 0
         self.gunX = 0
         self.gunY = 0
-        self.gunCooldown = 0
-    def tick(self, scale):
+        self.gunCooldown = 100
+    def tick(self):
         self.x += self.xVel
         self.y += self.yVel
         
-        self.get_touching(self.level, scale)
+        self.get_touching(self.level)
+        self.xVel *= 0.6
+        if abs(self.xVel) < 0.01:
+            self.xVel = 0
         if not self.touchingPlatform:
             self.yVel -= self.level.gravity #fix wall climbing
 
@@ -81,11 +138,19 @@ class Shoaldier:
             self.jumping = 1
             self.yVel += 10
             
+        if True and self.gunCooldown == 0:
+            shoaldier_fire.play()
+            self.level.projectiles.append(Bullet(self.gunX, -self.gunY, self.rightArm+(self.rightHand*self.facing), 5, self))
+            self.gunCooldown = 100
+
+        if self.gunCooldown > 0:
+            self.gunCooldown -= 1
+            
         return True
-    def draw(self, camX, camY, scale, win, mouseX, mouseY, winW, winH):
+    def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
         head_rot = -math.degrees(math.atan2(self.y-self.player.y, self.player.x-self.x))
         head_rot_left = math.degrees(math.atan2(self.y-self.player.y, self.x-self.player.x))
-        self.rightArm = (Sin((time()+1)*40)*10)-90-(5*self.facing)#head_rot-(15*self.facing)#
+        self.rightArm = head_rot-(15*self.facing)
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
         self.rightHand = 15
         self.leftHand = 10
@@ -101,16 +166,16 @@ class Shoaldier:
 
         
         if self.facing == -1:
-            blitRotateCenter(win, shoaldier[self.facing]['arm_far'], self.rightArm+180, (self.x-(14*scale),-self.y+(0*scale)), (camX,camY))
-            handX = (self.x-(29*scale))+(Cos(-(self.rightArm))*(13*scale))
-            handY = (-self.y-(2*scale))+(Sin(-(self.rightArm))*(13*scale))
-            self.gunX = (handX+(8*scale))+(Cos(-(self.rightArm-self.rightHand))*(15*scale))
-            self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(15*scale))
+            blitRotateCenter(win, shoaldier[self.facing]['arm_far'], self.rightArm+180, (self.x-(14),-self.y+(0)), (camX,camY))
+            handX = (self.x-(29))+(Cos(-(self.rightArm))*(13))
+            handY = (-self.y-(2))+(Sin(-(self.rightArm))*(13))
+            self.gunX = (handX+(28))+(Cos(-(self.rightArm-self.rightHand))*(15))
+            self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(15))+4
             blitRotateCenter(win, shoaldier[self.facing]['gun_hand'], (self.rightArm-self.rightHand)+180, (handX,handY), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, shoaldier[self.facing]['arm_far'], self.leftArm, (self.x+(3*scale),-self.y+(0*scale)), (camX,camY))
-            handX = (self.x-(4*scale))+(Cos(-self.leftArm)*(13*scale))
-            handY = (-self.y-(2*scale))+(Sin(-self.leftArm)*(13*scale))
+            blitRotateCenter(win, shoaldier[self.facing]['arm_far'], self.leftArm, (self.x+(3),-self.y+(0)), (camX,camY))
+            handX = (self.x-(4))+(Cos(-self.leftArm)*(13))
+            handY = (-self.y-(2))+(Sin(-self.leftArm)*(13))
             blitRotateCenter(win, shoaldier[self.facing]['hand_far'], self.leftArm+self.leftHand, (handX,handY), (camX,camY))
 
         if abs(self.xVel) > 0:
@@ -125,58 +190,31 @@ class Shoaldier:
                 blitRotateCenter(win, shoaldier[self.facing]['torso'], 0, (self.x,-self.y), (camX,camY))
 
         if self.facing == -1:
-            headX = self.x-(6*scale)
-            headY = -self.y-(19*scale)
+            headX = self.x-(7)
+            headY = -self.y-(19)
             blitRotateCenter(win, shoaldier[self.facing]['head'], min(max(head_rot_left, -45), 45), (headX, headY), (camX,camY))
-            blitRotateCenter(win, shoaldier[self.facing]['jaw'], min(max(head_rot_left, -45), 45), (headX-(2*scale), headY+(14*scale)), (camX,camY))
-            blitRotateCenter(win, shoaldier[self.facing]['hat'], min(max(head_rot_left, -45), 45), (headX, headY-(10*scale)), (camX,camY))
+            blitRotateCenter(win, shoaldier[self.facing]['jaw'], min(max(head_rot_left, -45), 45), (headX-(0), headY+(14)), (camX,camY))
+            blitRotateCenter(win, shoaldier[self.facing]['hat'], min(max(head_rot_left, -45), 45), (headX, headY-(10)), (camX,camY))
             
         elif self.facing == 1:       
-            headX = self.x-(4*scale)
-            headY = -self.y-(19*scale)
+            headX = self.x-(3)
+            headY = -self.y-(19)
             blitRotateCenter(win, shoaldier[self.facing]['head'], min(max(head_rot, -45), 45), (headX, headY), (camX,camY))          
-            blitRotateCenter(win, shoaldier[self.facing]['jaw'], min(max(head_rot, -45), 45), (headX-(2*scale), headY+(14*scale)), (camX,camY))
-            blitRotateCenter(win, shoaldier[self.facing]['hat'], min(max(head_rot, -45), 45), (headX, headY-(10*scale)), (camX,camY))
+            blitRotateCenter(win, shoaldier[self.facing]['jaw'], min(max(head_rot, -45), 45), (headX+(1), headY+(14)), (camX,camY))
+            blitRotateCenter(win, shoaldier[self.facing]['hat'], min(max(head_rot, -45), 45), (headX, headY-(10)), (camX,camY))
                 
 
         if self.facing == -1:
-            blitRotateCenter(win, shoaldier[self.facing]['arm_near'], self.leftArm+180, (self.x+(6*scale),-self.y+(0*scale)), (camX,camY))
-            handX = (self.x-(5*scale))+(Cos(-(self.leftArm))*(13*scale))
-            handY = (-(self.y+(2*scale)))+(Sin(-(self.leftArm))*(13*scale))
+            blitRotateCenter(win, shoaldier[self.facing]['arm_near'], self.leftArm+180, (self.x+(6),-self.y+(0)), (camX,camY))
+            handX = (self.x-(5))+(Cos(-(self.leftArm))*(13))
+            handY = (-(self.y+(2)))+(Sin(-(self.leftArm))*(13))
             blitRotateCenter(win, shoaldier[self.facing]['hand_near'], (self.leftArm-self.leftHand)+180, (handX,handY), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, shoaldier[self.facing]['arm_near'], self.rightArm, (self.x-(12*scale),-self.y+(0*scale)), (camX,camY))
-            handX = (self.x-(29*scale))+(Cos(-self.rightArm)*(13*scale))
-            handY = (-self.y-(1*scale))+(Sin(-self.rightArm)*(13*scale))
-            self.gunX = (handX+(8*scale))+(Cos(-(self.rightArm+self.rightHand))*(15*scale))
-            self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(15*scale))
+            blitRotateCenter(win, shoaldier[self.facing]['arm_near'], self.rightArm, (self.x-(12),-self.y+(0)), (camX,camY))
+            handX = (self.x-(29))+(Cos(-self.rightArm)*(13))
+            handY = (-self.y-(1))+(Sin(-self.rightArm)*(13))
+            self.gunX = (handX+(28))+(Cos(-(self.rightArm+self.rightHand))*(15))
+            self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(15))+4
             blitRotateCenter(win, shoaldier[self.facing]['gun_hand'], self.rightArm+self.rightHand, (handX,handY), (camX,camY))
-    def get_touching(self, level, scale):
-        self.touchingPlatform = False
-        self.rightTouching = 0
-        self.leftTouching = 0
-        self.upTouching = 0
-        self.downTouching = 0
-        for platform in level.platforms:
-            if self.x<platform.x+platform.w and\
-            self.x+(40*scale)>platform.x and\
-            self.y+(18*scale)>platform.y-platform.h and\
-            self.y-(48*scale)<platform.y:
-                self.touchingPlatform = True
-                self.rightTouching = (self.x+(40*scale))-platform.x
-                self.leftTouching = (platform.x+platform.w)-self.x
-                self.upTouching = (self.y+(18*scale))-(platform.y-platform.h)
-                self.downTouching = platform.y-(self.y-(48*scale))
-                if self.downTouching > 0 and self.downTouching <= -(self.yVel-1):
-                    self.yVel = 0
-                    self.y += math.ceil(self.downTouching)-1
-                    self.jumping = 0
-                if self.upTouching > 0 and self.upTouching <= self.yVel:
-                    self.yVel = 0
-                    self.y -= math.ceil(self.upTouching)
-                if self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel: #this needs to be the relative xVel between the player and the platform
-                    self.xVel = 0
-                    self.x -= math.ceil(self.rightTouching)
-                if self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= -self.xVel: #this needs to be the relative xVel between the player and the platform
-                    self.xVel = 0
-                    self.x += math.ceil(self.leftTouching)
+    def damage(self, dmg, src, knockback=(0,0)): #0: fall damage - 1: melee damage
+        self.hp -= dmg

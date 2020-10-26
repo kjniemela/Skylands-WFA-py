@@ -1,6 +1,9 @@
 from time import time
 import math
 
+def distance(x1, y1, x2, y2):
+    return math.sqrt((x2-x1)**2 + (y2-y1)**2)
+
 def Sin(x):
     return math.sin(math.radians(x))
 def Cos(x):
@@ -23,7 +26,7 @@ def blitRotateCenter(surf, image, angle, pos, camPos):
 
     surf.blit(rotated_image, (new_rect.topleft[0] + pos[0] - camPos[0], new_rect.topleft[1] + pos[1] + camPos[1]))
 
-def loadPlayerTextures(scale):
+def loadPlayerTextures():
     global walkRight
     global walkLeft
     global idleRight
@@ -40,6 +43,8 @@ def loadPlayerTextures(scale):
     global handFarLeft
     global GDFSERRight
     global GDFSERLeft
+    global powerBar
+    global healthBar
     
     walkRight = [pygame.image.load('assets/body_walk%s.png' % frame) for frame in range(1, 9)]
     walkLeft = [pygame.transform.flip(pygame.image.load('assets/body_walk%s.png' % frame), True, False) for frame in range(1, 9)]
@@ -60,7 +65,13 @@ def loadPlayerTextures(scale):
 
     GDFSERRight = pygame.image.load('assets/GDFSER.png')
     GDFSERLeft = pygame.transform.flip(GDFSERRight, False, True)
+    
+    powerBar = pygame.image.load('assets/power.png')
+    healthBar = pygame.image.load('assets/health.png')
 
+def drawHUD(win, player):
+    win.blit(healthBar, (435-(142*(player.hp/player.maxHp)), 28))
+    win.blit(powerBar, (333+(110*(player.gunCooldown/20)), 40))
 
 class Player:
     def __init__(self, x, y):
@@ -82,9 +93,12 @@ class Player:
         self.gunX = 0
         self.gunY = 0
         self.gunCooldown = 0
-    def draw(self, camX, camY, scale, win, mouseX, mouseY, winW, winH):
-        head_rot = -math.degrees(math.atan2(mouseY-((winH/2)+(4*scale)), mouseX-(winW/2)))
-        head_rot_left = math.degrees(math.atan2(mouseY-(((winH/2)+(4*scale))), (winW/2)-mouseX))
+        
+        self.hp = 10
+        self.maxHp = 10
+    def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        head_rot = -math.degrees(math.atan2(mouseY-((winH/2)+(50)), mouseX-(winW/2)))
+        head_rot_left = math.degrees(math.atan2(mouseY-(((winH/2)+(50))), (winW/2)-mouseX))
         self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
         self.rightHand = 15
@@ -102,17 +116,17 @@ class Player:
         #arm position is a bit buggy
         
         if self.facing == -1:
-            blitRotateCenter(win, armFarLeft, self.rightArm, (self.x-(3*scale),-self.y-(2*scale)), (camX,camY))
-            handX = (self.x-(8*scale))+(Cos(-self.rightArm)*(11*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.rightArm)*(11*scale))
-            self.gunX = (handX+(8*scale))+(Cos(-(self.rightArm-self.rightHand))*(15*scale))
-            self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(16*scale))
+            blitRotateCenter(win, armFarLeft, self.rightArm, (self.x-(3),-self.y-(2)), (camX,camY))
+            handX = (self.x-(8))+(Cos(-self.rightArm)*(11))
+            handY = (-self.y-(0))+(Sin(-self.rightArm)*(11))
+            self.gunX = (handX+(8))+(Cos(-(self.rightArm-self.rightHand))*(15))
+            self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(16))
             blitRotateCenter(win, handFarLeft, self.rightArm-self.rightHand, (handX,handY), (camX,camY))
             blitRotateCenter(win, GDFSERLeft, self.rightArm-self.rightHand, (self.gunX,self.gunY), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, armFarRight, self.leftArm, (self.x+(15*scale),-self.y-(2*scale)), (camX,camY))
-            handX = (self.x+(11*scale))+(Cos(-self.leftArm)*(11*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.leftArm)*(11*scale))
+            blitRotateCenter(win, armFarRight, self.leftArm, (self.x+(15),-self.y-(2)), (camX,camY))
+            handX = (self.x+(11))+(Cos(-self.leftArm)*(11))
+            handY = (-self.y-(0))+(Sin(-self.leftArm)*(11))
             blitRotateCenter(win, handFarRight, self.leftArm+self.leftHand, (handX,handY), (camX,camY))
 
         if abs(self.xVel) > 0:
@@ -127,25 +141,36 @@ class Player:
                 win.blit(idleRight, (self.x-camX,-(self.y-camY)))
 
         if self.facing == -1:
-            blitRotateCenter(win, headLeft, min(max(head_rot_left, -45), 45), (self.x,-self.y-(20*scale)), (camX,camY))
+            blitRotateCenter(win, headLeft, min(max(head_rot_left, -45), 45), (self.x,-self.y-(20)), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, headRight, min(max(head_rot, -45), 45), (self.x,-self.y-(20*scale)), (camX,camY))
+            blitRotateCenter(win, headRight, min(max(head_rot, -45), 45), (self.x,-self.y-(20)), (camX,camY))
 
         if self.facing == -1:
             blitRotateCenter(win, armNearLeft, self.leftArm, (self.x+17,-self.y-0), (camX,camY))
-            handX = (self.x+(12*scale))+(Cos(-self.leftArm)*(11*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.leftArm)*(11*scale))
+            handX = (self.x+(12))+(Cos(-self.leftArm)*(11))
+            handY = (-self.y-(0))+(Sin(-self.leftArm)*(11))
             blitRotateCenter(win, handNearLeft, self.leftArm-self.leftHand, (handX,handY), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, armNearRight, self.rightArm, (self.x-2,-self.y-(2*scale)), (camX,camY))
-            handX = (self.x-(8*scale))+(Cos(-self.rightArm)*(11*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.rightArm)*(11*scale))
-            self.gunX = (handX+(8*scale))+(Cos(-(self.rightArm+self.rightHand))*(15*scale))
-            self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(16*scale))
+            blitRotateCenter(win, armNearRight, self.rightArm, (self.x-2,-self.y-(2)), (camX,camY))
+            handX = (self.x-(8))+(Cos(-self.rightArm)*(11))
+            handY = (-self.y-(0))+(Sin(-self.rightArm)*(11))
+            self.gunX = (handX+(8))+(Cos(-(self.rightArm+self.rightHand))*(15))
+            self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(16))
             blitRotateCenter(win, GDFSERRight, self.rightArm+self.rightHand, (self.gunX,self.gunY), (camX,camY))
             blitRotateCenter(win, handNearRight, self.rightArm+self.rightHand, (handX,handY), (camX,camY))
-            
-    def get_touching(self, level, scale):
+    def damage(self, dmg, src, knockback=(0,0)):
+        """
+        0: fall damage - 1: melee damage
+        """
+        self.hp -= dmg
+        self.xVel += knockback[0]
+        self.yVel += knockback[1]
+    def check_inside(self, x, y):
+        if self.x<x and self.x+(40)>x and self.y+(18)>y and self.y-(48)<y:
+            return (True, (self.x+(self.width/2))-x, self.y-y)
+        else:
+            return (False, 0, 0)
+    def get_touching(self, level):
         self.touchingPlatform = False
         self.rightTouching = 0
         self.leftTouching = 0
@@ -153,16 +178,21 @@ class Player:
         self.downTouching = 0
         for platform in level.platforms:
             if self.x<platform.x+platform.w and\
-            self.x+(40*scale)>platform.x and\
-            self.y+(18*scale)>platform.y-platform.h and\
-            self.y-(48*scale)<platform.y:
+            self.x+(40)>platform.x and\
+            self.y+(18)>platform.y-platform.h and\
+            self.y-(48)<platform.y:
                 self.touchingPlatform = True
-                self.rightTouching = (self.x+(40*scale))-platform.x
+                self.rightTouching = (self.x+(40))-platform.x
                 self.leftTouching = (platform.x+platform.w)-self.x
-                self.upTouching = (self.y+(18*scale))-(platform.y-platform.h)
-                self.downTouching = platform.y-(self.y-(48*scale))
+                self.upTouching = (self.y+(18))-(platform.y-platform.h)
+                self.downTouching = platform.y-(self.y-(48))
                 if self.downTouching > 0 and self.downTouching <= -(self.yVel-1):
-                    self.yVel = 0
+                    if self.yVel < -20:
+                        dmg = math.ceil((abs(self.yVel)-11)/8)
+                        self.yVel = 0
+                        self.damage(dmg, 0) #FALL DAMAGE
+                    else:
+                        self.yVel = 0
                     self.y += math.ceil(self.downTouching)-1
                     self.jumping = 0
                 if self.upTouching > 0 and self.upTouching <= self.yVel:
@@ -176,13 +206,13 @@ class Player:
                     self.x += math.ceil(self.leftTouching)
 
 class Bullet:
-    def __init__(self, x, y, d, speed, owner, scale):
+    def __init__(self, x, y, d, speed, owner):
         self.x = x
         self.y = y
         self.d = d
         self.owner = owner
-        self.xVel = (Cos(d)*(speed*scale))#+owner.xVel
-        self.yVel = (Sin(d)*(speed*scale))#+owner.yVel
+        self.xVel = (Cos(d)*(speed))#+owner.xVel
+        self.yVel = (Sin(d)*(speed))#+owner.yVel
         self.age = 0
     def tick(self):
         self.x += self.xVel
@@ -201,5 +231,18 @@ class Bullet:
             self.x+self.xVel>platform.x and\
             self.y+self.yVel>platform.y-platform.h and\
             self.y+self.yVel<platform.y:
+                return True
+        for entity in level.entities:
+            if not entity == self.owner:
+                hit, xD, yD = entity.check_inside(self.x, self.y)
+                if hit:
+                    #print(hit, xD, yD)
+                    entity.xVel += self.xVel*0.2
+                    entity.yVel += self.yVel*0.2 + 1
+                    return True
+        if not level.player == self.owner:
+            hit, xD, yD = level.player.check_inside(self.x, self.y)
+            if hit:
+                level.player.damage(1, 2, (self.xVel*1, self.yVel*1 + 1))
                 return True
         return False

@@ -7,6 +7,11 @@ except ModuleNotFoundError:
     while time()-t<1:
         pass
     exit()
+
+VERSION_MAJOR = 0
+VERSION_MINOR = 1
+VERSION_PATCH = 0
+    
 pygame.display.init()
 islandIcon = pygame.image.load('assets/icon.png')
 pygame.display.set_icon(islandIcon)
@@ -14,15 +19,13 @@ pygame.display.set_icon(islandIcon)
 window = pygame.display.set_mode((960, 720), pygame.RESIZABLE)
 win = pygame.Surface((480, 360))
 
-#pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
+pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
 
-pygame.display.set_caption("Skylands")
+pygame.display.set_caption("Skylands %d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
-scale = 1
 menuXOffset = 0
 
-###TEXTURES###
-#BACKGROUND
+#MENU
 sky = pygame.image.load('assets/sky.png').convert_alpha()
 menuIsland = pygame.image.load('assets/menu.png').convert()
 loading = pygame.image.load('assets/loading.png')
@@ -37,8 +40,10 @@ win.blit(menu, (menuXOffset, 0))
 win.blit(loading, (15, 660))
 pygame.display.update()
 
+###TEXTURES###
 #HUD
 HUD = pygame.image.load('assets/HUD.png')
+HUD_back = pygame.image.load('assets/HUD back.png')
 
 #ITEMS
 STBRight = pygame.image.load('assets/STB Mk1.png')
@@ -52,14 +57,15 @@ items = {1: {
 
 from player import *
 from level import *
-loadPlayerTextures(scale)
-loadLevelTextures(scale)
-loadEntityTextures(scale, items)
+loadPlayerTextures()
+loadLevelTextures()
+loadEntityTextures(items)
 
 cursor = pygame.image.load('assets/cursor.png')
+##############
 
 ###SOUND###
-vol = 0
+vol = 0.1
 playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
@@ -70,8 +76,12 @@ if playMusic:
     gameMusic = pygame.mixer.Sound("assets/music.ogg")
     gameMusic.set_volume(0.4*vol)
     menuMusic.set_volume(1*vol)
+
 GDFSER_shoot = pygame.mixer.Sound("assets/GDFSER-fire2.wav")
 GDFSER_shoot.set_volume(1*vol)
+
+loadEntitySounds(vol)
+###########
 
 clock = pygame.time.Clock()
 
@@ -89,19 +99,21 @@ def drawGameWindow():
             win.blit(pl, (176, 306))
     elif gameState == "inGame":
         win.fill((240, 240, 255))
-        level.draw(camX, camY, scale, win, mouseX, mouseY, winW, winH)
-        player.draw(camX, camY, scale, win, mouseX, mouseY, winW, winH)
+        level.draw(camX, camY, win, mouseX, mouseY, winW, winH)
+        player.draw(camX, camY, win, mouseX, mouseY, winW, winH)
 
+        win.blit(HUD_back, (293, 28))
+        drawHUD(win, player)
         win.blit(HUD, (0, 0))
 
-        win.blit(cursor, ((mouseX-(8*scale*(winW/480)))//(winW/480),(mouseY-(8*scale*(winH/360)))//(winH/360)))
+        win.blit(cursor, ((mouseX-(8*(winW/480)))//(winW/480),(mouseY-(8*(winH/360)))//(winH/360)))
         
     #window.blit(pygame.transform.scale(win, (winW, winH)), (menuXOffset,0))
     window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
     pygame.display.update()
 
 player = Player(125, 25)
-level = Level("level1", scale, player)
+level = Level("level1", player)
 
 run = True
 gameState = "mainMenu"
@@ -179,7 +191,7 @@ while run:
     player.x += player.xVel
     player.y += player.yVel
 
-    player.get_touching(level, scale)
+    player.get_touching(level)
 
     if keys[pygame.K_a]:
         player.xVel -= 2
@@ -204,8 +216,8 @@ while run:
         #player.yVel -= 1
     if keys[pygame.K_SPACE] and player.gunCooldown == 0:
         GDFSER_shoot.play()
-        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), 30, player, scale))
-        player.gunCooldown = 20
+        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), 20, player))
+        player.gunCooldown = 30
 
     if player.gunCooldown > 0:
         player.gunCooldown -= 1
