@@ -41,30 +41,30 @@ def loadPlayerTextures(scale):
     global GDFSERRight
     global GDFSERLeft
     
-    walkRight = [pygame.transform.scale(pygame.image.load('assets/body_walk%s.png' % frame), (40*scale, 50*scale)) for frame in range(1, 9)]
-    walkLeft = [pygame.transform.scale(pygame.transform.flip(pygame.image.load('assets/body_walk%s.png' % frame), True, False), (40*scale, 50*scale)) for frame in range(1, 9)]
-    idleRight = pygame.transform.scale(pygame.image.load('assets/body_idle.png'), (40*scale, 50*scale))
+    walkRight = [pygame.image.load('assets/body_walk%s.png' % frame) for frame in range(1, 9)]
+    walkLeft = [pygame.transform.flip(pygame.image.load('assets/body_walk%s.png' % frame), True, False) for frame in range(1, 9)]
+    idleRight = pygame.image.load('assets/body_idle.png')
     idleLeft = pygame.transform.flip(idleRight, True, False)
-    headRight = pygame.transform.scale(pygame.image.load('assets/head.png'), (40*scale, 38*scale))
+    headRight = pygame.image.load('assets/head.png')
     headLeft = pygame.transform.flip(headRight, True, False)
 
-    armNearRight = pygame.transform.scale(pygame.image.load('assets/arm_near.png'), (19*scale, 11*scale))
+    armNearRight = pygame.image.load('assets/arm_near.png')
     armNearLeft = pygame.transform.flip(armNearRight, False, True)
-    armFarRight = pygame.transform.scale(pygame.image.load('assets/arm_far.png'), (19*scale, 11*scale))
+    armFarRight = pygame.image.load('assets/arm_far.png')
     armFarLeft = pygame.transform.flip(armFarRight, False, True)
 
-    handNearRight = pygame.transform.scale(pygame.image.load('assets/hand_near.png'), (35*scale, 9*scale))
+    handNearRight = pygame.image.load('assets/hand_near.png')
     handNearLeft = pygame.transform.flip(handNearRight, False, True)
-    handFarRight = pygame.transform.scale(pygame.image.load('assets/hand_far.png'), (35*scale, 9*scale))
+    handFarRight = pygame.image.load('assets/hand_far.png')
     handFarLeft = pygame.transform.flip(handFarRight, False, True)
 
-    GDFSERRight = pygame.transform.scale(pygame.image.load('assets/GDFSER.png'), (23*scale, 12*scale))
+    GDFSERRight = pygame.image.load('assets/GDFSER.png')
     GDFSERLeft = pygame.transform.flip(GDFSERRight, False, True)
 
 
 class Player:
-    def __init__(self, level, x, y):
-        self.level = level
+    def __init__(self, x, y):
+        self.level = None
         self.x = x
         self.y = y
         self.width = 40
@@ -84,7 +84,7 @@ class Player:
         self.gunCooldown = 0
     def draw(self, camX, camY, scale, win, mouseX, mouseY, winW, winH):
         head_rot = -math.degrees(math.atan2(mouseY-((winH/2)+(4*scale)), mouseX-(winW/2)))
-        head_rot_left = math.degrees(math.atan2(mouseY-(-self.y), self.x-mouseX))
+        head_rot_left = math.degrees(math.atan2(mouseY-(((winH/2)+(4*scale))), (winW/2)-mouseX))
         self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
         self.rightHand = 15
@@ -99,19 +99,20 @@ class Player:
         if self.walkFrame < 0:
             self.walkFrame = 30
 
+        #arm position is a bit buggy
         
         if self.facing == -1:
-            blitRotateCenter(win, armFarLeft, self.rightArm, (self.x+(1*scale),-self.y-(2*scale)), (camX,camY))
-            handX = (self.x-(8*scale))+(Cos(-self.rightArm)*(9*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.rightArm)*(9*scale))
+            blitRotateCenter(win, armFarLeft, self.rightArm, (self.x-(3*scale),-self.y-(2*scale)), (camX,camY))
+            handX = (self.x-(8*scale))+(Cos(-self.rightArm)*(11*scale))
+            handY = (-self.y-(0*scale))+(Sin(-self.rightArm)*(11*scale))
             self.gunX = (handX+(8*scale))+(Cos(-(self.rightArm-self.rightHand))*(15*scale))
-            self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(15*scale))
+            self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(16*scale))
             blitRotateCenter(win, handFarLeft, self.rightArm-self.rightHand, (handX,handY), (camX,camY))
             blitRotateCenter(win, GDFSERLeft, self.rightArm-self.rightHand, (self.gunX,self.gunY), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, armFarRight, self.leftArm, (self.x+(20*scale),-self.y-(2*scale)), (camX,camY))
-            handX = (self.x+(12*scale))+(Cos(-self.leftArm)*(9*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.leftArm)*(9*scale))
+            blitRotateCenter(win, armFarRight, self.leftArm, (self.x+(15*scale),-self.y-(2*scale)), (camX,camY))
+            handX = (self.x+(11*scale))+(Cos(-self.leftArm)*(11*scale))
+            handY = (-self.y-(0*scale))+(Sin(-self.leftArm)*(11*scale))
             blitRotateCenter(win, handFarRight, self.leftArm+self.leftHand, (handX,handY), (camX,camY))
 
         if abs(self.xVel) > 0:
@@ -131,16 +132,16 @@ class Player:
             blitRotateCenter(win, headRight, min(max(head_rot, -45), 45), (self.x,-self.y-(20*scale)), (camX,camY))
 
         if self.facing == -1:
-            blitRotateCenter(win, armNearLeft, self.leftArm, (self.x+(21*scale),-self.y-(2*scale)), (camX,camY))
-            handX = (self.x+(12*scale))+(Cos(-self.leftArm)*(9*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.leftArm)*(9*scale))
+            blitRotateCenter(win, armNearLeft, self.leftArm, (self.x+17,-self.y-0), (camX,camY))
+            handX = (self.x+(12*scale))+(Cos(-self.leftArm)*(11*scale))
+            handY = (-self.y-(0*scale))+(Sin(-self.leftArm)*(11*scale))
             blitRotateCenter(win, handNearLeft, self.leftArm-self.leftHand, (handX,handY), (camX,camY))
         elif self.facing == 1:
-            blitRotateCenter(win, armNearRight, self.rightArm, (self.x,-self.y-(2*scale)), (camX,camY))
-            handX = (self.x-(8*scale))+(Cos(-self.rightArm)*(9*scale))
-            handY = (-self.y-(0*scale))+(Sin(-self.rightArm)*(9*scale))
+            blitRotateCenter(win, armNearRight, self.rightArm, (self.x-2,-self.y-(2*scale)), (camX,camY))
+            handX = (self.x-(8*scale))+(Cos(-self.rightArm)*(11*scale))
+            handY = (-self.y-(0*scale))+(Sin(-self.rightArm)*(11*scale))
             self.gunX = (handX+(8*scale))+(Cos(-(self.rightArm+self.rightHand))*(15*scale))
-            self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(15*scale))
+            self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(16*scale))
             blitRotateCenter(win, GDFSERRight, self.rightArm+self.rightHand, (self.gunX,self.gunY), (camX,camY))
             blitRotateCenter(win, handNearRight, self.rightArm+self.rightHand, (handX,handY), (camX,camY))
             

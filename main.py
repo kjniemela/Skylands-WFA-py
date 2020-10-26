@@ -11,25 +11,25 @@ pygame.display.init()
 islandIcon = pygame.image.load('assets/icon.png')
 pygame.display.set_icon(islandIcon)
 
-win = pygame.display.set_mode((960, 720), pygame.RESIZABLE)
+window = pygame.display.set_mode((960, 720), pygame.RESIZABLE)
+win = pygame.Surface((480, 360))
 
-pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
+#pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
 
 pygame.display.set_caption("Skylands")
 
-scale = 2
+scale = 1
 menuXOffset = 0
 
 ###TEXTURES###
-
 #BACKGROUND
 sky = pygame.image.load('assets/sky.png').convert_alpha()
 menuIsland = pygame.image.load('assets/menu.png').convert()
 loading = pygame.image.load('assets/loading.png')
 playText = pygame.image.load('assets/play.png')
 
-bg = sky
-menu = menuIsland
+bg = pygame.transform.scale(sky, (480, 360))
+menu = pygame.transform.scale(menuIsland, (480, 360))
 pl = playText
 
 win.blit(bg, (0, 0))
@@ -37,17 +37,29 @@ win.blit(menu, (menuXOffset, 0))
 win.blit(loading, (15, 660))
 pygame.display.update()
 
+#HUD
+HUD = pygame.image.load('assets/HUD.png')
+
+#ITEMS
+STBRight = pygame.image.load('assets/STB Mk1.png')
+STBLeft = pygame.transform.flip(STBRight, False, True)
+
+items = {1: {
+        'stb': STBRight
+    }, -1: {
+        'stb': STBLeft
+        }}
+
 from player import *
 from level import *
-from entities import *
 loadPlayerTextures(scale)
 loadLevelTextures(scale)
-loadEntityTextures(scale)
+loadEntityTextures(scale, items)
 
-cursor = pygame.transform.scale(pygame.image.load('assets/cursor.png'), (16*scale, 16*scale))
+cursor = pygame.image.load('assets/cursor.png')
 
 ###SOUND###
-vol = 0.1
+vol = 0
 playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
@@ -67,21 +79,29 @@ def drawGameWindow():
     global gameState
     global player
 
-    if gameState == "mainMenu":
-        win.blit(bg, (0, 0))
-        win.blit(menu, (menuXOffset, 0))
-        win.blit(pl, (int(winW/2) - int(255*(winH/720)/2), winH*0.85))
+    zoom = 1 #make global or smth later
+
+    if gameState == "mainMenu" or gameState == "fade":
+        if gameState == "fade":
+            win.blit(bg, (0, 0))
+        win.blit(menu, (0, 0))
+        if gameState == "mainMenu":
+            win.blit(pl, (176, 306))
     elif gameState == "inGame":
         win.fill((240, 240, 255))
         level.draw(camX, camY, scale, win, mouseX, mouseY, winW, winH)
         player.draw(camX, camY, scale, win, mouseX, mouseY, winW, winH)
 
-        win.blit(cursor, (mouseX-(8*scale),mouseY-(8*scale)))
-    
+        win.blit(HUD, (0, 0))
+
+        win.blit(cursor, ((mouseX-(8*scale*(winW/480)))//(winW/480),(mouseY-(8*scale*(winH/360)))//(winH/360)))
+        
+    #window.blit(pygame.transform.scale(win, (winW, winH)), (menuXOffset,0))
+    window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
     pygame.display.update()
 
-level = Level("level1", scale)
-player = Player(level, 250, 50)
+player = Player(125, 25)
+level = Level("level1", scale, player)
 
 run = True
 gameState = "mainMenu"
@@ -103,12 +123,12 @@ while run:
         if event.type == pygame.MOUSEMOTION:
             mouseX, mouseY = event.pos
         if event.type == pygame.VIDEORESIZE:
-            winW, winH = event.w, event.h
+            winW, winH = int(480*(event.h/360)), event.h
             surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
             bg = pygame.transform.scale(sky, (event.w, event.h))
-            menu = pygame.transform.scale(menuIsland, (int(960*(event.h/720)), event.h))
-            pl = pygame.transform.scale(playText, (int(255*(event.h/720)), int(event.h/18)))
-            menuXOffset = int(winW/2) - int(960*(winH/720)/2)
+            menu = pygame.transform.scale(menuIsland, (480, 360))
+            pl = pygame.transform.scale(playText, (127, 20))
+            menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
 
     keys = pygame.key.get_pressed()
 
@@ -119,19 +139,20 @@ while run:
 if playMusic:
     menuMusic.fadeout(1000)
 if run:
+    gameState = "fade"
     alpha = 255
     if playMusic:
-        while alpha > 0 and curChannel.get_busy():
+        while alpha > 0 or curChannel.get_busy():
             clock.tick(60)
             if alpha > 0:
-                alpha -= 20#4
+                alpha -= 6
             menu.set_alpha(alpha)
             drawGameWindow()
     else:
         while alpha > 0:
             clock.tick(60)
             if alpha > 0:
-                alpha -= 20#4
+                alpha -= 20
             menu.set_alpha(alpha)
             drawGameWindow()
     gameState = "inGame"
@@ -144,13 +165,14 @@ while run:
             run = False
         if event.type == pygame.MOUSEMOTION:
             mouseX, mouseY = event.pos
+            mouseX -= menuXOffset
         if event.type == pygame.VIDEORESIZE:
-            winW, winH = event.w, event.h
+            winW, winH = int(480*(event.h/360)), event.h
             surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-            bg = pygame.transform.scale(sky, (event.w, event.h))
-            menu = pygame.transform.scale(menuIsland, (int(960*(event.h/720)), event.h))
+            #bg = pygame.transform.scale(sky, (event.w, event.h))
+            #menu = pygame.transform.scale(menuIsland, (480, 360))
             pl = pygame.transform.scale(playText, (int(255*(event.h/720)), int(event.h/18)))
-            menuXOffset = int(winW/2) - int(960*(winH/720)/2)
+            menuXOffset = int(event.w/2) - int(960*(event.h/720)/2)
 
     keys = pygame.key.get_pressed()
 
@@ -160,11 +182,11 @@ while run:
     player.get_touching(level, scale)
 
     if keys[pygame.K_a]:
-        player.xVel -= 4
+        player.xVel -= 2
         player.walkFrame += player.facing*-1
         #player.facing = -1
     elif keys[pygame.K_d]:
-        player.xVel += 4
+        player.xVel += 2
         player.walkFrame += player.facing
         #player.facing = 1
 
@@ -172,24 +194,24 @@ while run:
     if abs(player.xVel) < 0.01:
         player.xVel = 0
     if not player.touchingPlatform:
-        player.yVel -= 1 #fix wall climbing
+        player.yVel -= level.gravity #fix wall climbing
     
     if keys[pygame.K_w] and player.touchingPlatform and player.jumping == 0:
         player.jumping = 1
-        player.yVel += 20
+        player.yVel += 10
     if keys[pygame.K_s]:
-        #player.yVel = 0
-        player.yVel -= 1
+        player.yVel = 0
+        #player.yVel -= 1
     if keys[pygame.K_SPACE] and player.gunCooldown == 0:
         GDFSER_shoot.play()
-        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), 15, player, scale))
+        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), 30, player, scale))
         player.gunCooldown = 20
 
     if player.gunCooldown > 0:
         player.gunCooldown -= 1
 
-    camX += ((player.x-(winW/2))-camX)*0.2
-    camY += ((player.y+(winH/2))-camY)*0.2
+    camX += (((player.x+5)-(480/2))-camX)*0.2
+    camY += (((player.y+20)+(360/2))-camY)*0.2
 
     drawGameWindow()
     
@@ -198,6 +220,6 @@ while run:
         fpst = time()
         FPS = fps
         fps = 0
-    pygame.display.set_caption("Skylands    FPS: %d" % (FPS))
+    pygame.display.set_caption("Skylands    FPS: %d X: %d Y: %d" % (FPS, player.x, player.y))
 
 pygame.quit()
