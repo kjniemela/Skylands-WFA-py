@@ -1,8 +1,7 @@
+entities.py
+level.py
 main.py
 player.py
-level.py
-entities.py
-levels/level1
 assets/arm_far.png
 assets/arm_near.png
 assets/bg.jpg
@@ -98,3 +97,4 @@ assets/shoaldier/jaw.png
 assets/shoaldier/leg_far.png
 assets/shoaldier/leg_near.png
 assets/shoaldier/torso.png
+levels/level1
