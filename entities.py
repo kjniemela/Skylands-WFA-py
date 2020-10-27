@@ -64,6 +64,7 @@ class Entity:
     facing = 1
     touchingPlatform = False
     jumping = 0
+    falling = True
     def __init__(self, level, x, y):
         self.level = level
         self.player = level.player
@@ -80,6 +81,7 @@ class Entity:
         self.leftTouching = 0
         self.upTouching = 0
         self.downTouching = 0
+        self.falling = True
         for platform in level.platforms:
             if self.x<platform.x+platform.w and\
             self.x+(self.width)>platform.x and\
@@ -99,6 +101,7 @@ class Entity:
                         self.yVel = 0
                     self.y += math.ceil(self.downTouching)-1
                     self.jumping = 0
+                    self.falling = False
                 if self.upTouching > 0 and self.upTouching <= self.yVel:
                     self.yVel = 0
                     self.y -= math.ceil(self.upTouching)
@@ -131,8 +134,8 @@ class Shoaldier(Entity):
         self.xVel *= 0.6
         if abs(self.xVel) < 0.01:
             self.xVel = 0
-        if not self.touchingPlatform:
-            self.yVel -= self.level.gravity #fix wall climbing
+        if self.falling:
+            self.yVel -= self.level.gravity
 
         if time()%2<0.1 and self.touchingPlatform and self.jumping == 0 and False:
             self.jumping = 1

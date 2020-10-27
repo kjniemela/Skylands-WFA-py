@@ -91,6 +91,7 @@ class Player:
         self.facing = 1
         self.touchingPlatform = False
         self.jumping = 0
+        self.falling = True
         self.rightArm = 0
         self.leftArm = 0
         self.rightHand = 0
@@ -183,6 +184,7 @@ class Player:
         self.leftTouching = 0
         self.upTouching = 0
         self.downTouching = 0
+        self.falling = True
         for platform in level.platforms:
             if self.x<platform.x+platform.w and\
             self.x+(40)>platform.x and\
@@ -202,6 +204,7 @@ class Player:
                         self.yVel = 0
                     self.y += math.ceil(self.downTouching)-1
                     self.jumping = 0
+                    self.falling = False
                 if self.upTouching > 0 and self.upTouching <= self.yVel:
                     self.yVel = 0
                     self.y -= math.ceil(self.upTouching)

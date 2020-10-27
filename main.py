@@ -13,7 +13,7 @@ except ModuleNotFoundError:
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 1
+VERSION_PATCH = 2
     
 pygame.display.init()
 islandIcon = pygame.image.load('assets/icon.png')
@@ -210,8 +210,8 @@ while run:
     player.xVel *= 0.6
     if abs(player.xVel) < 0.01:
         player.xVel = 0
-    if not player.touchingPlatform:
-        player.yVel -= level.gravity #fix wall climbing
+    if player.falling:
+        player.yVel -= level.gravity
     
     if keys[pygame.K_w] and player.touchingPlatform and player.jumping == 0:
         player.jumping = 1
