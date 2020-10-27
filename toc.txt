@@ -33,26 +33,26 @@ assets/gem6.png
 assets/gem7.png
 assets/gem8.png
 assets/gem9.png
-assets/ground1 - Copy.png
+assets/ground1%20-%20Copy.png
 assets/ground1.png
 assets/hand_far.png
 assets/hand_near.png
 assets/head.png
-assets/health - Copy.png
+assets/health%20-%20Copy.png
 assets/health.png
-assets/HUD back.png
+assets/HUD%20back.png
 assets/HUD.png
 assets/icon.png
 assets/icon_old.png
 assets/island.png
-assets/jungle3 - Copy (2).png
-assets/jungle3 - Copy.png
+assets/jungle3%20-%20Copy%20(2).png
+assets/jungle3%20-%20Copy.png
 assets/jungle3.png
 assets/loading.png
 assets/menu.png
 assets/music.ogg
 assets/play.png
-assets/power - Copy.png
+assets/power%20-%20Copy.png
 assets/power.png
 assets/Shoal-Der-arm1.png
 assets/Shoal-Der-idle1.png
@@ -71,9 +71,9 @@ assets/shoaldier
 assets/sky.png
 assets/standing.png
 assets/stars.png
-assets/STB Mk1.png
+assets/STB%20Mk1.png
 assets/sun.png
-assets/The Light - The Album Leaf.wav
+assets/The%20Light%20-%20The%20Album%20Leaf.wav
 assets/thumbnail.png
 assets/tree.png
 assets/walk1.png
