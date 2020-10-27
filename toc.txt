@@ -67,7 +67,6 @@ assets/Shoal-Der-walk6.png
 assets/Shoal-Der-walk7.png
 assets/Shoal-Der-walk8.png
 assets/Shoal-Der-walk9.png
-assets/shoaldier
 assets/sky.png
 assets/standing.png
 assets/stars.png
