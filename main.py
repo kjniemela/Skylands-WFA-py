@@ -106,6 +106,8 @@ def drawGameWindow():
         drawHUD(win, player)
         win.blit(HUD, (0, 0))
 
+        level.achievement_handler.draw(win, level)
+
         win.blit(cursor, ((mouseX-(8*(winW/480)))//(winW/480),(mouseY-(8*(winH/360)))//(winH/360)))
         
     #window.blit(pygame.transform.scale(win, (winW, winH)), (menuXOffset,0))
@@ -221,6 +223,12 @@ while run:
 
     if player.gunCooldown > 0:
         player.gunCooldown -= 1
+
+    if player.y < -2000:
+        player.hp = 0
+
+    if player.hp <= 0:
+        player.kill()
 
     camX += (((player.x+5)-(480/2))-camX)*0.2
     camY += (((player.y+20)+(360/2))-camY)*0.2

@@ -24,6 +24,53 @@ def blitRotateCenter(surf, image, angle, pos, camPos):
 
     surf.blit(rotated_image, (new_rect.topleft[0] + pos[0] - camPos[0], new_rect.topleft[1] + pos[1] + camPos[1]))
 
+class AchievementRenderer:
+    def __init__(self):
+        self.achievements_got = { #add loading achievements from save files?
+            "ANewStart": False,
+            "BabySteps": False,
+            "ChickeningOut": False,
+            "Dropout": False,
+            "HowBizarre": False,
+            "Scrooge": False,
+            "StillAlive": False,
+            "StrangePeople": False
+            }
+
+        self.on_display = ""
+        self.is_displaying = False
+        self.displayTime = 0
+
+        self.achievement_assets = {}
+
+        for i in self.achievements_got:
+            self.achievement_assets[i] = pygame.image.load('assets/achievements/%s.png' % (i))
+    def draw(self, win, level):
+        if not self.is_displaying:
+            if not self.achievements_got["ANewStart"]:
+                self.achievements_got["ANewStart"] = True
+                self.on_display = "ANewStart"
+                self.is_displaying = True
+            if not self.achievements_got["Dropout"]:
+                if level.player.y < -1000:
+                    self.achievements_got["Dropout"] = True
+                    self.on_display = "Dropout"
+                    self.is_displaying = True
+        else:
+            if self.displayTime < 30:
+                self.displayTime += 1
+                win.blit(self.achievement_assets[self.on_display], (-60+(self.displayTime)*2, 0))
+            elif self.displayTime < 180:
+                self.displayTime += 1
+                win.blit(self.achievement_assets[self.on_display], (0, 0))
+            elif self.displayTime < 210:
+                self.displayTime += 1
+                win.blit(self.achievement_assets[self.on_display], (-(self.displayTime-180)*2, 0))
+            else:
+                self.on_display = ""
+                self.is_displaying = False
+                self.displayTime = 0
+
 class Level:
     def __init__(self, src, player):
 
@@ -37,6 +84,8 @@ class Level:
         self.entityTypes = {
             'shoaldier': Shoaldier
         }
+
+        self.achievement_handler = AchievementRenderer()
 
         self.gravity = 0.5
         

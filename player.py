@@ -45,6 +45,7 @@ def loadPlayerTextures():
     global GDFSERLeft
     global powerBar
     global healthBar
+    global gem
     
     walkRight = [pygame.image.load('assets/body_walk%s.png' % frame) for frame in range(1, 9)]
     walkLeft = [pygame.transform.flip(pygame.image.load('assets/body_walk%s.png' % frame), True, False) for frame in range(1, 9)]
@@ -69,15 +70,19 @@ def loadPlayerTextures():
     powerBar = pygame.image.load('assets/power.png')
     healthBar = pygame.image.load('assets/health.png')
 
+    gem = [pygame.image.load('assets/gem%s.png' % frame) for frame in range(1, 10)]
+
 def drawHUD(win, player):
     win.blit(healthBar, (435-(142*(player.hp/player.maxHp)), 28))
-    win.blit(powerBar, (333+(110*(player.gunCooldown/20)), 40))
+    win.blit(powerBar, (333+(110*(player.gunCooldown/20)), 40))     
+    win.blit(gem[int((time()*16)%9)], (10, 10))   
 
 class Player:
     def __init__(self, x, y):
         self.level = None
         self.x = x
         self.y = y
+        self.spawnpoint = (x, y)
         self.width = 40
         self.height = 60
         self.xVel = 0
@@ -165,6 +170,8 @@ class Player:
         self.hp -= dmg
         self.xVel += knockback[0]
         self.yVel += knockback[1]
+    def kill(self):
+        self.__init__(*self.spawnpoint)
     def check_inside(self, x, y):
         if self.x<x and self.x+(40)>x and self.y+(18)>y and self.y-(48)<y:
             return (True, (self.x+(self.width/2))-x, self.y-y)
