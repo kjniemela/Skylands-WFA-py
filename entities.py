@@ -65,11 +65,30 @@ class Entity:
     touchingPlatform = False
     jumping = 0
     falling = True
+    kills = 0
+    hp = 1
+    is_dead = False
     def __init__(self, level, x, y):
         self.level = level
         self.player = level.player
         self.x = x
         self.y = y
+    def tick(self):
+        if self.hp <= 0:
+            self.kill()
+        if self.is_dead:
+            return False
+        else:
+            return True
+    def damage(self, dmg, src, knockback=(0,0)):
+        """
+        0: fall damage - 1: melee damage
+        """
+        self.hp -= dmg
+        self.xVel += knockback[0]
+        self.yVel += knockback[1]
+    def kill(self):
+        self.is_dead = True
     def check_inside(self, x, y):
         if self.x<x and self.x+(self.width)>x and self.y+(self.heightHead)>y and self.y-(self.heightBody)<y:
             return (True, (self.x+(self.width/2))-x, self.y-y)
@@ -126,7 +145,10 @@ class Shoaldier(Entity):
         self.gunX = 0
         self.gunY = 0
         self.gunCooldown = 100
+        self.hp = 3
     def tick(self):
+        if not super().tick():
+            return False
         self.x += self.xVel
         self.y += self.yVel
         

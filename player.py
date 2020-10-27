@@ -72,10 +72,11 @@ def loadPlayerTextures():
 
     gem = [pygame.image.load('assets/gem%s.png' % frame) for frame in range(1, 10)]
 
-def drawHUD(win, player):
+def drawHUD(win, player, fonts):
     win.blit(healthBar, (435-(142*(player.hp/player.maxHp)), 28))
     win.blit(powerBar, (333+(110*(player.gunCooldown/20)), 40))     
-    win.blit(gem[int((time()*16)%9)], (10, 10))   
+    win.blit(gem[int((time()*16)%9)], (10, 10))
+    win.blit(fonts["gemCount"].render('x%d' % (player.gems), True, (91, 183, 0)) , (50, 22))
 
 class Player:
     def __init__(self, x, y):
@@ -99,6 +100,8 @@ class Player:
         self.gunX = 0
         self.gunY = 0
         self.gunCooldown = 0
+
+        self.gems = 0
         
         self.hp = 10
         self.maxHp = 10
@@ -247,8 +250,7 @@ class Bullet:
                 hit, xD, yD = entity.check_inside(self.x, self.y)
                 if hit:
                     #print(hit, xD, yD)
-                    entity.xVel += self.xVel*0.2
-                    entity.yVel += self.yVel*0.2 + 1
+                    entity.damage(1, 2, (self.xVel*0.2, self.yVel*0.2 + 1))
                     return True
         if not level.player == self.owner:
             hit, xD, yD = level.player.check_inside(self.x, self.y)

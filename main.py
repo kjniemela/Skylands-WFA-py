@@ -26,6 +26,24 @@ pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
 
 pygame.display.set_caption("Skylands %d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
+asciiIcon = """                   
+         %%%%@  *@@@            
+      *##################       
+    ######################(     
+ ###########################@###
+  ,,,,,,,##########,,,*,,,,,&,,#
+   ,,,,,,,,,,,,#,,,,,,,,,,,,%,, 
+     ,,,,,,,,,,,,,,,,,,,,,,,%,  
+      ,,,,,,,,,,,,,,,,,,,,,,#   
+      .,,,,,,,,,,,,,,,,,,,,,(   
+        ,,,,,,,,,,,,,,,,,,, @   
+           ,,,,,,,,,,,,,,.  @   
+            .,  ,,,,,,,,,   @   
+                ,,,,,,,,    @   
+                  ,,,,          
+                   , .     
+"""
+
 menuXOffset = 0
 
 #MENU
@@ -86,11 +104,21 @@ GDFSER_shoot.set_volume(1*vol)
 loadEntitySounds(vol)
 ###########
 
+###FONTS###
+pygame.font.init()
+fonts = {
+    "gemCount": pygame.font.Font('freesansbold.ttf', 16),
+    "achievementTitle": pygame.font.Font('C:\\WINDOWS\\Fonts\\Inkfree.ttf', 15),
+    "achievementSubt": pygame.font.Font('C:\\WINDOWS\\Fonts\\Inkfree.ttf', 6),
+    }
+###########
+
 clock = pygame.time.Clock()
 
 def drawGameWindow():
     global gameState
     global player
+    global fonts
 
     zoom = 1 #make global or smth later
 
@@ -106,10 +134,10 @@ def drawGameWindow():
         player.draw(camX, camY, win, mouseX, mouseY, winW, winH)
 
         win.blit(HUD_back, (293, 28))
-        drawHUD(win, player)
+        drawHUD(win, player, fonts)
         win.blit(HUD, (0, 0))
 
-        level.achievement_handler.draw(win, level)
+        level.achievement_handler.draw(win, level, fonts)
 
         win.blit(cursor, ((mouseX-(8*(winW/480)))//(winW/480),(mouseY-(8*(winH/360)))//(winH/360)))
         
@@ -119,6 +147,9 @@ def drawGameWindow():
 
 player = Player(125, 25)
 level = Level("level1", player)
+
+print(asciiIcon)
+print("Skylands: Worlds from Above v%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
 run = True
 gameState = "mainMenu"
@@ -202,7 +233,7 @@ while run:
         player.xVel -= 2
         player.walkFrame += player.facing*-1
         #player.facing = -1
-    elif keys[pygame.K_d]:
+    if keys[pygame.K_d]:
         player.xVel += 2
         player.walkFrame += player.facing
         #player.facing = 1
@@ -232,6 +263,7 @@ while run:
 
     if player.hp <= 0:
         player.kill()
+        level.achievement_handler.trigger("StillAlive")
 
     camX += (((player.x+5)-(480/2))-camX)*0.2
     camY += (((player.y+20)+(360/2))-camY)*0.2

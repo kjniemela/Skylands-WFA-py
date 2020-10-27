@@ -36,36 +36,76 @@ class AchievementRenderer:
             "StillAlive": False,
             "StrangePeople": False
             }
+        self.achievement_title = {
+            "ANewStart": "A New Start",
+            "BabySteps": "Baby Steps",
+            "ChickeningOut": "Chickening Out",
+            "Dropout": "Drop Out",
+            "HowBizarre": "How Bizarre",
+            "Scrooge": "Scrooge",
+            "StillAlive": "Still Alive",
+            "StrangePeople": "Strange People"
+            }
+        self.achievement_sub = {
+            "ANewStart": False,
+            "BabySteps": False,
+            "ChickeningOut": False,
+            "Dropout": False,
+            "HowBizarre": False,
+            "Scrooge": False,
+            "StillAlive": False,
+            "StrangePeople": False
+            }
 
         self.on_display = ""
         self.is_displaying = False
         self.displayTime = 0
+        self.queue = []
+
+        self.text_bar = pygame.image.load('assets/achievements/textBar.png')
 
         self.achievement_assets = {}
 
         for i in self.achievements_got:
             self.achievement_assets[i] = pygame.image.load('assets/achievements/%s.png' % (i))
-    def draw(self, win, level):
+    def trigger(self, name):
+        self.achievements_got[name] = True
         if not self.is_displaying:
-            if not self.achievements_got["ANewStart"]:
-                self.achievements_got["ANewStart"] = True
-                self.on_display = "ANewStart"
-                self.is_displaying = True
-            if not self.achievements_got["Dropout"]:
-                if level.player.y < -1000:
-                    self.achievements_got["Dropout"] = True
-                    self.on_display = "Dropout"
-                    self.is_displaying = True
+            self.is_displaying = True
+            self.on_display = name
         else:
+            self.queue.append(name)
+    def draw(self, win, level, fonts):
+        if not self.achievements_got["ANewStart"]:
+            self.trigger("ANewStart")
+        if not self.achievements_got["Dropout"]:
+            if level.player.y < -1000:
+                self.trigger("Dropout")
+        if not self.is_displaying:
+            if len(self.queue) > 0:
+                self.achievements_got[self.queue[0]] = True
+                self.on_display = self.queue[0]
+                self.is_displaying = True
+                del self.queue[0]
+        else:
+            text = fonts["achievementTitle"].render(self.achievement_title[self.on_display], True, (170, 170, 190))
+            titleXOffset = (100-text.get_rect().w)//2
+            titleYOffset = 14
             if self.displayTime < 30:
                 self.displayTime += 1
                 win.blit(self.achievement_assets[self.on_display], (-60+(self.displayTime)*2, 0))
-            elif self.displayTime < 180:
+                win.blit(self.text_bar, (50, (-60+(self.displayTime)*2)))
+                win.blit(text, (50+titleXOffset, (titleYOffset-60+(self.displayTime)*2)))
+            elif self.displayTime < 240:
                 self.displayTime += 1
                 win.blit(self.achievement_assets[self.on_display], (0, 0))
-            elif self.displayTime < 210:
+                win.blit(self.text_bar, (50, 0))
+                win.blit(text, (50+titleXOffset, titleYOffset))
+            elif self.displayTime < 270:
                 self.displayTime += 1
-                win.blit(self.achievement_assets[self.on_display], (-(self.displayTime-180)*2, 0))
+                win.blit(self.achievement_assets[self.on_display], (-(self.displayTime-240)*2, 0))
+                win.blit(self.text_bar, (50, (-(self.displayTime-240)*2)))
+                win.blit(text, (50+titleXOffset, (titleYOffset-(self.displayTime-240)*2)))
             else:
                 self.on_display = ""
                 self.is_displaying = False
@@ -77,6 +117,7 @@ class Level:
         self.platforms = []
         self.projectiles = []
         self.entities = []
+        self.itemEntities = []
 
         self.player = player
         self.player.level = self
