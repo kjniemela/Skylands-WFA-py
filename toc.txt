@@ -1,3 +1,4 @@
+asciiIcon.txt
 entities.py
 level.py
 main.py
@@ -84,6 +85,7 @@ assets/achievements/HowBizarre.png
 assets/achievements/Scrooge.png
 assets/achievements/StillAlive.png
 assets/achievements/StrangePeople.png
+assets/achievements/textBar.png
 assets/shoaldier/arm_far.png
 assets/shoaldier/arm_near.png
 assets/shoaldier/foot_far.png
