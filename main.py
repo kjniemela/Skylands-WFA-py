@@ -3,14 +3,17 @@ try:
     import pygame
 except ModuleNotFoundError:
     print("ModuleNotFoundError: Pygame module could not be found.")
-    t=time()
-    while time()-t<1:
-        pass
-    exit()
+    if input("Install pygame [y/n]? ").lower() == "y":
+        import subprocess
+        import sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
+        import pygame
+    else:
+        exit()
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 0
+VERSION_PATCH = 1
     
 pygame.display.init()
 islandIcon = pygame.image.load('assets/icon.png')
