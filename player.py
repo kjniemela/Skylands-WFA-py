@@ -109,12 +109,12 @@ class Player:
         self.leftArm = 0
         self.rightHand = 0
         self.leftHand = 0
+        self.gunCooldown = 120
         if save_file == None:
             self.x = x
             self.y = y
             self.xVel = 0
             self.yVel = 0
-            self.gunCooldown = 0
 
             self.gems = 0
             
@@ -130,7 +130,7 @@ class Player:
         self.y = float(data[2])
         self.xVel = float(data[3])
         self.yVel = float(data[4])
-        self.gunCooldown = int(data[5])
+        #self.gunCooldown = int(data[5])
         self.gems = int(data[6])
         self.hp = int(data[7])
         self.maxHp = int(data[8])
@@ -149,8 +149,8 @@ class Player:
                 ]
             f.write('\n'.join(data))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
-        head_rot = -math.degrees(math.atan2(mouseY-((winH/2)+(50)), mouseX-(winW/2)))
-        head_rot_left = math.degrees(math.atan2(mouseY-(((winH/2)+(50))), (winW/2)-mouseX))
+        head_rot = -math.degrees(math.atan2(mouseY-(180+15), mouseX-240))
+        head_rot_left = math.degrees(math.atan2(mouseY-(180+15), 240-mouseX))
         self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
         self.rightHand = 15

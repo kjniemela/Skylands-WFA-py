@@ -76,6 +76,8 @@ class AchievementRenderer:
                 self.on_display = name
             else:
                 self.queue.append(name)
+    def message(self, win, fonts):
+        pass
     def draw(self, win, level, fonts):
         if not self.achievements_got["ANewStart"]:
             self.trigger("ANewStart")

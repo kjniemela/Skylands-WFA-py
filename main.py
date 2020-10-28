@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 2
+VERSION_PATCH = 3
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -78,6 +78,10 @@ win.blit(loading, (15, 660))
 pygame.display.update()
 
 ###TEXTURES###
+#PLAY MENU
+playMenu = pygame.image.load(resource_path('assets/playMenu2.png'))
+creditsSlide = pygame.image.load(resource_path('assets/credits.png'))
+
 #HUD
 HUD = pygame.image.load(resource_path('assets/HUD.png'))
 HUD_back = pygame.image.load(resource_path('assets/HUD back.png'))
@@ -102,8 +106,8 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
-vol = 0.1
-playMusic = False
+vol = 0.5
+playMusic = True
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
@@ -129,12 +133,62 @@ fonts = {
     }
 ###########
 
+###FADE###
+class Fade:
+    def __init__(self, fadeWhite, fadeBlack):
+        self.fadeWhite = fadeWhite
+        self.fadeBlack = fadeBlack
+        self.alpha = 0
+        self.active = False
+        self.color = "black"
+        self.speed = 1
+        self.next_state = ""
+        self.fading = True
+    def fade_white(self, speed, next_state):
+        self.color = "white"
+        self.speed = speed
+        self.next_state = next_state
+        self.active = True
+        self.fading = True
+    def fade_black(self, speed, next_state):
+        self.color = "black"
+        self.speed = speed
+        self.next_state = next_state
+        self.active = True
+        self.fading = True
+    def draw(self, win):
+        global gameState
+        
+        if self.active:
+            if self.color == "white":
+                self.fadeWhite.set_alpha(self.alpha)
+                win.blit(self.fadeWhite, (0,0))
+            elif self.color == "black":
+                self.fadeBlack.set_alpha(self.alpha)
+                win.blit(self.fadeBlack, (0,0))
+            if self.fading:
+                if self.alpha < 255:
+                    self.alpha += self.speed
+                else:
+                    self.fading = False
+                    gameState = self.next_state
+            else:
+                if self.alpha > 0:
+                    self.alpha -= self.speed
+                else:
+                    self.active = False
+
+fade = Fade(pygame.image.load(resource_path('assets/fadeWhite.png')).convert(),\
+            pygame.image.load(resource_path('assets/fadeBlack.png')).convert())
+
 clock = pygame.time.Clock()
+creditsY = 0
 
 def drawGameWindow():
     global gameState
     global player
     global fonts
+    global creditsY
 
     zoom = 1 #make global or smth later
 
@@ -144,6 +198,15 @@ def drawGameWindow():
         win.blit(menu, (0, 0))
         if gameState == "mainMenu":
             win.blit(pl, (176, 306))
+    elif gameState == "playMenu":
+        win.blit(playMenu, (0, 0))
+        win.blit(cursor, (mouseX-8,mouseY-8))
+    elif gameState == "credits":
+        win.fill((251, 251, 254))
+        win.blit(creditsSlide, (0, min(creditsY, 0)))
+        creditsY -= 1
+        if creditsY < -1440:
+            fade.fade_white(6, "playMenu")
     elif gameState == "inGame":
         win.fill((240, 240, 255))
         level.draw(camX, camY, win, mouseX, mouseY, winW, winH)
@@ -155,19 +218,20 @@ def drawGameWindow():
 
         level.achievement_handler.draw(win, level, fonts)
 
-        win.blit(cursor, ((mouseX-(8*(winW/480)))//(winW/480),(mouseY-(8*(winH/360)))//(winH/360)))
-        
-    #window.blit(pygame.transform.scale(win, (winW, winH)), (menuXOffset,0))
+        win.blit(cursor, (mouseX-8,mouseY-8))
+
+    fade.draw(win)
     window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
     pygame.display.update()
-
-player = Player(125, 25, save_file)
-level = Level("level1", player)
 
 print(asciiIcon)
 print("Skylands: Worlds from Above v%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
+player = Player(125, 25, save_file)
+level = Level("level1", player)
+
 run = True
+runMenu = True
 gameState = "mainMenu"
 mouseX, mouseY = 0, 0
 camX, camY = 0, 0
@@ -179,51 +243,73 @@ FPS = 60
 if playMusic:
     curChannel = menuMusic.play(-1)
 
-while run:
-    clock.tick(60)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.MOUSEMOTION:
-            mouseX, mouseY = event.pos
-        if event.type == pygame.VIDEORESIZE:
-            winW, winH = int(480*(event.h/360)), event.h
-            surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-            bg = pygame.transform.scale(sky, (event.w, event.h))
-            menu = pygame.transform.scale(menuIsland, (480, 360))
-            pl = pygame.transform.scale(playText, (127, 20))
-            menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+    while run and runMenu:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEMOTION:
+                mouseX, mouseY = event.pos
+                mouseX -= menuXOffset
+                mouseX *= 480/winW
+                mouseY *= 360/winH
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mouseX, mouseY = event.pos
+                    mouseX -= menuXOffset
+                    mouseX *= 480/winW
+                    mouseY *= 360/winH
+                    #print(mouseX, mouseY)
+                    if gameState == "playMenu":
+                        if mouseY<32 and 375<mouseX<470:
+                            runMenu = False
+                        if 47<mouseY<77 and 375<mouseX<470:
+                            #LOAD
+                            pass
+                        if 125<mouseY<155 and 375<mouseX<470:
+                            #SETTINGS
+                            pass
+                        if 310<mouseY<348 and 377<mouseX<465:
+                            fade.fade_white(6, "mainMenu")
+                        if 310<mouseY<348 and 16<mouseX<100:
+                            creditsY = 40
+                            fade.fade_white(6, "credits")
+            if event.type == pygame.VIDEORESIZE:
+                winW, winH = int(480*(event.h/360)), event.h
+                surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                bg = pygame.transform.scale(sky, (event.w, event.h))
+                menu = pygame.transform.scale(menuIsland, (480, 360))
+                pl = pygame.transform.scale(playText, (127, 20))
+                menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
 
-    keys = pygame.key.get_pressed()
+        keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_SPACE] or not playMusic:
-        break
+        if gameState == "mainMenu":
+            if keys[pygame.K_SPACE]:
+                fade.fade_white(6, "playMenu")
 
-    drawGameWindow()
-if playMusic:
-    menuMusic.fadeout(1000)
-if run:
-    gameState = "fade"
-    alpha = 255
+        drawGameWindow()
     if playMusic:
-        while alpha > 0 or curChannel.get_busy():
-            clock.tick(60)
-            if alpha > 0:
-                alpha -= 6
-            menu.set_alpha(alpha)
-            drawGameWindow()
-    else:
-        while alpha > 0:
-            clock.tick(60)
-            if alpha > 0:
-                alpha -= 20
-            menu.set_alpha(alpha)
-            drawGameWindow()
+        menuMusic.fadeout(1000)
+    fade.fade_black(6, "inGame")
+else:
     gameState = "inGame"
-    if playMusic:
-        gameMusic.play(-1)
+
+currentlyPlaying = None
+
+def startMusic(music):
+    global currentlyPlaying
+    global curChannel
+    if curChannel.get_busy() and not music == currentlyPlaying:
+        curChannel = music.play(-1)
+        currentlyPlaying = music
+    elif not curChannel.get_busy():
+        curChannel = music.play(-1)
+        currentlyPlaying = music
+
 while run:
     clock.tick(60)
+    startMusic(gameMusic)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             if not save_file == None:
@@ -232,6 +318,8 @@ while run:
         if event.type == pygame.MOUSEMOTION:
             mouseX, mouseY = event.pos
             mouseX -= menuXOffset
+            mouseX *= 480/winW
+            mouseY *= 360/winH
         if event.type == pygame.VIDEORESIZE:
             winW, winH = int(480*(event.h/360)), event.h
             surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
