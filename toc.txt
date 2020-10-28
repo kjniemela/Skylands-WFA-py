@@ -3,6 +3,7 @@ entities.py
 level.py
 main.py
 player.py
+Skylands WFA.lnk
 assets/arm_far.png
 assets/arm_near.png
 assets/bg.jpg
@@ -42,12 +43,14 @@ assets/health - Copy.png
 assets/health.png
 assets/HUD back.png
 assets/HUD.png
+assets/icon.ico
 assets/icon.png
 assets/icon_old.png
 assets/island.png
 assets/jungle3 - Copy (2).png
 assets/jungle3 - Copy.png
 assets/jungle3.png
+assets/launcher_thumbnail.png
 assets/loading.png
 assets/menu.png
 assets/music.ogg
@@ -100,3 +103,4 @@ assets/shoaldier/leg_far.png
 assets/shoaldier/leg_near.png
 assets/shoaldier/torso.png
 levels/level1
+saves/save1

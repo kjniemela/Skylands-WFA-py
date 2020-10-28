@@ -1,15 +1,23 @@
 from time import time
+import sys
+import os
 try:
     import pygame
 except ModuleNotFoundError:
     print("ModuleNotFoundError: Pygame module could not be found.")
     if input("Install pygame [y/n]? ").lower() == "y":
         import subprocess
-        import sys
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
         import pygame
     else:
         exit()
+
+if len(sys.argv) > 1:
+    save_file = sys.argv[1]
+else:
+    save_file = None
+
+print(save_file)
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
@@ -145,7 +153,7 @@ def drawGameWindow():
     window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
     pygame.display.update()
 
-player = Player(125, 25)
+player = Player(125, 25, save_file)
 level = Level("level1", player)
 
 print(asciiIcon)
@@ -210,6 +218,8 @@ while run:
     clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            if not save_file == None:
+                player.save()
             run = False
         if event.type == pygame.MOUSEMOTION:
             mouseX, mouseY = event.pos

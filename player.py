@@ -79,32 +79,62 @@ def drawHUD(win, player, fonts):
     win.blit(fonts["gemCount"].render('x%d' % (player.gems), True, (91, 183, 0)) , (50, 22))
 
 class Player:
-    def __init__(self, x, y):
-        self.level = None
-        self.x = x
-        self.y = y
+    def __init__(self, x, y, save_file):
+        self.save_file = save_file
         self.spawnpoint = (x, y)
         self.width = 40
         self.height = 60
-        self.xVel = 0
-        self.yVel = 0
         self.walkFrame = 0
         self.facing = 1
         self.touchingPlatform = False
-        self.jumping = 0
         self.falling = True
+        self.jumping = 0
+        self.gunX = 0
+        self.gunY = 0
+        self.level = None
         self.rightArm = 0
         self.leftArm = 0
         self.rightHand = 0
         self.leftHand = 0
-        self.gunX = 0
-        self.gunY = 0
-        self.gunCooldown = 0
+        if save_file == None:
+            self.x = x
+            self.y = y
+            self.xVel = 0
+            self.yVel = 0
+            self.gunCooldown = 0
 
-        self.gems = 0
-        
-        self.hp = 10
-        self.maxHp = 10
+            self.gems = 0
+            
+            self.hp = 10
+            self.maxHp = 10
+        else:
+            self.load(self.save_file)
+    def load(self, save_file):
+        with open(save_file) as f:
+            data = f.read().split('\n')
+        print(data)
+        self.x = float(data[1])
+        self.y = float(data[2])
+        self.xVel = float(data[3])
+        self.yVel = float(data[4])
+        self.gunCooldown = int(data[5])
+        self.gems = int(data[6])
+        self.hp = int(data[7])
+        self.maxHp = int(data[8])
+    def save(self):
+        with open(self.save_file, mode='w') as f:
+            data = [
+                str("SAVENAME"),
+                str(self.x),
+                str(self.y),
+                str(self.xVel),
+                str(self.yVel),
+                str(self.gunCooldown),
+                str(self.gems),
+                str(self.hp),
+                str(self.maxHp),
+                ]
+            f.write('\n'.join(data))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
         head_rot = -math.degrees(math.atan2(mouseY-((winH/2)+(50)), mouseX-(winW/2)))
         head_rot_left = math.degrees(math.atan2(mouseY-(((winH/2)+(50))), (winW/2)-mouseX))

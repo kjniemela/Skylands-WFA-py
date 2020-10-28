@@ -69,12 +69,13 @@ class AchievementRenderer:
         for i in self.achievements_got:
             self.achievement_assets[i] = pygame.image.load('assets/achievements/%s.png' % (i))
     def trigger(self, name):
-        self.achievements_got[name] = True
-        if not self.is_displaying:
-            self.is_displaying = True
-            self.on_display = name
-        else:
-            self.queue.append(name)
+        if not self.achievements_got[name]:
+            self.achievements_got[name] = True
+            if not self.is_displaying:
+                self.is_displaying = True
+                self.on_display = name
+            else:
+                self.queue.append(name)
     def draw(self, win, level, fonts):
         if not self.achievements_got["ANewStart"]:
             self.trigger("ANewStart")
