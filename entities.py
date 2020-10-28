@@ -1,5 +1,7 @@
 from time import time
 import math
+import os
+import sys
 
 from player import Bullet
 
@@ -15,6 +17,16 @@ except ModuleNotFoundError:
     while time()-t<1:
         pass
     exit()
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 shoaldier = {1: {}, -1: {}}
 globalTextures = {1: {}, -1: {}}
@@ -40,12 +52,12 @@ def loadEntityTextures(textures):
         ('gun_hand', 62, 14)
     ]
     for i in shoaldierTextures:
-        shoaldier[1][i[0]] = pygame.image.load('assets/shoaldier/%s.png'%(i[0]))
+        shoaldier[1][i[0]] = pygame.image.load(resource_path('assets/shoaldier/%s.png'%(i[0])))
         shoaldier[-1][i[0]] = pygame.transform.flip(shoaldier[1][i[0]], True, False)
 def loadEntitySounds(vol):
     global shoaldier_fire
 
-    shoaldier_fire = pygame.mixer.Sound("assets/GDFSER-fire2.wav")
+    shoaldier_fire = pygame.mixer.Sound(resource_path("assets/GDFSER-fire2.wav"))
     shoaldier_fire.set_volume(1*vol)
 
 def blitRotateCenter(surf, image, angle, pos, camPos):

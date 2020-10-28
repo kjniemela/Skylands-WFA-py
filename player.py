@@ -18,6 +18,19 @@ except ModuleNotFoundError:
         pass
     exit()
 
+import os
+import sys
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 def blitRotateCenter(surf, image, angle, pos, camPos):
 
@@ -47,30 +60,30 @@ def loadPlayerTextures():
     global healthBar
     global gem
     
-    walkRight = [pygame.image.load('assets/body_walk%s.png' % frame) for frame in range(1, 9)]
-    walkLeft = [pygame.transform.flip(pygame.image.load('assets/body_walk%s.png' % frame), True, False) for frame in range(1, 9)]
-    idleRight = pygame.image.load('assets/body_idle.png')
+    walkRight = [pygame.image.load(resource_path('assets/body_walk%s.png' % frame)) for frame in range(1, 9)]
+    walkLeft = [pygame.transform.flip(pygame.image.load(resource_path('assets/body_walk%s.png' % frame)), True, False) for frame in range(1, 9)]
+    idleRight = pygame.image.load(resource_path('assets/body_idle.png'))
     idleLeft = pygame.transform.flip(idleRight, True, False)
-    headRight = pygame.image.load('assets/head.png')
+    headRight = pygame.image.load(resource_path('assets/head.png'))
     headLeft = pygame.transform.flip(headRight, True, False)
 
-    armNearRight = pygame.image.load('assets/arm_near.png')
+    armNearRight = pygame.image.load(resource_path('assets/arm_near.png'))
     armNearLeft = pygame.transform.flip(armNearRight, False, True)
-    armFarRight = pygame.image.load('assets/arm_far.png')
+    armFarRight = pygame.image.load(resource_path('assets/arm_far.png'))
     armFarLeft = pygame.transform.flip(armFarRight, False, True)
 
-    handNearRight = pygame.image.load('assets/hand_near.png')
+    handNearRight = pygame.image.load(resource_path('assets/hand_near.png'))
     handNearLeft = pygame.transform.flip(handNearRight, False, True)
-    handFarRight = pygame.image.load('assets/hand_far.png')
+    handFarRight = pygame.image.load(resource_path('assets/hand_far.png'))
     handFarLeft = pygame.transform.flip(handFarRight, False, True)
 
-    GDFSERRight = pygame.image.load('assets/GDFSER.png')
+    GDFSERRight = pygame.image.load(resource_path('assets/GDFSER.png'))
     GDFSERLeft = pygame.transform.flip(GDFSERRight, False, True)
     
-    powerBar = pygame.image.load('assets/power.png')
-    healthBar = pygame.image.load('assets/health.png')
+    powerBar = pygame.image.load(resource_path('assets/power.png'))
+    healthBar = pygame.image.load(resource_path('assets/health.png'))
 
-    gem = [pygame.image.load('assets/gem%s.png' % frame) for frame in range(1, 10)]
+    gem = [pygame.image.load(resource_path('assets/gem%s.png' % frame)) for frame in range(1, 10)]
 
 def drawHUD(win, player, fonts):
     win.blit(healthBar, (435-(142*(player.hp/player.maxHp)), 28))

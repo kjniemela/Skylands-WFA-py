@@ -13,9 +13,9 @@ def loadLevelTextures():
     global platformTextures
     global bullet
     platformTextures = {
-        "ground1": pygame.image.load('assets/ground1.png')
+        "ground1": pygame.image.load(resource_path('assets/ground1.png'))
         }
-    bullet = pygame.image.load('assets/GDFSER-bullet.png')
+    bullet = pygame.image.load(resource_path('assets/GDFSER-bullet.png'))
 
 def blitRotateCenter(surf, image, angle, pos, camPos):
 
@@ -62,12 +62,12 @@ class AchievementRenderer:
         self.displayTime = 0
         self.queue = []
 
-        self.text_bar = pygame.image.load('assets/achievements/textBar.png')
+        self.text_bar = pygame.image.load(resource_path('assets/achievements/textBar.png'))
 
         self.achievement_assets = {}
 
         for i in self.achievements_got:
-            self.achievement_assets[i] = pygame.image.load('assets/achievements/%s.png' % (i))
+            self.achievement_assets[i] = pygame.image.load(resource_path('assets/achievements/%s.png' % (i)))
     def trigger(self, name):
         if not self.achievements_got[name]:
             self.achievements_got[name] = True
@@ -131,7 +131,7 @@ class Level:
 
         self.gravity = 0.5
         
-        f = open("levels/"+src)
+        f = open(resource_path("levels/"+src))
         data = f.read().split("\n")
         f.close()
         data = [i.split(" ") for i in data]

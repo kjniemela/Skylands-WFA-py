@@ -17,14 +17,22 @@ if len(sys.argv) > 1:
 else:
     save_file = None
 
-print(save_file)
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
 VERSION_PATCH = 2
     
 pygame.display.init()
-islandIcon = pygame.image.load('assets/icon.png')
+islandIcon = pygame.image.load(resource_path('assets/icon.png'))
 pygame.display.set_icon(islandIcon)
 
 window = pygame.display.set_mode((960, 720), pygame.RESIZABLE)
@@ -55,10 +63,10 @@ asciiIcon = """
 menuXOffset = 0
 
 #MENU
-sky = pygame.image.load('assets/sky.png').convert_alpha()
-menuIsland = pygame.image.load('assets/menu.png').convert()
-loading = pygame.image.load('assets/loading.png')
-playText = pygame.image.load('assets/play.png')
+sky = pygame.image.load(resource_path('assets/sky.png')).convert_alpha()
+menuIsland = pygame.image.load(resource_path('assets/menu.png')).convert()
+loading = pygame.image.load(resource_path('assets/loading.png'))
+playText = pygame.image.load(resource_path('assets/play.png'))
 
 bg = pygame.transform.scale(sky, (480, 360))
 menu = pygame.transform.scale(menuIsland, (480, 360))
@@ -71,11 +79,11 @@ pygame.display.update()
 
 ###TEXTURES###
 #HUD
-HUD = pygame.image.load('assets/HUD.png')
-HUD_back = pygame.image.load('assets/HUD back.png')
+HUD = pygame.image.load(resource_path('assets/HUD.png'))
+HUD_back = pygame.image.load(resource_path('assets/HUD back.png'))
 
 #ITEMS
-STBRight = pygame.image.load('assets/STB Mk1.png')
+STBRight = pygame.image.load(resource_path('assets/STB Mk1.png'))
 STBLeft = pygame.transform.flip(STBRight, False, True)
 
 items = {1: {
@@ -90,7 +98,7 @@ loadPlayerTextures()
 loadLevelTextures()
 loadEntityTextures(items)
 
-cursor = pygame.image.load('assets/cursor.png')
+cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
@@ -101,12 +109,12 @@ pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
 if playMusic:
     pygame.mixer.init()
-    menuMusic = pygame.mixer.Sound("assets/The Light - The Album Leaf.wav")
-    gameMusic = pygame.mixer.Sound("assets/music.ogg")
+    menuMusic = pygame.mixer.Sound(resource_path("assets/The Light - The Album Leaf.wav"))
+    gameMusic = pygame.mixer.Sound(resource_path("assets/music.ogg"))
     gameMusic.set_volume(0.4*vol)
     menuMusic.set_volume(1*vol)
 
-GDFSER_shoot = pygame.mixer.Sound("assets/GDFSER-fire2.wav")
+GDFSER_shoot = pygame.mixer.Sound(resource_path("assets/GDFSER-fire2.wav"))
 GDFSER_shoot.set_volume(1*vol)
 
 loadEntitySounds(vol)
@@ -115,9 +123,9 @@ loadEntitySounds(vol)
 ###FONTS###
 pygame.font.init()
 fonts = {
-    "gemCount": pygame.font.Font('freesansbold.ttf', 16),
-    "achievementTitle": pygame.font.Font('C:\\WINDOWS\\Fonts\\Inkfree.ttf', 15),
-    "achievementSubt": pygame.font.Font('C:\\WINDOWS\\Fonts\\Inkfree.ttf', 6),
+    "gemCount": pygame.font.Font(pygame.font.match_font('arial', bold=1), 16),
+    "achievementTitle": pygame.font.Font(pygame.font.match_font('inkfree'), 15),
+    "achievementSubt": pygame.font.Font(pygame.font.match_font('inkfree'), 6),
     }
 ###########
 
