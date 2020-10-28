@@ -205,7 +205,7 @@ class Player:
         self.xVel += knockback[0]
         self.yVel += knockback[1]
     def kill(self):
-        self.__init__(*self.spawnpoint)
+        self.__init__(*self.spawnpoint, self.save_file)
     def check_inside(self, x, y):
         if self.x<x and self.x+(40)>x and self.y+(18)>y and self.y-(48)<y:
             return (True, (self.x+(self.width/2))-x, self.y-y)
