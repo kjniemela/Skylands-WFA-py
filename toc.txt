@@ -1,8 +1,10 @@
 asciiIcon.txt
+autopytoexeConfig.json
 entities.py
 level.py
 main.py
 player.py
+Skylands Launcher.exe
 Skylands WFA.lnk
 assets/arm_far.png
 assets/arm_near.png
@@ -19,7 +21,10 @@ assets/body_walk6.png
 assets/body_walk7.png
 assets/body_walk8.png
 assets/chatacter_sheet_x400.png
+assets/credits.png
 assets/cursor.png
+assets/fadeBlack.png
+assets/fadeWhite.png
 assets/GDFSER-bullet.png
 assets/GDFSER-fire.wav
 assets/GDFSER-fire2-old1.wav
@@ -39,7 +44,6 @@ assets/ground1.png
 assets/hand_far.png
 assets/hand_near.png
 assets/head.png
-assets/health - Copy.png
 assets/health.png
 assets/HUD back.png
 assets/HUD.png
@@ -47,15 +51,14 @@ assets/icon.ico
 assets/icon.png
 assets/icon_old.png
 assets/island.png
-assets/jungle3 - Copy (2).png
-assets/jungle3 - Copy.png
 assets/jungle3.png
 assets/launcher_thumbnail.png
 assets/loading.png
 assets/menu.png
 assets/music.ogg
 assets/play.png
-assets/power - Copy.png
+assets/playMenu.png
+assets/playMenu2.png
 assets/power.png
 assets/Shoal-Der-arm1.png
 assets/Shoal-Der-idle1.png
@@ -71,14 +74,12 @@ assets/Shoal-Der-walk7.png
 assets/Shoal-Der-walk8.png
 assets/Shoal-Der-walk9.png
 assets/sky.png
-assets/standing.png
 assets/stars.png
 assets/STB Mk1.png
 assets/sun.png
 assets/The Light - The Album Leaf.wav
 assets/thumbnail.png
 assets/tree.png
-assets/walk1.png
 assets/water.png
 assets/achievements/ANewStart.png
 assets/achievements/BabySteps.png
@@ -103,4 +104,4 @@ assets/shoaldier/leg_far.png
 assets/shoaldier/leg_near.png
 assets/shoaldier/torso.png
 levels/level1
-saves/save1
+saves/save1.save
