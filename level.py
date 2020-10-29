@@ -155,13 +155,16 @@ class Level:
         d = 0
         self.platforms = []
         self.polyplats = [PolyPlat((79, 127, 0), [plat_x, -250])]
+        self.entities = []
         for i in range(times):
+            if randint(0, 5) == 0:
+                self.entities.append(self.entityTypes["shoaldier"](self, plat_x+94, plat_y+200))
             self.polyplats[0].points.append((plat_x, plat_y))
             plat_x += (188*Cos(d))
             plat_y += (188*Sin(d))
-            d += randint(-10, 10)
+            d = max(-50, min(50, d + randint(-10, 10)))
             if plat_y < -200:
-                d = randint(-10, 0)
+                d = randint(0, 50)
         self.polyplats[0].points.append((plat_x, -250))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
         for platform in self.platforms:

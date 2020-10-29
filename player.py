@@ -278,10 +278,10 @@ class Player:
                 self.y+(18)>platform.y-(platform.h/2) and\
                 self.y-(48)<platform.y+(platform.h/2):
                     self.touchingPlatform = True
-                    self.rightTouching = (self.x+(40))-(platform.x-(platform.w/2))
+                    self.rightTouching = (self.x+(self.width))-(platform.x-(platform.w/2))
                     self.leftTouching = (platform.x+(platform.w/2))-self.x
-                    self.upTouching = (self.y+(18))-(platform.y-(platform.h/2))
-                    self.downTouching = (platform.y+(platform.h/2))-(self.y-(48))
+                    self.upTouching = (self.y+(self.heightHead))-(platform.y-(platform.h/2))
+                    self.downTouching = (platform.y+(platform.h/2))-(self.y-(self.heightBody))
                     if self.downTouching > 0 and self.downTouching <= -(self.yVel-1):
                         if self.yVel < -20:
                             dmg = math.ceil((abs(self.yVel)-11)/8)
