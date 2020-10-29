@@ -1,3 +1,4 @@
+from random import randint
 try:
     import pygame
 except ModuleNotFoundError:
@@ -13,7 +14,8 @@ def loadLevelTextures():
     global platformTextures
     global bullet
     platformTextures = {
-        "ground1": pygame.image.load(resource_path('assets/ground1.png'))
+        "ground1": pygame.image.load(resource_path('assets/ground1.png')),
+        "grass1": pygame.image.load(resource_path('assets/grass1.png')),
         }
     bullet = pygame.image.load(resource_path('assets/GDFSER-bullet.png'))
 
@@ -118,6 +120,7 @@ class Level:
     def __init__(self, src, player):
 
         self.platforms = []
+        self.polyplats = []
         self.projectiles = []
         self.entities = []
         self.itemEntities = []
@@ -138,17 +141,36 @@ class Level:
         f.close()
         data = [i.split(" ") for i in data]
         for i in data:
-            if i[1] == '1':
-                self.platforms.append(Platform(i[0], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6])))
-            elif i[1] == '2':
-                pass#self.entities.append(self.entityTypes[i[0]](self, int(i[2]), int(i[3])))
+            if i[0] == 'plat':
+                self.platforms.append(Platform(i[1], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6])))
+            elif i[0] == 'poly':
+                self.polyplats.append(PolyPlat((int(i[1]), int(i[2]), int(i[3])), i[4:]))
+            elif i[0] == 'entity':
+                self.entities.append(self.entityTypes[i[1]](self, int(i[2]), int(i[3])))
 
+        self.generate(50)
+    def generate(self, times):
+        plat_x = -200
+        plat_y = 0
+        d = 0
+        self.platforms = []
+        self.polyplats = [PolyPlat((79, 127, 0), [plat_x, -250])]
+        for i in range(times):
+            self.polyplats[0].points.append((plat_x, plat_y))
+            plat_x += (188*Cos(d))
+            plat_y += (188*Sin(d))
+            d += randint(-10, 10)
+            if plat_y < -200:
+                d = randint(-10, 0)
+        self.polyplats[0].points.append((plat_x, -250))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
         for platform in self.platforms:
             if platform.d == 0:
                 win.blit(platform.texture, (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
             else:
                 blitRotateCenter(win, platform.texture, platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
+        for polyplat in self.polyplats:
+            pygame.draw.polygon(win, polyplat.color, [(x-camX, -(y-camY)) for x, y in polyplat.points])
         for entity in self.entities:
             if entity.tick():
                 entity.draw(camX, camY, win, mouseX, mouseY, winW, winH)
@@ -161,6 +183,12 @@ class Level:
             else:
                 del self.projectiles[self.projectiles.index(projectile)]
 
+class PolyPlat:
+    def __init__(self, color, points):
+        self.color = color
+        self.points = []
+        for i in range(0, len(points), 2):
+            self.points.append((int(points[i]), int(points[i+1])))
 class Platform:
     def __init__(self, texture, x, y, w, h, d):
         self.x, self.y, self.w, self.h, self.d = x, y, w, h, d

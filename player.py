@@ -232,11 +232,19 @@ class Player:
         y3 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
         x4 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
         y4 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
-        if ((platform.d+180)%360)-180 > 0:
+        return self.get_colliding_lines(x3, y3, x4, y4, platform.d)
+    def get_colliding_lines(self, x3, y3, x4, y4, d, down=True):
+        if ((d+180)%360)-180 > 0:
             col1 = line_collision((self.x+40, self.y+(self.heightHead), self.x+40, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
+            if not col1[0]:
+                col1 = line_collision((self.x, self.y+(self.heightHead), self.x, self.y-(self.heightBody)),
+                             (x3, y3, x4, y4))  
         else:
             col1 = line_collision((self.x, self.y+(self.heightHead), self.x, self.y-(self.heightBody)),
+                             (x3, y3, x4, y4))
+            if not col1[0]:
+                col1 = line_collision((self.x+40, self.y+(self.heightHead), self.x+40, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
         col2 = line_collision((self.x, self.y-(self.heightBody), self.x+(self.width), self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
@@ -251,7 +259,7 @@ class Player:
         if col2[0]:
             self.touchingPlatform = True
             #blitRotateCenter(self.win, headRight, 0, (col2[1],-col2[2]), (camX,camY))
-            if ((platform.d+180)%360)-180 > 0:
+            if ((d+180)%360)-180 > 0:
                 self.rightTouching = (self.x+(self.width))-col2[1]
             else:
                 self.leftTouching = col2[1]-self.x
@@ -323,6 +331,35 @@ class Player:
                         else:
                             self.x -= math.ceil(self.rightTouching)
                 self.x -= xVel
+        for polyplat in level.polyplats:
+            for i in range(len(polyplat.points)):# if polyplat.points[(i+1)%len(polyplat.points)][1]>polyplat.points[i][1] else -1
+                if self.get_colliding_lines(*polyplat.points[i], *polyplat.points[(i+1)%len(polyplat.points)],
+                1, True):
+                    if self.downTouching > 0:
+                        if self.yVel < -20:
+                            dmg = math.ceil((abs(self.yVel)-11)/8)
+                            self.yVel = 0
+                            self.damage(dmg, 0) #FALL DAMAGE
+                        else:
+                            self.yVel += 0
+                        self.y += self.downTouching-1
+                        self.jumping = 0
+                        self.falling = False
+                xVel = self.xVel
+                self.x += xVel
+                if self.get_colliding_lines(*polyplat.points[i], *polyplat.points[(i+1)%len(polyplat.points)],
+                1, False):
+                    if self.downTouching > 0 and self.leftTouching > 0:
+                        if self.downTouching < 6:
+                            self.y += self.downTouching
+                        else:
+                            self.x += math.ceil(self.leftTouching)
+                    if self.downTouching > 0 and self.rightTouching > 0:
+                        if self.downTouching < 6:
+                            self.y += self.downTouching
+                        else:
+                            self.x -= math.ceil(self.rightTouching)
+                self.x -= xVel
 
 class Bullet:
     def __init__(self, x, y, d, speed, owner):
@@ -346,11 +383,27 @@ class Bullet:
         self.upTouching = 0
         self.downTouching = 0
         for platform in level.platforms:
-            if self.x+self.xVel<platform.x+platform.w and\
-            self.x+self.xVel>platform.x and\
-            self.y+self.yVel>platform.y-platform.h and\
-            self.y+self.yVel<platform.y:
-                return True
+            if platform.d == 0:
+                if self.x<platform.x+(platform.w/2) and\
+                    self.x>platform.x-(platform.w/2) and\
+                    self.y>platform.y-(platform.h/2) and\
+                    self.y<platform.y+(platform.h/2):
+                    return True
+            else:
+                x3 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+                y3 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+                x4 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+                y4 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+                col = line_collision((self.x, self.y, self.x-self.xVel, self.y-self.yVel),
+                                     (x3, y3, x4, y4))
+                if col[0]:
+                    return True
+        for polyplat in level.polyplats:
+            for i in range(len(polyplat.points)):# if polyplat.points[(i+1)%len(polyplat.points)][1]>polyplat.points[i][1] else -1
+                col = line_collision((self.x, self.y, self.x-self.xVel, self.y-self.yVel),
+                                     (*polyplat.points[i], *polyplat.points[(i+1)%len(polyplat.points)]))
+                if col[0]:
+                    return True
         for entity in level.entities:
             if not entity == self.owner:
                 hit, xD, yD = entity.check_inside(self.x, self.y)

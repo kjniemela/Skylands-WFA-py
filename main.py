@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 4
+VERSION_PATCH = 5
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -309,8 +309,6 @@ def startMusic(music):
         curChannel = music.play(-1)
         currentlyPlaying = music
 
-player.win = win #DEBUG ONLY
-
 while run:
     clock.tick(60)
     if playMusic:
@@ -367,7 +365,8 @@ while run:
             player.yVel = 0
     if keys[pygame.K_SPACE] and player.gunCooldown == 0:
         GDFSER_shoot.play()
-        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), 20, player))
+        bulletspeed = 20
+        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), bulletspeed, player))
         player.gunCooldown = 30
 
     if player.gunCooldown > 0:
