@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 3
+VERSION_PATCH = 4
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -106,8 +106,8 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
-vol = 0.5
-playMusic = True
+vol = 0.1
+playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
@@ -180,6 +180,7 @@ class Fade:
 
 fade = Fade(pygame.image.load(resource_path('assets/fadeWhite.png')).convert(),\
             pygame.image.load(resource_path('assets/fadeBlack.png')).convert())
+##########
 
 clock = pygame.time.Clock()
 creditsY = 0
@@ -239,6 +240,7 @@ winW, winH = 500, 480
 fpst = time()
 fps = 0
 FPS = 60
+fly = False
 
 if playMusic:
     curChannel = menuMusic.play(-1)
@@ -307,9 +309,12 @@ def startMusic(music):
         curChannel = music.play(-1)
         currentlyPlaying = music
 
+player.win = win #DEBUG ONLY
+
 while run:
     clock.tick(60)
-    startMusic(gameMusic)
+    if playMusic:
+        startMusic(gameMusic)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             if not save_file == None:
@@ -350,12 +355,16 @@ while run:
     if player.falling:
         player.yVel -= level.gravity
     
-    if keys[pygame.K_w] and player.touchingPlatform and player.jumping == 0:
+    if keys[pygame.K_w] and player.touchingPlatform and player.jumping == 0 and not fly:
         player.jumping = 1
         player.yVel += 10
-    if keys[pygame.K_s]:
-        player.yVel = 0
-        #player.yVel -= 1
+    if fly:
+        if keys[pygame.K_w]:
+            player.yVel = 5
+        elif keys[pygame.K_s]:
+            player.yVel = -5
+        elif not  keys[pygame.K_g]:  
+            player.yVel = 0
     if keys[pygame.K_SPACE] and player.gunCooldown == 0:
         GDFSER_shoot.play()
         level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), 20, player))

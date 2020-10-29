@@ -139,13 +139,16 @@ class Level:
         data = [i.split(" ") for i in data]
         for i in data:
             if i[1] == '1':
-                self.platforms.append(Platform(i[0], int(i[2]), int(i[3]), int(i[4]), int(i[5])))
+                self.platforms.append(Platform(i[0], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6])))
             elif i[1] == '2':
-                self.entities.append(self.entityTypes[i[0]](self, int(i[2]), int(i[3])))
+                pass#self.entities.append(self.entityTypes[i[0]](self, int(i[2]), int(i[3])))
 
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
         for platform in self.platforms:
-            win.blit(platform.texture, (platform.x-camX, -(platform.y-camY)))
+            if platform.d == 0:
+                win.blit(platform.texture, (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
+            else:
+                blitRotateCenter(win, platform.texture, platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
         for entity in self.entities:
             if entity.tick():
                 entity.draw(camX, camY, win, mouseX, mouseY, winW, winH)
@@ -159,6 +162,6 @@ class Level:
                 del self.projectiles[self.projectiles.index(projectile)]
 
 class Platform:
-    def __init__(self, texture, x, y, w, h):
-        self.x, self.y, self.w, self.h = x, y, w, h
+    def __init__(self, texture, x, y, w, h, d):
+        self.x, self.y, self.w, self.h, self.d = x, y, w, h, d
         self.texture = platformTextures[texture]
