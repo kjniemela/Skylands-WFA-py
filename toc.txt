@@ -1,8 +1,10 @@
 asciiIcon.txt
 autopytoexeConfig.json
+collision.py
 entities.py
 level.py
 main.py
+player - Copy.py
 player.py
 Skylands Launcher.exe
 Skylands WFA.lnk
