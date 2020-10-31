@@ -4,7 +4,6 @@ collision.py
 entities.py
 level.py
 main.py
-player - Copy.py
 player.py
 Skylands Launcher.exe
 Skylands WFA.lnk
@@ -41,7 +40,6 @@ assets/gem6.png
 assets/gem7.png
 assets/gem8.png
 assets/gem9.png
-assets/ground1 - Copy.png
 assets/ground1.png
 assets/hand_far.png
 assets/hand_near.png
