@@ -6,6 +6,9 @@ import sys
 from player import Bullet
 from collision import *
 
+def distance(x1, y1, x2, y2):
+    return math.sqrt((x2-x1)**2 + (y2-y1)**2)
+
 def Sin(x):
     return math.sin(math.radians(x))
 def Cos(x):
@@ -81,6 +84,9 @@ class Entity:
     kills = 0
     hp = 1
     is_dead = False
+    aim_target = 0
+    aim = 0
+    brain = {}
     def __init__(self, level, x, y):
         self.level = level
         self.player = level.player
@@ -107,6 +113,11 @@ class Entity:
             return (True, (self.x+(self.width/2))-x, self.y-y)
         else:
             return (False, 0, 0)
+    def can_see(self, target):
+        for platform in self.level.platforms:
+            if platform.collides_with_line(self.x, self.y, target.x, target.y):
+                return False
+        return True
     def get_colliding_platform(self, platform, down):
         x3 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
         y3 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
@@ -212,9 +223,9 @@ class Entity:
                             self.x -= math.ceil(self.rightTouching)
                 self.x -= xVel
         for polyplat in level.polyplats:
-            for i in range(len(polyplat.points)):# if polyplat.points[(i+1)%len(polyplat.points)][1]>polyplat.points[i][1] else -1
+            for i in range(len(polyplat.points)):# 
                 if self.get_colliding_lines(*polyplat.points[i], *polyplat.points[(i+1)%len(polyplat.points)],
-                1, True):
+                1 if polyplat.points[(i+1)%len(polyplat.points)][1]>polyplat.points[i][1] else -1, True):
                     if self.downTouching > 0:
                         if self.yVel < -20:
                             dmg = math.ceil((abs(self.yVel)-11)/8)
@@ -256,6 +267,8 @@ class Shoaldier(Entity):
         self.gunY = 0
         self.gunCooldown = 100
         self.hp = 3
+        self.brain['fire'] = False
+        self.brain['jump'] = False
     def tick(self):
         if not super().tick():
             return False
@@ -269,11 +282,11 @@ class Shoaldier(Entity):
         if self.falling:
             self.yVel -= self.level.gravity
 
-        if time()%2<0.1 and self.touchingPlatform and self.jumping == 0 and False:
+        if time()%2<0.1 and self.touchingPlatform and self.jumping == 0 and self.brain['jump']:
             self.jumping = 1
             self.yVel += 10
             
-        if True and self.gunCooldown == 0:
+        if self.brain['fire'] and self.gunCooldown == 0:
             #shoaldier_fire.set_volume(1*vol)
             #shoaldier_fire.play()
             self.level.projectiles.append(Bullet(self.gunX, -self.gunY, self.rightArm+(self.rightHand*self.facing), 5, self))
@@ -281,11 +294,22 @@ class Shoaldier(Entity):
 
         if self.gunCooldown > 0:
             self.gunCooldown -= 1
+
+        if self.can_see(self.player):
+            self.aim_target = -math.degrees(math.atan2(self.y-self.player.y, self.player.x-self.x))
+            self.brain['fire'] = True
+        else:
+            self.aim_target = 180
+            self.brain['fire'] = False
+        if abs(self.aim_target-self.aim) > 180:
+            self.aim += ((self.aim_target%360)-(self.aim%360))*0.1
+        else:
+            self.aim += (self.aim_target-self.aim)*0.1
             
         return True
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
-        head_rot = -math.degrees(math.atan2(self.y-self.player.y, self.player.x-self.x))
-        head_rot_left = math.degrees(math.atan2(self.y-self.player.y, self.x-self.player.x))
+        head_rot = self.aim
+        head_rot_left = ((360+(head_rot))%360)-180
         self.rightArm = head_rot-(15*self.facing)
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
         self.rightHand = 15

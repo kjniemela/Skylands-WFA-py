@@ -97,7 +97,10 @@ class Player:
     def __init__(self, x, y, save_file):
         self.save_file = save_file
         self.spawnpoint = (x, y)
+        self.xOffset = 0
         self.width = 40
+        self.lastXOffset = 0
+        self.lastWidth = 0
         self.heightHead = 24
         self.heightBody = 48
         self.walkFrame = 0
@@ -125,6 +128,10 @@ class Player:
             self.maxHp = 10
         else:
             self.load(self.save_file)
+    def set_spawn(self, x, y):
+        self.x = x
+        self.y = y
+        self.spawnpoint = (x, y)
     def load(self, save_file):
         with open(save_file) as f:
             data = f.read().split('\n')
@@ -152,8 +159,11 @@ class Player:
                 ]
             f.write('\n'.join(data))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        pygame.draw.rect(win, (0, 0, 0),
+                         ((self.x+self.xOffset)-camX, -((self.y+self.heightHead)-camY),
+                          self.width, self.heightHead+self.heightBody))
         head_rot = -math.degrees(math.atan2(mouseY-(180+15), mouseX-240))
-        head_rot_left = math.degrees(math.atan2(mouseY-(180+15), 240-mouseX))
+        head_rot_left = ((360+(head_rot))%360)-180#math.degrees(math.atan2(mouseY-(180+15), 240-mouseX))
         self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
         self.rightHand = 15
@@ -235,18 +245,23 @@ class Player:
         return self.get_colliding_lines(x3, y3, x4, y4, platform.d)
     def get_colliding_lines(self, x3, y3, x4, y4, d, down=True):
         if ((d+180)%360)-180 > 0:
-            col1 = line_collision((self.x+40, self.y+(self.heightHead), self.x+40, self.y-(self.heightBody)),
+            col1 = line_collision((self.x+self.width+self.xOffset, self.y+(self.heightHead),
+                                   self.x+self.width+self.xOffset, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
             if not col1[0]:
-                col1 = line_collision((self.x, self.y+(self.heightHead), self.x, self.y-(self.heightBody)),
+                col1 = line_collision((self.x+self.xOffset, self.y+(self.heightHead),
+                                       self.x+self.xOffset, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))  
         else:
-            col1 = line_collision((self.x, self.y+(self.heightHead), self.x, self.y-(self.heightBody)),
+            col1 = line_collision((self.x+self.xOffset, self.y+(self.heightHead),
+                                   self.x+self.xOffset, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
             if not col1[0]:
-                col1 = line_collision((self.x+40, self.y+(self.heightHead), self.x+40, self.y-(self.heightBody)),
+                col1 = line_collision((self.x+self.width+self.xOffset, self.y+(self.heightHead),
+                                       self.x+self.width+self.xOffset, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
-        col2 = line_collision((self.x, self.y-(self.heightBody), self.x+(self.width), self.y-(self.heightBody)),
+        col2 = line_collision((self.x+self.xOffset, self.y-(self.heightBody),
+                               self.x+self.width+self.xOffset, self.y-(self.heightBody)),
                              (x3, y3, x4, y4))
         
         #blitRotateCenter(self.win, headRight, 0, (x3, -y3), (camX,camY))
@@ -255,12 +270,12 @@ class Player:
         if col1[0]:
             self.touchingPlatform = True
             #blitRotateCenter(self.win, headRight, 0, (col[1],-col[2]), (camX,camY))
-            self.downTouching = col1[2]-(self.y-(48))
+            self.downTouching = col1[2]-(self.y-(self.heightBody))
         if col2[0]:
             self.touchingPlatform = True
             #blitRotateCenter(self.win, headRight, 0, (col2[1],-col2[2]), (camX,camY))
             if ((d+180)%360)-180 > 0:
-                self.rightTouching = (self.x+(self.width))-col2[1]
+                self.rightTouching = (self.x+self.width+self.xOffset)-col2[1]
             else:
                 self.leftTouching = col2[1]-self.x
         return col1[0] if down else col2[0]
@@ -273,16 +288,16 @@ class Player:
         self.touchingPlatform = False
         for platform in level.platforms:
             if platform.d == 0:
-                if self.x<platform.x+(platform.w/2) and\
-                self.x+(40)>platform.x-(platform.w/2) and\
-                self.y+(18)>platform.y-(platform.h/2) and\
-                self.y-(48)<platform.y+(platform.h/2):
+                if self.x+self.xOffset<platform.x+(platform.w/2) and\
+                self.x+(self.width+self.xOffset)>platform.x-(platform.w/2) and\
+                self.y+(self.heightHead)>platform.y-(platform.h/2) and\
+                self.y-(self.heightBody)<platform.y+(platform.h/2):
                     self.touchingPlatform = True
-                    self.rightTouching = (self.x+(self.width))-(platform.x-(platform.w/2))
-                    self.leftTouching = (platform.x+(platform.w/2))-self.x
+                    self.rightTouching = (self.x+(self.width+self.xOffset))-(platform.x-(platform.w/2))
+                    self.leftTouching = (platform.x+(platform.w/2))-(self.x+self.xOffset)
                     self.upTouching = (self.y+(self.heightHead))-(platform.y-(platform.h/2))
                     self.downTouching = (platform.y+(platform.h/2))-(self.y-(self.heightBody))
-                    if self.downTouching > 0 and self.downTouching <= -(self.yVel-1):
+                    if self.downTouching > 0 and self.downTouching <= -(self.yVel-2):
                         if self.yVel < -20:
                             dmg = math.ceil((abs(self.yVel)-11)/8)
                             self.yVel = 0
@@ -295,12 +310,12 @@ class Player:
                     if self.upTouching > 0 and self.upTouching <= self.yVel:
                         self.yVel = 0
                         self.y -= math.ceil(self.upTouching)
-                    if self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel: #this needs to be the relative xVel between the player and the platform
+                    if self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel+((self.xOffset+self.width)-(self.lastXOffset+self.lastWidth)): #this needs to be the relative xVel between the player and the platform
                         self.xVel = 0
                         self.x -= math.ceil(self.rightTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
-                    if self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= -self.xVel: #this needs to be the relative xVel between the player and the platform
+                    if self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= (-self.xVel)+(self.lastXOffset-self.xOffset): #this needs to be the relative xVel between the player and the platform
                         self.xVel = 0
                         self.x += math.ceil(self.leftTouching)
                         if self.downTouching < 6:
@@ -331,35 +346,8 @@ class Player:
                         else:
                             self.x -= math.ceil(self.rightTouching)
                 self.x -= xVel
-        for polyplat in level.polyplats:
-            for i in range(len(polyplat.points)):# if polyplat.points[(i+1)%len(polyplat.points)][1]>polyplat.points[i][1] else -1
-                if self.get_colliding_lines(*polyplat.points[i], *polyplat.points[(i+1)%len(polyplat.points)],
-                1, True):
-                    if self.downTouching > 0:
-                        if self.yVel < -20:
-                            dmg = math.ceil((abs(self.yVel)-11)/8)
-                            self.yVel = 0
-                            self.damage(dmg, 0) #FALL DAMAGE
-                        else:
-                            self.yVel += 0
-                        self.y += self.downTouching-1
-                        self.jumping = 0
-                        self.falling = False
-                xVel = self.xVel
-                self.x += xVel
-                if self.get_colliding_lines(*polyplat.points[i], *polyplat.points[(i+1)%len(polyplat.points)],
-                1, False):
-                    if self.downTouching > 0 and self.leftTouching > 0:
-                        if self.downTouching < 6:
-                            self.y += self.downTouching
-                        else:
-                            self.x += math.ceil(self.leftTouching)
-                    if self.downTouching > 0 and self.rightTouching > 0:
-                        if self.downTouching < 6:
-                            self.y += self.downTouching
-                        else:
-                            self.x -= math.ceil(self.rightTouching)
-                self.x -= xVel
+        self.lastXOffset = self.xOffset
+        self.lastWidth = self.width
 
 class Bullet:
     def __init__(self, x, y, d, speed, owner):
@@ -369,6 +357,7 @@ class Bullet:
         self.owner = owner
         self.xVel = (Cos(d)*(speed))#+owner.xVel
         self.yVel = (Sin(d)*(speed))#+owner.yVel
+        self.speed = speed
         self.age = 0
     def tick(self):
         self.x += self.xVel
@@ -376,6 +365,14 @@ class Bullet:
         self.age += 1
         #self.yVel -= 1
         return 0 < self.age < 100
+    def check_forward(self, pr, platform):
+        if self.x+(self.xVel*pr)<platform.x+(platform.w/2) and\
+            self.x+(self.xVel*pr)>platform.x-(platform.w/2) and\
+            self.y+(self.yVel*pr)>platform.y-(platform.h/2) and\
+            self.y+(self.yVel*pr)<platform.y+(platform.h/2):
+            return True
+        else:
+            return False
     def get_touching(self, level):
         self.touchingPlatform = False
         self.rightTouching = 0
@@ -389,6 +386,12 @@ class Bullet:
                     self.y>platform.y-(platform.h/2) and\
                     self.y<platform.y+(platform.h/2):
                     return True
+                elif distance(self.x, self.y, platform.x, platform.y)<=max(platform.w,platform.h):
+                    pr = -1
+                    while abs(pr*self.speed)>2:
+                        pr *= 0.9
+                        if self.check_forward(pr, platform):
+                            return True
             else:
                 x3 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
                 y3 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))

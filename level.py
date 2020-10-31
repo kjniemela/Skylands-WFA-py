@@ -16,6 +16,16 @@ def loadLevelTextures():
     platformTextures = {
         "ground1": pygame.image.load(resource_path('assets/ground1.png')),
         "grass1": pygame.image.load(resource_path('assets/grass1.png')),
+        "tree": pygame.image.load(resource_path('assets/tree.png')),
+        "lab1": pygame.image.load(resource_path('assets/lab1.png')).convert(),
+        "lab2": pygame.image.load(resource_path('assets/lab2.png')).convert(),
+        "lab3": pygame.image.load(resource_path('assets/lab3.png')).convert(),
+        "lab4": pygame.image.load(resource_path('assets/lab4.png')).convert(),
+        "lab_back1": pygame.image.load(resource_path('assets/lab_back1.png')),
+        "lab_back2": pygame.image.load(resource_path('assets/lab_back2.png')),
+        "lab_back3": pygame.image.load(resource_path('assets/lab_back3.png')),
+        "lab_back4": pygame.image.load(resource_path('assets/lab_back4.png')),
+        "door1": pygame.image.load(resource_path('assets/door1.png')),
         }
     bullet = pygame.image.load(resource_path('assets/GDFSER-bullet.png'))
 
@@ -120,13 +130,19 @@ class Level:
     def __init__(self, src, player):
 
         self.platforms = []
+        self.overlays = []
+        self.background = []
+        self.backdrop = []
         self.polyplats = []
         self.projectiles = []
         self.entities = []
         self.itemEntities = []
 
+        self.controls = {}
+
         self.player = player
         self.player.level = self
+        self.src = src
 
         self.entityTypes = {
             'shoaldier': Shoaldier
@@ -142,18 +158,38 @@ class Level:
         data = [i.split(" ") for i in data]
         for i in data:
             if i[0] == 'plat':
-                self.platforms.append(Platform(i[1], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6])))
-            elif i[0] == 'poly':
+                self.platforms.append(Platform(i[1], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6]), i[1] != "none"))
+                if len(i) > 7:
+                    self.controls[i[7]] = self.platforms[-1]
+            elif i[0] == 'platc':
+                self.platforms.append(Platform(i[1], int(i[2])+(int(i[4])//2), int(i[3])-(int(i[5])//2), int(i[4]), int(i[5]), int(i[6]), i[1] != "none"))
+                if len(i) > 7:
+                    self.controls[i[7]] = self.platforms[-1]
+            elif i[0] == 'overlay':
+                self.overlays.append(Platform(i[1], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6])))
+            elif i[0] == 'backg':
+                self.background.append(Platform(i[1], int(i[2]), int(i[3]), int(i[4]), int(i[5]), int(i[6])))
+            elif i[0] == 'backdr':
+                self.backdrop.append(((int(i[1]), int(i[2]), int(i[3])), (int(i[4]), int(i[5]), int(i[6]), int(i[7]))))
+            elif i[0] == 'poly':##Never use polyplats. Use a combination of platforms instead
                 self.polyplats.append(PolyPlat((int(i[1]), int(i[2]), int(i[3])), i[4:]))
             elif i[0] == 'entity':
                 self.entities.append(self.entityTypes[i[1]](self, int(i[2]), int(i[3])))
-
-        self.generate(50)
+            elif i[0] == 'spawn':
+                self.player.set_spawn(int(i[1]), int(i[2]))
+            elif i[0] == 'script':
+                from scripts import get_script
+                script = get_script(i[1])
+                if not script == None:
+                    self.tick = script
+        #self.generate(50)\
+    def tick(self, level):
+        pass
     def generate(self, times):
         plat_x = -200
         plat_y = 0
         d = 0
-        self.platforms = []
+        self.platforms = [Platform("ground1", plat_x-94, plat_y-63, 188, 125, 0)]
         self.polyplats = [PolyPlat((79, 127, 0), [plat_x, -250])]
         self.entities = []
         for i in range(times):
@@ -167,11 +203,45 @@ class Level:
                 d = randint(0, 50)
         self.polyplats[0].points.append((plat_x, -250))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        self.tick(self)
+        for backdr in self.backdrop:
+            if distance(self.player.x, self.player.y, backdr[1][0], backdr[1][1]) < max(backdr[1][2]/2, backdr[1][3]/2)+240:
+                pygame.draw.rect(win, backdr[0], (backdr[1][0]-camX-backdr[1][2]/2, -(backdr[1][1]-camY)-backdr[1][3]/2, *backdr[1][2:]))
+        for backg in self.background:
+            if distance(self.player.x, self.player.y, backg.x, backg.y) < max(backg.w/2, backg.h/2)+400:
+                if backg.d == 0:
+                    win.blit(backg.texture, (backg.x-(backg.w/2)-camX, -(backg.y+(backg.h/2)-camY)))
+                else:
+                    blitRotateCenter(win, backg.texture, backg.d, (backg.x-(backg.w/2),-(backg.y+(backg.h/2))), (camX,camY))
         for platform in self.platforms:
-            if platform.d == 0:
-                win.blit(platform.texture, (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
+            if platform.visible:
+                if distance(self.player.x, self.player.y, platform.x, platform.y) < max(platform.w/2, platform.h/2)+240:
+                    if platform.d == 0:
+                        win.blit(platform.texture, (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
+                    else:
+                        blitRotateCenter(win, platform.texture, platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
             else:
-                blitRotateCenter(win, platform.texture, platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
+                if platform.d == 0:
+                    pygame.draw.rect(win, (0, 0, 0),
+                                 (platform.x-camX-platform.w/2,
+                                  -(platform.y-camY)-platform.h/2,
+                                  platform.w, platform.h))
+                else:     
+                    x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+                    y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+                    x2 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+                    y2 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+                    
+                    x3 = platform.x-((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
+                    y3 = platform.y-((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+                    x4 = platform.x+((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
+                    y4 = platform.y-((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+                    pygame.draw.polygon(win, (0, 0, 0), [
+                        (x1-camX, -(y1-camY)),
+                        (x2-camX, -(y2-camY)),
+                        (x4-camX, -(y4-camY)),
+                        (x3-camX, -(y3-camY)),
+                        ])
         for polyplat in self.polyplats:
             pygame.draw.polygon(win, polyplat.color, [(x-camX, -(y-camY)) for x, y in polyplat.points])
         for entity in self.entities:
@@ -185,14 +255,62 @@ class Level:
                 blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
             else:
                 del self.projectiles[self.projectiles.index(projectile)]
+    def draw_overlays(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        for overlay in self.overlays:
+            if distance(self.player.x, self.player.y, overlay.x, overlay.y) < max(overlay.w/2, overlay.h/2)+400:
+                if overlay.d == 0:
+                    overlay.texture.set_alpha(100)
+                    win.blit(overlay.texture, (overlay.x-(overlay.w/2)-camX, -(overlay.y+(overlay.h/2)-camY)))
+                else:
+                    blitRotateCenter(win, overlay.texture, overlay.d, (overlay.x-(overlay.w/2),-(overlay.y+(overlay.h/2))), (camX,camY))
 
-class PolyPlat:
+class PolyPlat:##DEFUNCT
     def __init__(self, color, points):
         self.color = color
         self.points = []
         for i in range(0, len(points), 2):
             self.points.append((int(points[i]), int(points[i+1])))
+
+cursor = pygame.image.load(resource_path('assets/cursor.png'))
+            
 class Platform:
-    def __init__(self, texture, x, y, w, h, d):
-        self.x, self.y, self.w, self.h, self.d = x, y, w, h, d
-        self.texture = platformTextures[texture]
+    def __init__(self, texture, x, y, w, h, d, visible=True):
+        self.x, self.y, self.w, self.h, self.d, self.visible = x, y, w, h, d, visible
+        if visible == True:
+            self.texture = platformTextures[texture]
+    def collides_with_line(self, px1, py1, px2, py2):
+        x1 = self.x-((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
+        y1 = self.y+((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
+        x2 = self.x+((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
+        y2 = self.y+((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
+        
+        x3 = self.x-((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
+        y3 = self.y-((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
+        x4 = self.x+((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
+        y4 = self.y-((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
+
+##        blitRotateCenter(win, cursor, 0, (x1-8, -y1-8), (camX,camY))
+##        blitRotateCenter(win, cursor, 0, (x2-8, -y2-8), (camX,camY))
+##        blitRotateCenter(win, cursor, 0, (x3-8, -y3-8), (camX,camY))
+##        blitRotateCenter(win, cursor, 0, (x4-8, -y4-8), (camX,camY))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x1-camX, -(y1-camY)), (x2-camX, -(y2-camY)))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x2-camX, -(y2-camY)), (x4-camX, -(y4-camY)))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x3-camX, -(y3-camY)), (x4-camX, -(y4-camY)))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x3-camX, -(y3-camY)), (x1-camX, -(y1-camY)))
+        #self.d = (self.d+1)%360
+
+        if line_collision((px1, py1, px2, py2), (x1, y1, x2, y2))[0]:
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        elif line_collision((px1, py1, px2, py2), (x3, y3, x4, y4))[0]:
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        elif line_collision((px1, py1, px2, py2), (x2, y2, x4, y4))[0]:
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        elif line_collision((px1, py1, px2, py2), (x3, y3, x1, y1))[0]:
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        else:
+            #pygame.draw.aaline(win, (0, 255, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return False

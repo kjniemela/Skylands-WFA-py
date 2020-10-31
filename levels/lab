@@ -1,0 +1,43 @@
+#spawn -640 -310
+script lab
+overlay lab1 -375 313 750 627 0
+overlay lab2 375 313 750 627 0
+overlay lab3 -375 -313 750 627 0
+overlay lab4 375 -313 750 627 0
+backg lab_back1 -375 348 750 562 0
+backg lab_back2 375 348 750 562 0
+backg lab_back3 -375 -201 750 562 0
+backg lab_back4 375 -201 750 562 0
+backdr 58 58 58 0 0 1600 1200
+platc none -760 630 20 1255 0
+platc none -680 -407 1420 26 0
+plat none -616 -400 64 30 0
+plat none -615 -252 80 8 0
+plat none -634 -239 44 10 38
+plat none -596 -239 44 10 -38
+plat none -615 -238 10 32 0
+platc none -740 -332 60 100 0
+platc none -740 -118 50 20 0
+platc none -560 -82 110 20 0
+platc none -247 -100 6 310 0
+platc none -740 128 1116 50 0
+platc none -455 -338 85 70 0
+platc none -332 -73 179 27 0
+platc none -306 -282 60 130 0
+platc none -250 79 10 40 0
+platc door1 -246 39 4 120 0 door_1
+platc none -90 -155 115 10 0
+platc none -210 -340 120 10 0
+platc none -42 -335 120 10 0
+platc none -24 77 9 232 0
+nentity shoaldier 0 -250
+platc none 180 -92 8 241 0
+platc none 188 -326 68 8 0
+platc none 105 -257 75 10 0
+platc none 80 -82 108 10 0
+platc none 247 -334 9 73 0
+platc none 289 -284 118 10 0
+platc none 247 78 8 226 0
+platc none 742 630 20 1255 0
+platc none 478 -253 118 10 0
+platc none 666 80 20 270 0

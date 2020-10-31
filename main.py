@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 5
+VERSION_PATCH = 6
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -106,7 +106,7 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
-vol = 0.1
+vol = 0.25
 playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
@@ -212,6 +212,7 @@ def drawGameWindow():
         win.fill((240, 240, 255))
         level.draw(camX, camY, win, mouseX, mouseY, winW, winH)
         player.draw(camX, camY, win, mouseX, mouseY, winW, winH)
+        level.draw_overlays(camX, camY, win, mouseX, mouseY, winW, winH)
 
         win.blit(HUD_back, (293, 28))
         drawHUD(win, player, fonts)
@@ -229,13 +230,13 @@ print(asciiIcon)
 print("Skylands: Worlds from Above v%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
 player = Player(125, 25, save_file)
-level = Level("level1", player)
+level = Level("lab", player)
 
 run = True
 runMenu = True
 gameState = "mainMenu"
 mouseX, mouseY = 0, 0
-camX, camY = 0, 0
+camX, camY = ((player.x+5)-(480/2)), ((player.y+20)+(360/2))
 winW, winH = 500, 480
 fpst = time()
 fps = 0
@@ -350,19 +351,33 @@ while run:
     player.xVel *= 0.6
     if abs(player.xVel) < 0.01:
         player.xVel = 0
-    if player.falling:
+    if player.falling and not fly:
         player.yVel -= level.gravity
     
     if keys[pygame.K_w] and player.touchingPlatform and player.jumping == 0 and not fly:
         player.jumping = 1
         player.yVel += 10
+    if keys[pygame.K_f]:
+        if not fly:
+            player.yVel += 5
+            fly = True
+    elif keys[pygame.K_r]:
+        fly = False
+    if keys[pygame.K_t]:
+        level = Level(level.src, player)
     if fly:
         if keys[pygame.K_w]:
             player.yVel = 5
         elif keys[pygame.K_s]:
             player.yVel = -5
-        elif not  keys[pygame.K_g]:  
-            player.yVel = 0
+        elif not  keys[pygame.K_g]:
+            player.yVel *= 0.9
+    if keys[pygame.K_x]:
+        player.width = 30
+        player.xOffset = 5
+    else:
+        player.xOffset = 0
+        player.width = 40
     if keys[pygame.K_SPACE] and player.gunCooldown == 0:
         GDFSER_shoot.play()
         bulletspeed = 20
@@ -389,6 +404,8 @@ while run:
         fpst = time()
         FPS = fps
         fps = 0
-    pygame.display.set_caption("Skylands    FPS: %d X: %d Y: %d" % (FPS, player.x, player.y))
+    pygame.display.set_caption("Skylands %d.%d.%d    FPS: %d X: %d Y: %d ~ %d %d"\
+                               % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
+                                  FPS, player.x, player.y, camX+mouseX, camY-mouseY))
 
 pygame.quit()

@@ -1,9 +1,11 @@
-poly 79 127 0 -296 -245 -596 -245 -596 -27 -496 -35 -396 -25
 plat ground1 -88 -125 188 125 -45
 plat ground1 -202 -80 188 125 0
+plat ground1 -88 -200 188 125 0
 plat ground1 100 -200 188 125 0
+plat ground1 288 -200 188 125 0
 plat ground1 288 -167 188 125 20
 plat ground1 446 -140 188 125 0
+backg tree 446 90 248 376 0
 plat ground1 634 -145 188 125 0
 plat ground1 822 -150 188 125 0
 plat ground1 1010 -150 188 125 0
