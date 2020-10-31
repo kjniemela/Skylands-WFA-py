@@ -1,10 +1,12 @@
 asciiIcon.txt
 autopytoexeConfig.json
 collision.py
+entities - Copy.py
 entities.py
 level.py
 main.py
 player.py
+scripts.py
 Skylands Launcher.exe
 Skylands WFA.lnk
 assets/arm_far.png
@@ -24,6 +26,7 @@ assets/body_walk8.png
 assets/chatacter_sheet_x400.png
 assets/credits.png
 assets/cursor.png
+assets/door1.png
 assets/fadeBlack.png
 assets/fadeWhite.png
 assets/GDFSER-bullet.png
@@ -40,6 +43,7 @@ assets/gem6.png
 assets/gem7.png
 assets/gem8.png
 assets/gem9.png
+assets/grass1.png
 assets/ground1.png
 assets/hand_far.png
 assets/hand_near.png
@@ -52,6 +56,14 @@ assets/icon.png
 assets/icon_old.png
 assets/island.png
 assets/jungle3.png
+assets/lab1.png
+assets/lab2.png
+assets/lab3.png
+assets/lab4.png
+assets/lab_back1.png
+assets/lab_back2.png
+assets/lab_back3.png
+assets/lab_back4.png
 assets/launcher_thumbnail.png
 assets/loading.png
 assets/menu.png
@@ -103,5 +115,7 @@ assets/shoaldier/jaw.png
 assets/shoaldier/leg_far.png
 assets/shoaldier/leg_near.png
 assets/shoaldier/torso.png
+levels/lab
 levels/level1
+levels/level2
 saves/save1.save
