@@ -17,10 +17,14 @@ def loadLevelTextures():
         "ground1": pygame.image.load(resource_path('assets/ground1.png')),
         "grass1": pygame.image.load(resource_path('assets/grass1.png')),
         "tree": pygame.image.load(resource_path('assets/tree.png')),
-        "lab1": pygame.image.load(resource_path('assets/lab1.png')).convert(),
-        "lab2": pygame.image.load(resource_path('assets/lab2.png')).convert(),
-        "lab3": pygame.image.load(resource_path('assets/lab3.png')).convert(),
-        "lab4": pygame.image.load(resource_path('assets/lab4.png')).convert(),
+##        "lab1": pygame.image.load(resource_path('assets/lab1.png')).convert(),
+##        "lab2": pygame.image.load(resource_path('assets/lab2.png')).convert(),
+##        "lab3": pygame.image.load(resource_path('assets/lab3.png')).convert(),
+##        "lab4": pygame.image.load(resource_path('assets/lab4.png')).convert(),
+        "lab1": pygame.image.load(resource_path('assets/lab1.png')),
+        "lab2": pygame.image.load(resource_path('assets/lab2.png')),
+        "lab3": pygame.image.load(resource_path('assets/lab3.png')),
+        "lab4": pygame.image.load(resource_path('assets/lab4.png')),
         "lab_back1": pygame.image.load(resource_path('assets/lab_back1.png')),
         "lab_back2": pygame.image.load(resource_path('assets/lab_back2.png')),
         "lab_back3": pygame.image.load(resource_path('assets/lab_back3.png')),
@@ -220,28 +224,28 @@ class Level:
                         win.blit(platform.texture, (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
                     else:
                         blitRotateCenter(win, platform.texture, platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
-            else:
-                if platform.d == 0:
-                    pygame.draw.rect(win, (0, 0, 0),
-                                 (platform.x-camX-platform.w/2,
-                                  -(platform.y-camY)-platform.h/2,
-                                  platform.w, platform.h))
-                else:     
-                    x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
-                    y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
-                    x2 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
-                    y2 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
-                    
-                    x3 = platform.x-((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
-                    y3 = platform.y-((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
-                    x4 = platform.x+((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
-                    y4 = platform.y-((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
-                    pygame.draw.polygon(win, (0, 0, 0), [
-                        (x1-camX, -(y1-camY)),
-                        (x2-camX, -(y2-camY)),
-                        (x4-camX, -(y4-camY)),
-                        (x3-camX, -(y3-camY)),
-                        ])
+##            else:
+##                if platform.d == 0:
+##                    pygame.draw.rect(win, (0, 0, 0),
+##                                 (platform.x-camX-platform.w/2,
+##                                  -(platform.y-camY)-platform.h/2,
+##                                  platform.w, platform.h))
+##                else:     
+##                    x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+##                    y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+##                    x2 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+##                    y2 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+##                    
+##                    x3 = platform.x-((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
+##                    y3 = platform.y-((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+##                    x4 = platform.x+((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
+##                    y4 = platform.y-((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+##                    pygame.draw.polygon(win, (0, 0, 0), [
+##                        (x1-camX, -(y1-camY)),
+##                        (x2-camX, -(y2-camY)),
+##                        (x4-camX, -(y4-camY)),
+##                        (x3-camX, -(y3-camY)),
+##                        ])
         for polyplat in self.polyplats:
             pygame.draw.polygon(win, polyplat.color, [(x-camX, -(y-camY)) for x, y in polyplat.points])
         for entity in self.entities:
@@ -259,7 +263,7 @@ class Level:
         for overlay in self.overlays:
             if distance(self.player.x, self.player.y, overlay.x, overlay.y) < max(overlay.w/2, overlay.h/2)+400:
                 if overlay.d == 0:
-                    overlay.texture.set_alpha(100)
+                    #overlay.texture.set_alpha(100)
                     win.blit(overlay.texture, (overlay.x-(overlay.w/2)-camX, -(overlay.y+(overlay.h/2)-camY)))
                 else:
                     blitRotateCenter(win, overlay.texture, overlay.d, (overlay.x-(overlay.w/2),-(overlay.y+(overlay.h/2))), (camX,camY))

@@ -159,9 +159,9 @@ class Player:
                 ]
             f.write('\n'.join(data))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
-        pygame.draw.rect(win, (0, 0, 0),
-                         ((self.x+self.xOffset)-camX, -((self.y+self.heightHead)-camY),
-                          self.width, self.heightHead+self.heightBody))
+##        pygame.draw.rect(win, (0, 0, 0),
+##                         ((self.x+self.xOffset)-camX, -((self.y+self.heightHead)-camY),
+##                          self.width, self.heightHead+self.heightBody))
         head_rot = -math.degrees(math.atan2(mouseY-(180+15), mouseX-240))
         head_rot_left = ((360+(head_rot))%360)-180#math.degrees(math.atan2(mouseY-(180+15), 240-mouseX))
         self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#

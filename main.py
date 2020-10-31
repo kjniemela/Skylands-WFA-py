@@ -106,8 +106,8 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
-vol = 0.25
-playMusic = False
+vol = 0.5
+playMusic = True
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
