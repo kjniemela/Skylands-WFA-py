@@ -1,0 +1,2 @@
+0001 - angled hitboxes are not reliable - UNFIXED
+0002 - the "drop" function (x) lets you phase through walls - UNFIXED

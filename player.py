@@ -101,7 +101,7 @@ class Player:
         self.width = 40
         self.lastXOffset = 0
         self.lastWidth = 0
-        self.heightHead = 24
+        self.heightHead = 18
         self.heightBody = 48
         self.walkFrame = 0
         self.facing = 1
@@ -159,10 +159,12 @@ class Player:
                 ]
             f.write('\n'.join(data))
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
-##        pygame.draw.rect(win, (0, 0, 0),
-##                         ((self.x+self.xOffset)-camX, -((self.y+self.heightHead)-camY),
-##                          self.width, self.heightHead+self.heightBody))
-        head_rot = -math.degrees(math.atan2(mouseY-(180+15), mouseX-240))
+        if not self.level == None:
+            if self.level.debugMode:
+                pygame.draw.rect(win, (0, 0, 0),
+                                 ((self.x+self.xOffset)-camX, -((self.y+self.heightHead)-camY),
+                                  self.width, self.heightHead+self.heightBody))
+        head_rot = -math.degrees(math.atan2(mouseY-(180+24), mouseX-(240+16)))
         head_rot_left = ((360+(head_rot))%360)-180#math.degrees(math.atan2(mouseY-(180+15), 240-mouseX))
         self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
@@ -233,7 +235,7 @@ class Player:
     def kill(self):
         self.__init__(*self.spawnpoint, self.save_file)
     def check_inside(self, x, y):
-        if self.x<x and self.x+(40)>x and self.y+(18)>y and self.y-(48)<y:
+        if self.x<x and self.x+(self.width)>x and self.y+(self.heightHead)>y and self.y-(self.heightBody)<y:
             return (True, (self.x+(self.width/2))-x, self.y-y)
         else:
             return (False, 0, 0)
@@ -315,11 +317,18 @@ class Player:
                         self.x -= math.ceil(self.rightTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
+##                    elif self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel+((self.xOffset+self.width)-(self.lastXOffset+self.lastWidth)):
+##                        self.xVel = 0
+##                        self.xOffset = self.lastXOffset
+##                        self.width = self.lastWidth
                     if self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= (-self.xVel)+(self.lastXOffset-self.xOffset): #this needs to be the relative xVel between the player and the platform
                         self.xVel = 0
                         self.x += math.ceil(self.leftTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
+##                    elif self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= (-self.xVel)+(self.lastXOffset-self.xOffset):
+##                        self.xVel = 0
+##                        self.xOffset = self.lastXOffset
             else:
                 if self.get_colliding_platform(platform, True):
                     if self.downTouching > 0:
