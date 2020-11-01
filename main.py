@@ -414,15 +414,18 @@ def controlsScreen(nextState):
         held = keys
         keys = pygame.key.get_pressed()
 
-        if True in keys and selCol > -1:
-            k = keys.index(True)
-            lastControl = controlsList[controlsDisplayPage][selCol][selRow][0]
-            controlsList[controlsDisplayPage][selCol][selRow][0] = pygame.key.name(k).capitalize()
-            try:
-                updateControlsMap()
-            except KeyError:
-                controlsList[controlsDisplayPage][selCol][selRow][0] = lastControl
-            selCol = -1
+        for k in keyMap.values():
+            if keys[k] and selCol > -1:
+                try:
+                    lastControl = controlsList[controlsDisplayPage][selCol][selRow][0]
+                    controlsList[controlsDisplayPage][selCol][selRow][0] = pygame.key.name(k).capitalize()
+                    try:
+                        updateControlsMap()
+                    except KeyError:
+                        controlsList[controlsDisplayPage][selCol][selRow][0] = lastControl
+                except IndexError:
+                    pass
+                selCol = -1
 
         drawGameWindow()
 
@@ -508,7 +511,8 @@ runMenu = True
 gameState = "mainMenu"
 mouseX, mouseY = 0, 0
 camX, camY = ((player.x+5)-(480/2)), ((player.y+20)+(360/2))
-winW, winH = 500, 480
+winW, winH = 960, 720
+pl = pygame.transform.scale(playText, (127, 20))
 fpst = time()
 fps = 0
 FPS = 60
