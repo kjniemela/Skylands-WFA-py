@@ -1,6 +1,8 @@
 asciiIcon.txt
 autopytoexeConfig.json
+bugs.txt
 collision.py
+credits.txt
 entities - Copy.py
 entities.py
 level.py
@@ -23,6 +25,8 @@ assets/body_walk5.png
 assets/body_walk6.png
 assets/body_walk7.png
 assets/body_walk8.png
+assets/button1.png
+assets/button2.png
 assets/chatacter_sheet_x400.png
 assets/credits.png
 assets/cursor.png
