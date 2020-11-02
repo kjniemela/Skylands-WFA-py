@@ -1,4 +1,4 @@
-#spawn -640 -310
+spawn -640 -310
 script lab
 overlay lab1 -375 313 750 627 0
 overlay lab2 375 313 750 627 0
@@ -54,3 +54,7 @@ platc none 247 359 8 231 0
 platc door1 249 488 4 120 0 door_c1
 entity doorController 222 565 controller1
 #spawn 400 411
+platc none -2 331 88 10 0
+platc none -8 618 6 157 0
+platc none -8 370 6 80 0
+platc none -159 187 120 10 0
