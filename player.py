@@ -108,6 +108,8 @@ class Player:
         self.touchingPlatform = False
         self.falling = True
         self.jumping = 0
+        self.walljump = False
+        self.wallJumpTime = 0
         self.gunX = 0
         self.gunY = 0
         self.level = None
@@ -281,7 +283,7 @@ class Player:
             else:
                 self.leftTouching = col2[1]-self.x
         return col1[0] if down else col2[0]
-    def get_touching(self, level):
+    def get_touching(self, level, controlsMap, keys):
         self.rightTouching = 0
         self.leftTouching = 0
         self.upTouching = 0
@@ -317,6 +319,13 @@ class Player:
                         self.x -= math.ceil(self.rightTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
+                        if keys[controlsMap["left"]] and (not self.walljump or self.wallJumpTime > 50):
+                            self.xVel = -5
+                            self.yVel = 10
+                            self.walljump = True
+                            self.falling = True
+                            self.wallJumpTime = 0
+                            print(self.downTouching)
 ##                    elif self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel+((self.xOffset+self.width)-(self.lastXOffset+self.lastWidth)):
 ##                        self.xVel = 0
 ##                        self.xOffset = self.lastXOffset
@@ -326,6 +335,12 @@ class Player:
                         self.x += math.ceil(self.leftTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
+                        if keys[controlsMap["right"]] and (not self.walljump or self.wallJumpTime > 50):
+                            self.xVel = 5
+                            self.yVel = 10
+                            self.walljump = True
+                            self.falling = True                  
+                            self.wallJumpTime = 0
 ##                    elif self.downTouching > 1 and self.leftTouching > 0 and self.leftTouching <= (-self.xVel)+(self.lastXOffset-self.xOffset):
 ##                        self.xVel = 0
 ##                        self.xOffset = self.lastXOffset

@@ -131,6 +131,7 @@ class AchievementRenderer:
                 self.displayTime = 0
 
 class Level:
+    debugMode = False
     def __init__(self, src, player):
 
         self.platforms = []
@@ -151,8 +152,6 @@ class Level:
         self.entityTypes = {
             'shoaldier': Shoaldier
         }
-
-        self.debugMode = False
 
         self.achievement_handler = AchievementRenderer()
 

@@ -1,4 +1,4 @@
-spawn -640 -310
+#spawn -640 -310
 script lab
 overlay lab1 -375 313 750 627 0
 overlay lab2 375 313 750 627 0
@@ -30,7 +30,7 @@ platc none -90 -155 115 10 0
 platc none -210 -340 120 10 0
 platc none -42 -335 120 10 0
 platc none -24 77 9 232 0
-entity shoaldier 0 -250
+#entity shoaldier 0 -250
 platc none 180 -92 8 241 0
 platc none 188 -326 68 8 0
 platc none 105 -257 75 10 0

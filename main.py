@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
-VERSION_PATCH = 7
+VERSION_PATCH = 8
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -111,7 +111,7 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 
 ###SOUND###
 vol = 0.25
-playMusic = True
+playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
@@ -212,17 +212,8 @@ controlsList = [
         [['T', "Reset Level"]] #column 3
     ]
 ]
-keyMap = {
-    'W': pygame.K_w,
-    'A': pygame.K_a,
-    'S': pygame.K_s,
-    'D': pygame.K_d,
-    'Space': pygame.K_SPACE,
-    'B': pygame.K_b,
-    'F': pygame.K_f,
-    'T': pygame.K_t,
-    'P': pygame.K_p,
-}
+validKeys = [*range(97, 123), pygame.K_SPACE, *range(303, 309), pygame.K_TAB]
+keyMap = {pygame.key.name(k).capitalize(): k for k in validKeys}
 controlsMap = {}
 def updateControlsMap():
     global controlsMap
@@ -633,18 +624,34 @@ while run:
         player.xOffset = 0
         player.width = 40
 
-    player.get_touching(level)
+    player.get_touching(level, controlsMap, keys)
 
-    if keys[controlsMap["left"]]:
-        player.xVel -= 2
-        player.walkFrame += player.facing*-1
-        #player.facing = -1
-    if keys[controlsMap["right"]]:
-        player.xVel += 2
-        player.walkFrame += player.facing
-        #player.facing = 1
+    if not (player.walljump and player.wallJumpTime < 5):
+        if keys[controlsMap["left"]]:
+            if player.xVel > -3:
+                player.xVel -= 2
+                player.xVel *= 0.6
+            else:
+                pass#player.xVel = -3
+            player.walkFrame += player.facing*-1
+            #player.facing = -1
+        if keys[controlsMap["right"]]:
+            if player.xVel < 3:
+                player.xVel += 2
+                player.xVel *= 0.6
+            else:
+                pass#player.xVel = 3
+            player.walkFrame += player.facing
+            #player.facing = 1
 
-    player.xVel *= 0.6
+    if player.walljump and not player.falling:
+        player.walljump = False
+        player.wallJumpTime = 0
+    elif player.walljump:
+        player.wallJumpTime += 1
+
+    if not player.walljump and not (keys[controlsMap["right"]] or keys[controlsMap["left"]]):#player.touchingPlatform
+        player.xVel *= 0.6
     if abs(player.xVel) < 0.01:
         player.xVel = 0
     if player.falling and not fly:
@@ -678,7 +685,7 @@ while run:
         level.debugMode = not level.debugMode
         
     if keys[controlsMap["reset"]]:
-        level = Level(level.src, player)
+        level.__init__(level.src, player)
     if keys[controlsMap["fire"]] and player.gunCooldown == 0:
         GDFSER_shoot.play()
         bulletspeed = 20
@@ -705,8 +712,13 @@ while run:
         fpst = time()
         FPS = fps
         fps = 0
-##    pygame.display.set_caption("Skylands %d.%d.%d    FPS: %d X: %d Y: %d ~ %d %d ~ %d %d"\
-##                               % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
-##                                  FPS, player.x, player.y, camX+mouseX, camY-mouseY, mouseX, mouseY))
+
+    if level.debugMode:
+        pygame.display.set_caption("Skylands %d.%d.%d    FPS: %d X: %d~%f Y: %d~%f ~ %d %d ~ %d %d"\
+                                   % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
+                                      FPS, player.x, player.xVel, player.y, player.yVel,
+                                      camX+mouseX, camY-mouseY, mouseX, mouseY))
+    else:
+        pygame.display.set_caption("Skylands %d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
 pygame.quit()
