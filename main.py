@@ -37,6 +37,7 @@ pygame.display.set_icon(islandIcon)
 
 window = pygame.display.set_mode((960, 720), pygame.RESIZABLE)
 win = pygame.Surface((480, 360))
+win2 = pygame.Surface((960, 720))
 
 pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
 
@@ -333,7 +334,9 @@ def drawGameWindow():
         win.blit(cursor, (mouseX-8,mouseY-8))
 
     fade.draw(win)
-    window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
+    pygame.transform.scale(win, (winW, winH), win2)
+    window.blit(win2, (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
+    #window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
     pygame.display.update()
 
 def controlsScreen(nextState):
@@ -348,6 +351,7 @@ def controlsScreen(nextState):
     global menuXOffset
     global winW
     global winH
+    global win2
     global controlsList
     global controlsDisplayPage
     global selCol
@@ -397,6 +401,7 @@ def controlsScreen(nextState):
             if event.type == pygame.VIDEORESIZE:
                 winW, winH = int(480*(event.h/360)), event.h
                 surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                win2 = pygame.Surface((winW, winH))
                 #bg = pygame.transform.scale(sky, (event.w, event.h))
                 #menu = pygame.transform.scale(menuIsland, (480, 360))
                 pl = pygame.transform.scale(playText, (int(255*(event.h/720)), int(event.h/18)))
@@ -438,6 +443,7 @@ def pauseScreen(nextState):
     global menuXOffset
     global winW
     global winH
+    global win2
 
     pause = True
 
@@ -472,6 +478,7 @@ def pauseScreen(nextState):
             if event.type == pygame.VIDEORESIZE:
                 winW, winH = int(480*(event.h/360)), event.h
                 surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                win2 = pygame.Surface((winW, winH))
                 #bg = pygame.transform.scale(sky, (event.w, event.h))
                 #menu = pygame.transform.scale(menuIsland, (480, 360))
                 pl = pygame.transform.scale(playText, (int(255*(event.h/720)), int(event.h/18)))
@@ -603,6 +610,7 @@ while run:
         if event.type == pygame.VIDEORESIZE:
             winW, winH = int(480*(event.h/360)), event.h
             surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+            win2 = pygame.Surface((winW, winH))
             #bg = pygame.transform.scale(sky, (event.w, event.h))
             #menu = pygame.transform.scale(menuIsland, (480, 360))
             pl = pygame.transform.scale(playText, (int(255*(event.h/720)), int(event.h/18)))

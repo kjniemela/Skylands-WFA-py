@@ -235,7 +235,9 @@ class Player:
         self.xVel += knockback[0]
         self.yVel += knockback[1]
     def kill(self):
+        level = self.level
         self.__init__(*self.spawnpoint, self.save_file)
+        self.level = level
     def check_inside(self, x, y):
         if self.x<x and self.x+(self.width)>x and self.y+(self.heightHead)>y and self.y-(self.heightBody)<y:
             return (True, (self.x+(self.width/2))-x, self.y-y)
@@ -319,13 +321,12 @@ class Player:
                         self.x -= math.ceil(self.rightTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
-                        if keys[controlsMap["left"]] and (not self.walljump or self.wallJumpTime > 50):
-                            self.xVel = -5
+                        if keys[controlsMap["left"]] and (not self.walljump or self.wallJumpTime > 40):
+                            self.xVel = -4
                             self.yVel = 10
                             self.walljump = True
                             self.falling = True
                             self.wallJumpTime = 0
-                            print(self.downTouching)
 ##                    elif self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel+((self.xOffset+self.width)-(self.lastXOffset+self.lastWidth)):
 ##                        self.xVel = 0
 ##                        self.xOffset = self.lastXOffset
@@ -335,8 +336,8 @@ class Player:
                         self.x += math.ceil(self.leftTouching)
                         if self.downTouching < 6:
                             self.y += self.downTouching
-                        if keys[controlsMap["right"]] and (not self.walljump or self.wallJumpTime > 50):
-                            self.xVel = 5
+                        if keys[controlsMap["right"]] and (not self.walljump or self.wallJumpTime > 40):
+                            self.xVel = 4
                             self.yVel = 10
                             self.walljump = True
                             self.falling = True                  

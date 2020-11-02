@@ -5,6 +5,8 @@ def lab(level):
         level.doors = {
             "door_1": [0, -21, -1, 120, 5],
             }
+    if not "dclv" in level.data:
+        level.data["dclv"] = 0
     for doorID in level.doors:
         door = level.controls[doorID]
         #print(distance(level.player.x, level.player.y, door.x, door.y))
@@ -14,6 +16,17 @@ def lab(level):
         elif level.doors[doorID][0] > 0:
             level.doors[doorID][0] -= level.doors[doorID][4]
             door.y = level.doors[doorID][1] + (level.doors[doorID][0]*level.doors[doorID][2])
+    if level.controls["controller1"].is_dead:
+        door = level.controls["door_c1"]
+        if door.y > 340:
+            level.data["dclv"] += 1
+            door.y -= level.data["dclv"]
+        else:
+            door.y = 340
+            level.data["dclv"] *= -0.5
+            if level.data["dclv"] < -1:
+                door.y -= level.data["dclv"]
+            
 
 scripts = {
     "lab": lab,

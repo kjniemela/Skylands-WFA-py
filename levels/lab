@@ -8,7 +8,7 @@ backg lab_back1 -375 348 750 562 0
 backg lab_back2 375 348 750 562 0
 backg lab_back3 -375 -201 750 562 0
 backg lab_back4 375 -201 750 562 0
-backdr 58 58 58 0 0 1600 1200
+backdr 58 58 58 0 0 1600 1250
 platc none -760 630 20 1255 0
 platc none -680 -407 1420 26 0
 plat none -616 -400 64 30 0
@@ -30,7 +30,7 @@ platc none -90 -155 115 10 0
 platc none -210 -340 120 10 0
 platc none -42 -335 120 10 0
 platc none -24 77 9 232 0
-#entity shoaldier 0 -250
+entity shoaldier 0 -250
 platc none 180 -92 8 241 0
 platc none 188 -326 68 8 0
 platc none 105 -257 75 10 0
@@ -41,3 +41,16 @@ platc none 247 78 8 226 0
 platc none 742 630 20 1255 0
 platc none 478 -253 118 10 0
 platc none 666 80 20 270 0
+platc none 432 -66 120 10 0
+platc none 331 35 120 10 0
+platc none 600 127 88 48 0
+platc none 472 194 120 10 0
+platc none 380 364 120 10 0
+platc none 628 286 120 10 0
+platc none -740 628 1482 10 0
+platc none 247 618 8 74 0
+platc none 165 369 90 10 0
+platc none 247 359 8 231 0
+platc door1 249 488 4 120 0 door_c1
+entity doorController 222 565 controller1
+#spawn 400 411

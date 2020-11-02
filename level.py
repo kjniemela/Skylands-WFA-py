@@ -144,13 +144,15 @@ class Level:
         self.itemEntities = []
 
         self.controls = {}
+        self.data = {}
 
         self.player = player
         self.player.level = self
         self.src = src
 
         self.entityTypes = {
-            'shoaldier': Shoaldier
+            "shoaldier": Shoaldier,
+            "doorController": DoorController
         }
 
         self.achievement_handler = AchievementRenderer()
@@ -180,6 +182,8 @@ class Level:
                 self.polyplats.append(PolyPlat((int(i[1]), int(i[2]), int(i[3])), i[4:]))
             elif i[0] == 'entity':
                 self.entities.append(self.entityTypes[i[1]](self, int(i[2]), int(i[3])))
+                if len(i) > 4:
+                    self.controls[i[4]] = self.entities[-1]
             elif i[0] == 'spawn':
                 self.player.set_spawn(int(i[1]), int(i[2]))
             elif i[0] == 'script':

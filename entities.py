@@ -33,10 +33,12 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 shoaldier = {1: {}, -1: {}}
+door_controller = None
 globalTextures = {1: {}, -1: {}}
 def loadEntityTextures(textures):
     global shoaldier
     global globalTextures
+    global door_controller
 
     globalTextures = textures
 
@@ -58,6 +60,7 @@ def loadEntityTextures(textures):
     for i in shoaldierTextures:
         shoaldier[1][i[0]] = pygame.image.load(resource_path('assets/shoaldier/%s.png'%(i[0])))
         shoaldier[-1][i[0]] = pygame.transform.flip(shoaldier[1][i[0]], True, False)
+    door_controller = pygame.image.load(resource_path('assets/door_controller.png'))
 def loadEntitySounds(vol):
     global shoaldier_fire
 
@@ -73,6 +76,7 @@ def blitRotateCenter(surf, image, angle, pos, camPos):
 
 class Entity:
     width = 1
+    xOffset = 0
     heightHead = 1
     heightBody = 1
     xVel = 0
@@ -251,6 +255,12 @@ class Entity:
                         else:
                             self.x -= math.ceil(self.rightTouching)
                 self.x -= xVel
+    def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        if not self.level == None:
+            if self.level.debugMode:
+                pygame.draw.rect(win, (0, 0, 0),
+                                 ((self.x+self.xOffset)-camX, -((self.y+self.heightHead)-camY),
+                                  self.width, self.heightHead+self.heightBody))
 
 class Shoaldier(Entity):
     def __init__(self, level, x, y):
@@ -308,6 +318,7 @@ class Shoaldier(Entity):
             
         return True
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        super().draw(camX, camY, win, mouseX, mouseY, winW, winH)
         head_rot = self.aim
         head_rot_left = ((360+(head_rot))%360)-180
         self.rightArm = head_rot-(15*self.facing)
@@ -376,5 +387,22 @@ class Shoaldier(Entity):
             self.gunX = (handX+(28))+(Cos(-(self.rightArm+self.rightHand))*(15))
             self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(15))+4
             blitRotateCenter(win, shoaldier[self.facing]['gun_hand'], self.rightArm+self.rightHand, (handX,handY), (camX,camY))
+    def damage(self, dmg, src, knockback=(0,0)): #0: fall damage - 1: melee damage
+        self.hp -= dmg
+
+class DoorController(Entity):
+    def __init__(self, level, x, y):
+        super().__init__(level, x, y)
+        self.width = 16
+        self.heightHead = 0
+        self.heightBody = 20
+        self.hp = 1
+    def tick(self):
+        super().tick()
+            
+        return True
+    def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+        super().draw(camX, camY, win, mouseX, mouseY, winW, winH)
+        blitRotateCenter(win, door_controller, 0, (self.x,-self.y), (camX,camY))
     def damage(self, dmg, src, knockback=(0,0)): #0: fall damage - 1: melee damage
         self.hp -= dmg
