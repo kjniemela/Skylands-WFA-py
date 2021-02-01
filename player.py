@@ -118,6 +118,7 @@ class Player:
         self.rightHand = 0
         self.leftHand = 0
         self.gunCooldown = 120
+        self.aim = 0
         if save_file == None:
             self.x = x
             self.y = y
@@ -160,7 +161,7 @@ class Player:
                 str(self.maxHp),
                 ]
             f.write('\n'.join(data))
-    def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
+    def draw(self, playerdata, camX, camY, win, mouseX, mouseY, winW, winH):
         if not self.level == None:
             if self.level.debugMode:
                 pygame.draw.rect(win, (0, 0, 0),
@@ -168,10 +169,8 @@ class Player:
                                   self.width, self.heightHead+self.heightBody))
         head_rot = -math.degrees(math.atan2(mouseY-(180+24), mouseX-(240+16)))
         head_rot_left = ((360+(head_rot))%360)-180#math.degrees(math.atan2(mouseY-(180+15), 240-mouseX))
-        self.rightArm = head_rot-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
-        self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)
-        self.rightHand = 15
-        self.leftHand = 10
+        self.aim = head_rot
+        
         if abs(head_rot)> 90:
             self.facing = -1
         else:
@@ -182,47 +181,61 @@ class Player:
         if self.walkFrame < 0:
             self.walkFrame = 30
 
+        for i in playerdata:
+            try:
+                self.drawPlayer(playerdata[i][0], playerdata[i][1], -1 if abs(playerdata[i][2])> 90 else 1, playerdata[i][2], camX, camY, win, mouseX, mouseY, winW, winH)
+            except IndexError:
+                print(playerdata[i])
+            
+        self.drawPlayer(self.x, self.y, self.facing, head_rot, camX, camY, win, mouseX, mouseY, winW, winH)
+    def drawPlayer(self, x, y, facing, head_rot, camX, camY, win, mouseX, mouseY, winW, winH):
+        head_rot_left = ((360+(head_rot))%360)-180
+        self.rightArm = head_rot-(15*facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
+        self.leftArm = (Sin(time()*40)*10)-90-(5*facing)
+        self.rightHand = 15
+        self.leftHand = 10
+
         #arm position is a bit buggy
         
-        if self.facing == -1:
-            blitRotateCenter(win, armFarLeft, self.rightArm, (self.x-(3),-self.y-(2)), (camX,camY))
-            handX = (self.x-(8))+(Cos(-self.rightArm)*(11))
-            handY = (-self.y-(0))+(Sin(-self.rightArm)*(11))
+        if facing == -1:
+            blitRotateCenter(win, armFarLeft, self.rightArm, (x-(3),-y-(2)), (camX,camY))
+            handX = (x-(8))+(Cos(-self.rightArm)*(11))
+            handY = (-y-(0))+(Sin(-self.rightArm)*(11))
             self.gunX = (handX+(8))+(Cos(-(self.rightArm-self.rightHand))*(15))
             self.gunY = handY+(Sin(-(self.rightArm-self.rightHand))*(16))
             blitRotateCenter(win, handFarLeft, self.rightArm-self.rightHand, (handX,handY), (camX,camY))
             blitRotateCenter(win, GDFSERLeft, self.rightArm-self.rightHand, (self.gunX,self.gunY), (camX,camY))
-        elif self.facing == 1:
-            blitRotateCenter(win, armFarRight, self.leftArm, (self.x+(15),-self.y-(2)), (camX,camY))
-            handX = (self.x+(11))+(Cos(-self.leftArm)*(11))
-            handY = (-self.y-(0))+(Sin(-self.leftArm)*(11))
+        elif facing == 1:
+            blitRotateCenter(win, armFarRight, self.leftArm, (x+(15),-y-(2)), (camX,camY))
+            handX = (x+(11))+(Cos(-self.leftArm)*(11))
+            handY = (-y-(0))+(Sin(-self.leftArm)*(11))
             blitRotateCenter(win, handFarRight, self.leftArm+self.leftHand, (handX,handY), (camX,camY))
 
         if abs(self.xVel) > 0:
             if self.facing < 0:
-                win.blit(walkLeft[self.walkFrame//4], (self.x-camX,-(self.y-camY)))
-            elif self.facing > 0:
-                win.blit(walkRight[self.walkFrame//4], (self.x-camX,-(self.y-camY)))
+                win.blit(walkLeft[self.walkFrame//4], (x-camX,-(y-camY)))
+            elif facing > 0:
+                win.blit(walkRight[self.walkFrame//4], (x-camX,-(y-camY)))
         else:
-            if self.facing == -1:
-                win.blit(idleLeft, (self.x-camX,-(self.y-camY)))
-            elif self.facing == 1:
-                win.blit(idleRight, (self.x-camX,-(self.y-camY)))
+            if facing == -1:
+                win.blit(idleLeft, (x-camX,-(y-camY)))
+            elif facing == 1:
+                win.blit(idleRight, (x-camX,-(y-camY)))
 
-        if self.facing == -1:
-            blitRotateCenter(win, headLeft, min(max(head_rot_left, -45), 45), (self.x,-self.y-(20)), (camX,camY))
-        elif self.facing == 1:
-            blitRotateCenter(win, headRight, min(max(head_rot, -45), 45), (self.x,-self.y-(20)), (camX,camY))
+        if facing == -1:
+            blitRotateCenter(win, headLeft, min(max(head_rot_left, -45), 45), (x,-y-(20)), (camX,camY))
+        elif facing == 1:
+            blitRotateCenter(win, headRight, min(max(head_rot, -45), 45), (x,-y-(20)), (camX,camY))
 
-        if self.facing == -1:
-            blitRotateCenter(win, armNearLeft, self.leftArm, (self.x+17,-self.y-0), (camX,camY))
-            handX = (self.x+(12))+(Cos(-self.leftArm)*(11))
-            handY = (-self.y-(0))+(Sin(-self.leftArm)*(11))
+        if facing == -1:
+            blitRotateCenter(win, armNearLeft, self.leftArm, (x+17,-y-0), (camX,camY))
+            handX = (x+(12))+(Cos(-self.leftArm)*(11))
+            handY = (-y-(0))+(Sin(-self.leftArm)*(11))
             blitRotateCenter(win, handNearLeft, self.leftArm-self.leftHand, (handX,handY), (camX,camY))
-        elif self.facing == 1:
-            blitRotateCenter(win, armNearRight, self.rightArm, (self.x-2,-self.y-(2)), (camX,camY))
-            handX = (self.x-(8))+(Cos(-self.rightArm)*(11))
-            handY = (-self.y-(0))+(Sin(-self.rightArm)*(11))
+        elif facing == 1:
+            blitRotateCenter(win, armNearRight, self.rightArm, (x-2,-y-(2)), (camX,camY))
+            handX = (x-(8))+(Cos(-self.rightArm)*(11))
+            handY = (-y-(0))+(Sin(-self.rightArm)*(11))
             self.gunX = (handX+(8))+(Cos(-(self.rightArm+self.rightHand))*(15))
             self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(16))
             blitRotateCenter(win, GDFSERRight, self.rightArm+self.rightHand, (self.gunX,self.gunY), (camX,camY))
@@ -285,13 +298,15 @@ class Player:
             else:
                 self.leftTouching = col2[1]-self.x
         return col1[0] if down else col2[0]
-    def get_touching(self, level, controlsMap, keys):
+    def get_touching(self, level, controlsMap, keys, xOld, yOld):
         self.rightTouching = 0
         self.leftTouching = 0
         self.upTouching = 0
         self.downTouching = 0
         self.falling = True
         self.touchingPlatform = False
+        xChange = self.xVel
+        yChange = self.yVel
         for platform in level.platforms:
             if platform.d == 0:
                 if self.x+self.xOffset<platform.x+(platform.w/2) and\
@@ -303,7 +318,7 @@ class Player:
                     self.leftTouching = (platform.x+(platform.w/2))-(self.x+self.xOffset)
                     self.upTouching = (self.y+(self.heightHead))-(platform.y-(platform.h/2))
                     self.downTouching = (platform.y+(platform.h/2))-(self.y-(self.heightBody))
-                    if self.downTouching > 0 and self.downTouching <= -(self.yVel-2):
+                    if self.downTouching > 0 and self.downTouching <= -(yChange-2):
                         if self.yVel < -20:
                             dmg = math.ceil((abs(self.yVel)-11)/8)
                             self.yVel = 0
@@ -313,9 +328,10 @@ class Player:
                         self.y += math.ceil(self.downTouching)-1
                         self.jumping = 0
                         self.falling = False
-                    if self.upTouching > 0 and self.upTouching <= self.yVel:
+                    if self.upTouching > 0 and self.upTouching <= yChange:
                         self.yVel = 0
                         self.y -= math.ceil(self.upTouching)
+                        #self.yChange -= math.ceil(self.upTouching)
                     if self.downTouching > 1 and self.rightTouching > 0 and self.rightTouching <= self.xVel+((self.xOffset+self.width)-(self.lastXOffset+self.lastWidth)): #this needs to be the relative xVel between the player and the platform
                         self.xVel = 0
                         self.x -= math.ceil(self.rightTouching)

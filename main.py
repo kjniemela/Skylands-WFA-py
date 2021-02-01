@@ -28,8 +28,8 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 1
-VERSION_PATCH = 8
+VERSION_MINOR = 2
+VERSION_PATCH = 0
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -80,7 +80,7 @@ pygame.display.update()
 
 ###TEXTURES###
 #PLAY MENU
-playMenu = pygame.image.load(resource_path('assets/playMenu2.png'))
+playMenu = pygame.image.load(resource_path('assets/playMenu.png'))
 creditsSlide = pygame.image.load(resource_path('assets/credits.png'))
 
 #PAUSE MENU
@@ -101,6 +101,7 @@ items = {1: {
         'stb': STBLeft
         }}
 
+from client import *
 from player import *
 from level import *
 loadPlayerTextures()
@@ -111,16 +112,16 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
-vol = 0.25
-playMusic = False
+vol = 0.5
+playMusic = True
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
 if playMusic:
     pygame.mixer.init()
-    menuMusic = pygame.mixer.Sound(resource_path("assets/The Light - The Album Leaf.wav"))
-    gameMusic = pygame.mixer.Sound(resource_path("assets/music.ogg"))
-    gameMusic.set_volume(0.4*vol)
+    menuMusic = pygame.mixer.Sound(resource_path("assets/music/Skylands Theme.ogg"))
+    gameMusic = pygame.mixer.Sound(resource_path("assets/music/Skylands Theme.ogg"))
+    gameMusic.set_volume(1*vol)
     menuMusic.set_volume(1*vol)
 
 GDFSER_shoot = pygame.mixer.Sound(resource_path("assets/GDFSER-fire2.wav"))
@@ -241,6 +242,7 @@ def drawGameWindow():
     global creditsY
     global selCol
     global selRow
+    global c
 
     zoom = 1 #make global or smth later
 
@@ -252,6 +254,20 @@ def drawGameWindow():
             win.blit(pl, (176, 306))
     elif gameState == "playMenu":
         win.blit(playMenu, (0, 0))
+        
+        newGame = fonts["gemCount"].render("New Game", True, (170, 170, 190), (130, 132, 130))
+        loadGame = fonts["gemCount"].render("Load Game", True, (170, 170, 190), (130, 132, 130))
+        levelSelect = fonts["gemCount"].render("Level Select", True, (170, 170, 190), (130, 132, 130))
+        settings = fonts["gemCount"].render("Settings", True, (170, 170, 190), (130, 132, 130))
+        creditsText = fonts["buttonText"].render("Credits", True, (170, 170, 190), (130, 132, 130))
+        returnText = fonts["buttonText"].render("Return", True, (170, 170, 190), (130, 132, 130))
+        win.blit(newGame, (378, 16))
+        win.blit(loadGame, (376, 54))
+        win.blit(levelSelect, (373, 92))
+        win.blit(settings, (387, 130))
+        win.blit(creditsText, (17, 313))
+        win.blit(returnText, (384, 313))
+        
         win.blit(cursor, (mouseX-8,mouseY-8))
     elif gameState == "credits":
         win.fill((251, 251, 254))
@@ -262,7 +278,10 @@ def drawGameWindow():
     elif gameState == "inGame":
         win.fill((240, 240, 255))
         level.draw(camX, camY, win, mouseX, mouseY, winW, winH)
-        player.draw(camX, camY, win, mouseX, mouseY, winW, winH)
+        if multiplayer:
+            player.draw(c.playerdata, camX, camY, win, mouseX, mouseY, winW, winH)
+        else:
+            player.draw({}, camX, camY, win, mouseX, mouseY, winW, winH)
         level.draw_overlays(camX, camY, win, mouseX, mouseY, winW, winH)
 
         win.blit(HUD_back, (293, 28))
@@ -502,7 +521,7 @@ print(asciiIcon)
 print("Skylands: Worlds from Above v%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
 player = Player(125, 25, save_file)
-level = Level("lab", player)
+level = Level("lab", player, {})
 
 run = True
 runMenu = True
@@ -517,6 +536,9 @@ FPS = 60
 fly = False
 held = {}
 keys = pygame.key.get_pressed()
+multiplayer = False
+if multiplayer:
+    c = Game("localhost:8080", "heine")
 
 if playMusic:
     curChannel = menuMusic.play(-1)
@@ -573,14 +595,15 @@ if playMusic:
 else:
     gameState = "inGame"
 
-currentlyPlaying = None
+currentlyPlaying = menuMusic
 
 def startMusic(music):
     global currentlyPlaying
     global curChannel
     if curChannel.get_busy() and not music == currentlyPlaying:
-        curChannel = music.play(-1)
-        currentlyPlaying = music
+        #curChannel = music.play(-1)
+        #currentlyPlaying = music
+        pass
     elif not curChannel.get_busy():
         curChannel = music.play(-1)
         currentlyPlaying = music
@@ -588,7 +611,7 @@ def startMusic(music):
 while run:
     clock.tick(60)
     if playMusic:
-        startMusic(gameMusic)
+        startMusic(level.tracks[level.curTrack])
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             if not save_file == None:
@@ -606,7 +629,9 @@ while run:
                 mouseX *= 480/winW
                 mouseY *= 360/winH
                 if mouseY>318 and mouseX<42:
+                    curChannel.pause()
                     pauseScreen("inGame")
+                    curChannel.unpause()
         if event.type == pygame.VIDEORESIZE:
             winW, winH = int(480*(event.h/360)), event.h
             surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
@@ -619,11 +644,17 @@ while run:
     held = keys
     keys = pygame.key.get_pressed()
 
-    if keys[controlsMap["pause"]] and not held[controlsMap["pause"]]:
+    if (keys[controlsMap["pause"]] and not held[controlsMap["pause"]]) or keys[pygame.K_ESCAPE]:
+        curChannel.pause()
         pauseScreen("inGame")
+        curChannel.unpause()
 
+    xOld = player.x
+    yOld = player.y
     player.x += player.xVel
     player.y += player.yVel
+    if multiplayer:
+        c.Send(0, ints16=[int(player.x), int(player.y), int(player.aim)])
     
     if keys[pygame.K_x]:
         player.width = 30
@@ -632,7 +663,7 @@ while run:
         player.xOffset = 0
         player.width = 40
 
-    player.get_touching(level, controlsMap, keys)
+    player.get_touching(level, controlsMap, keys, xOld, yOld)
 
     if not (player.walljump and player.wallJumpTime < 5):
         if keys[controlsMap["left"]]:
@@ -729,4 +760,6 @@ while run:
     else:
         pygame.display.set_caption("Skylands %d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
+if multiplayer:
+    c.leave()
 pygame.quit()

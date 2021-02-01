@@ -1,5 +1,6 @@
 spawn -640 -310
 script lab
+music Chase assets/music/Chase.ogg
 overlay lab1 -375 313 750 627 0
 overlay lab2 375 313 750 627 0
 overlay lab3 -375 -313 750 627 0
@@ -53,8 +54,17 @@ platc none 165 369 90 10 0
 platc none 247 359 8 231 0
 platc door1 249 488 4 120 0 door_c1
 entity doorController 222 565 controller1
-#spawn 400 411
 platc none -2 331 88 10 0
 platc none -8 618 6 157 0
 platc none -8 370 6 80 0
 platc none -159 187 120 10 0
+platc none -460 280 120 10 0
+platc none -250 166 8 38 0
+platc none -248 618 8 324 0
+platc none -334 375 86 10 0
+platc none -274 365 26 20 0
+platc none -618 190 86 62 0
+platc none -572 425 120 10 0
+platc none -707 447 84 10 0
+platc none -707 575 84 10 0
+platc none -741 246 60 118 0

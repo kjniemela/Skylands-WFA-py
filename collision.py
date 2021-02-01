@@ -1,3 +1,23 @@
+def screen_coords(point, camX, camY):
+    return (point[0]-camX, -(point[1]-camY))
+
+#screen coord transformations
+def extend_line_up(x1, y1, x2, y2, y):
+    if y1 < y2:
+        s = (x1-x2)/(y1-y2)
+        return (x1+((y-y1)*s), y, x2, y2)
+    else:
+        s = (x2-x1)/(y2-y1)
+        return (x1, y, x2+((y-y2)*s), y2)
+    
+def extend_line_down(x1, y1, x2, y2, y):
+    if y1 > y2:
+        s = (x1-x2)/(y2-y1)
+        return (x1+((y-y1)*s), y, x2, y2)
+    else:
+        s = (x2-x1)/(y1-y2)
+        return (x1, y, x2+((y-y2)*s), y2)
+
 def line_collision(line1, line2):
     x1, y1, x2, y2 = line1
     x3, y3, x4, y4 = line2

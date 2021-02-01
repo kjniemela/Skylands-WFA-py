@@ -319,7 +319,7 @@ class Shoaldier(Entity):
         return True
     def draw(self, camX, camY, win, mouseX, mouseY, winW, winH):
         super().draw(camX, camY, win, mouseX, mouseY, winW, winH)
-        head_rot = self.aim
+        head_rot = self.aim%360
         head_rot_left = ((360+(head_rot))%360)-180
         self.rightArm = head_rot-(15*self.facing)
         self.leftArm = (Sin(time()*40)*10)-90-(5*self.facing)

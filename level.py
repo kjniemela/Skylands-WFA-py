@@ -17,10 +17,10 @@ def loadLevelTextures():
         "ground1": pygame.image.load(resource_path('assets/ground1.png')),
         "grass1": pygame.image.load(resource_path('assets/grass1.png')),
         "tree": pygame.image.load(resource_path('assets/tree.png')),
-        "lab1Debug": pygame.image.load(resource_path('assets/lab1.png')).convert(),
-        "lab2Debug": pygame.image.load(resource_path('assets/lab2.png')).convert(),
-        "lab3Debug": pygame.image.load(resource_path('assets/lab3.png')).convert(),
-        "lab4Debug": pygame.image.load(resource_path('assets/lab4.png')).convert(),
+##        "lab1Debug": pygame.image.load(resource_path('assets/lab1.png')).convert(),
+##        "lab2Debug": pygame.image.load(resource_path('assets/lab2.png')).convert(),
+##        "lab3Debug": pygame.image.load(resource_path('assets/lab3.png')).convert(),
+##        "lab4Debug": pygame.image.load(resource_path('assets/lab4.png')).convert(),
         "lab1": pygame.image.load(resource_path('assets/lab1.png')),
         "lab2": pygame.image.load(resource_path('assets/lab2.png')),
         "lab3": pygame.image.load(resource_path('assets/lab3.png')),
@@ -132,7 +132,7 @@ class AchievementRenderer:
 
 class Level:
     debugMode = False
-    def __init__(self, src, player):
+    def __init__(self, src, player, music={}):
 
         self.platforms = []
         self.overlays = []
@@ -149,6 +149,11 @@ class Level:
         self.player = player
         self.player.level = self
         self.src = src
+
+        self.tracks = {}
+
+        for track in music:
+            self.tracks[track] = (pygame.mixer.Sound(resource_path(music[track])))
 
         self.entityTypes = {
             "shoaldier": Shoaldier,
@@ -191,7 +196,14 @@ class Level:
                 script = get_script(i[1])
                 if not script == None:
                     self.tick = script
+            elif i[0] == 'music':
+                self.tracks[i[1]] = (pygame.mixer.Sound(resource_path(' '.join(i[2:]))))
         #self.generate(50)\
+
+        try:
+            self.curTrack = list(self.tracks.keys())[0]
+        except IndexError:
+            self.curTrack = None
     def tick(self, level):
         pass
     def generate(self, times):
@@ -223,6 +235,26 @@ class Level:
                 else:
                     blitRotateCenter(win, backg.texture, backg.d, (backg.x-(backg.w/2),-(backg.y+(backg.h/2))), (camX,camY))
         for platform in self.platforms:
+##            if distance(self.player.x, self.player.y, platform.x, platform.y) < max(platform.w/2, platform.h/2)+120:
+##                verts = platform.get_verts(camX, camY, 1.001)
+##                v = []
+##                for vert in verts:
+##                    if not platform.collides_with_line(self.player.x, self.player.y, vert[0], vert[1]):
+##                        point = screen_coords(vert, camX, camY)
+##                        plcoords = screen_coords((self.player.x, self.player.y), camX, camY)
+##                        if point[1] < plcoords[1]:
+##                            l = extend_line_up(*point, *plcoords, 0)
+##                            v.append((l[0], l[1]))
+##                            v.append(point)
+##                        else:
+##                            l = extend_line_down(*point, *plcoords, 360)
+##                            v.append((l[0], l[1]))
+##                            v.append(point)
+##                #print(v)
+##                if len(v) == 4:
+##                    pygame.draw.polygon(win, 0, [v[0], v[1], v[3], v[2]])
+##                elif len(v) == 6:
+##                    pygame.draw.polygon(win, 0, [v[0], v[1], v[5], v[3], v[2], v[4]])
             if platform.visible:
                 if distance(self.player.x, self.player.y, platform.x, platform.y) < max(platform.w/2, platform.h/2)+240:
                     if platform.d == 0:
@@ -231,10 +263,10 @@ class Level:
                         blitRotateCenter(win, platform.texture, platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
             elif self.debugMode:
                 if platform.d == 0:
-                    pygame.draw.rect(win, (0, 0, 0),
-                                 (platform.x-camX-platform.w/2,
-                                  -(platform.y-camY)-platform.h/2,
-                                  platform.w, platform.h))
+                        pygame.draw.rect(win, (0, 0, 0),
+                                     (platform.x-camX-platform.w/2,
+                                      -(platform.y-camY)-platform.h/2,
+                                      platform.w, platform.h))
                 else:     
                     x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
                     y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
@@ -298,7 +330,32 @@ class Platform:
             try:
                 self.debugTexture = platformTextures[texture+"Debug"]
             except KeyError:
-               self.debugTexture = cursor
+               self.debugTexture = platformTextures[texture].convert()
+    def get_verts(self, camX, camY, b=1):
+        x1 = self.x-((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
+        y1 = self.y+((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d)*b)
+        x2 = self.x+((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
+        y2 = self.y+((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d)*b)
+        
+        x3 = self.x-((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
+        y3 = self.y-((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d))
+        x4 = self.x+((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
+        y4 = self.y-((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d))
+
+        return [
+            (x1, y1),
+            (x2, y2),
+            (x3, y3),
+            (x4, y4)
+            ]
+
+##        return [
+##            (x1-camX, -(y1-camY)),
+##            (x2-camX, -(y2-camY)),
+##            (x3-camX, -(y3-camY)),
+##            (x4-camX, -(y4-camY))
+##            ]
+        
     def collides_with_line(self, px1, py1, px2, py2):
         x1 = self.x-((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y1 = self.y+((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
@@ -321,15 +378,19 @@ class Platform:
         #self.d = (self.d+1)%360
 
         if line_collision((px1, py1, px2, py2), (x1, y1, x2, y2))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x1, y1, x2, y2)))
             #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
             return True
         elif line_collision((px1, py1, px2, py2), (x3, y3, x4, y4))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x3, y3, x4, y4)))
             #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
             return True
         elif line_collision((px1, py1, px2, py2), (x2, y2, x4, y4))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x2, y2, x4, y4)))
             #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
             return True
         elif line_collision((px1, py1, px2, py2), (x3, y3, x1, y1))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x3, y3, x1, y1)))
             #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
             return True
         else:
