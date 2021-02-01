@@ -23,6 +23,24 @@ from collision import *
 import os
 import sys
 
+##DIRECTIVES##
+##  CLASS Ω - OVERRIDE: Execute directive immediately, whatever the cost.
+##  CLASS A - VITAL: Drop everything and execute directive immediately.
+##      A114 - Repair Node: Repair home node immediately.
+##  CLASS B - URGENT: Execute directive ASAP.
+##      B116 - Communications Down: Locate the nearest Node to reestablish contact.
+##  CLASS C - IMPORTANT: Execute directive as soon as it is convenient to do so.
+##  CLASS D - INSIGNIFICANT: Execute directive whenever the opportunity arises.
+##
+##
+##
+##
+##
+##
+##
+##
+##
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:

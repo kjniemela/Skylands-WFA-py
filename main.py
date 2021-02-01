@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 2
-VERSION_PATCH = 0
+VERSION_PATCH = 1
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -62,8 +62,20 @@ asciiIcon = """
 """
 
 menuXOffset = 0
+menuYOffset = 0
 
 #MENU
+vol = 0.5
+playMusic = True
+
+pygame.mixer.pre_init(44100, -16, 4, 512)
+pygame.mixer.init()
+if playMusic:
+    pygame.mixer.init()
+    menuMusicStart = pygame.mixer.Sound(resource_path("assets/music/Skylands Theme Start.ogg"))
+    menuMusicStart.set_volume(1*vol)
+
+introCredits = pygame.image.load(resource_path('assets/intro.png'))
 sky = pygame.image.load(resource_path('assets/sky.png')).convert_alpha()
 menuIsland = pygame.image.load(resource_path('assets/menu.png')).convert()
 loading = pygame.image.load(resource_path('assets/loading.png'))
@@ -73,10 +85,20 @@ bg = pygame.transform.scale(sky, (480, 360))
 menu = pygame.transform.scale(menuIsland, (480, 360))
 pl = playText
 
-win.blit(bg, (0, 0))
-win.blit(menu, (menuXOffset, 0))
-win.blit(loading, (15, 660))
+curChannel = menuMusicStart.play()
+#curChannel.stop()
+            
+win.blit(introCredits, (0, 0))
+win.blit(loading, (374, 330))
+pygame.transform.scale(win, (960, 720), win2)
+window.blit(win2, (menuXOffset,menuYOffset))
 pygame.display.update()
+#win.blit(bg, (0, 0))
+#win.blit(menu, (menuXOffset, 0))
+##win.blit(loading, (8, 330))
+##pygame.transform.scale(win, (960, 720), win2)
+##window.blit(win2, (menuXOffset,menuYOffset))
+##pygame.display.update()
 
 ###TEXTURES###
 #PLAY MENU
@@ -112,14 +134,8 @@ cursor = pygame.image.load(resource_path('assets/cursor.png'))
 ##############
 
 ###SOUND###
-vol = 0.5
-playMusic = True
-
-pygame.mixer.pre_init(44100, -16, 4, 512)
-pygame.mixer.init()
 if playMusic:
-    pygame.mixer.init()
-    menuMusic = pygame.mixer.Sound(resource_path("assets/music/Skylands Theme.ogg"))
+    menuMusic = pygame.mixer.Sound(resource_path("assets/music/Skylands Theme Loop.ogg"))
     gameMusic = pygame.mixer.Sound(resource_path("assets/music/Skylands Theme.ogg"))
     gameMusic.set_volume(1*vol)
     menuMusic.set_volume(1*vol)
@@ -354,7 +370,7 @@ def drawGameWindow():
 
     fade.draw(win)
     pygame.transform.scale(win, (winW, winH), win2)
-    window.blit(win2, (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
+    window.blit(win2, (menuXOffset-(winW*(0.5*(zoom-1))),menuYOffset-(winW*(0.5*(zoom-1)))))
     #window.blit(pygame.transform.scale(win, (winW*zoom, winH*zoom)), (menuXOffset-(winW*(0.5*(zoom-1))),-(winW*(0.5*(zoom-1)))))
     pygame.display.update()
 
@@ -540,6 +556,28 @@ multiplayer = False
 if multiplayer:
     c = Game("localhost:8080", "heine")
 
+while curChannel.get_busy() and run:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        if event.type == pygame.VIDEORESIZE:
+            if event.w/480 > event.h/360:
+                winW, winH = int(480*(event.h/360)), event.h
+                menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+                menuYOffset = 0
+            else:
+                winW, winH = event.w, int(360*(event.w/480))
+                menuXOffset = 0
+                menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
+            surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+            win2 = pygame.Surface((winW, winH))
+            
+    win.blit(introCredits, (0, 0))
+    pygame.transform.scale(win, (960, 720), win2)
+    window.blit(win2, (menuXOffset,menuYOffset))
+    pygame.display.update()
+
 if playMusic:
     curChannel = menuMusic.play(-1)
 
@@ -551,12 +589,14 @@ if playMusic:
             if event.type == pygame.MOUSEMOTION:
                 mouseX, mouseY = event.pos
                 mouseX -= menuXOffset
+                mouseY -= menuYOffset
                 mouseX *= 480/winW
                 mouseY *= 360/winH
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouseX, mouseY = event.pos
                     mouseX -= menuXOffset
+                    mouseY -= menuYOffset
                     mouseX *= 480/winW
                     mouseY *= 360/winH
                     #print(mouseX, mouseY)
@@ -575,12 +615,18 @@ if playMusic:
                             creditsY = 40
                             fade.fade_white(6, "credits")
             if event.type == pygame.VIDEORESIZE:
-                winW, winH = int(480*(event.h/360)), event.h
+                if event.w/480 > event.h/360:
+                    winW, winH = int(480*(event.h/360)), event.h
+                    menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+                    menuYOffset = 0
+                else:
+                    winW, winH = event.w, int(360*(event.w/480))
+                    menuXOffset = 0
+                    menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
                 surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                bg = pygame.transform.scale(sky, (event.w, event.h))
-                menu = pygame.transform.scale(menuIsland, (480, 360))
-                pl = pygame.transform.scale(playText, (127, 20))
-                menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+                win2 = pygame.Surface((winW, winH))
+                #bg = pygame.transform.scale(sky, (event.w, event.h))
+                #menu = pygame.transform.scale(menuIsland, (480, 360))
 
         keys = pygame.key.get_pressed()
 
@@ -620,12 +666,14 @@ while run:
         if event.type == pygame.MOUSEMOTION:
             mouseX, mouseY = event.pos
             mouseX -= menuXOffset
+            mouseY -= menuYOffset
             mouseX *= 480/winW
             mouseY *= 360/winH
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 mouseX, mouseY = event.pos
                 mouseX -= menuXOffset
+                mouseY -= menuYOffset
                 mouseX *= 480/winW
                 mouseY *= 360/winH
                 if mouseY>318 and mouseX<42:
@@ -633,13 +681,20 @@ while run:
                     pauseScreen("inGame")
                     curChannel.unpause()
         if event.type == pygame.VIDEORESIZE:
-            winW, winH = int(480*(event.h/360)), event.h
+            if event.w/480 > event.h/360:
+                winW, winH = int(480*(event.h/360)), event.h
+                menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+                menuYOffset = 0
+            else:
+                winW, winH = event.w, int(360*(event.w/480))
+                menuXOffset = 0
+                menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
             surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
             win2 = pygame.Surface((winW, winH))
             #bg = pygame.transform.scale(sky, (event.w, event.h))
             #menu = pygame.transform.scale(menuIsland, (480, 360))
             pl = pygame.transform.scale(playText, (int(255*(event.h/720)), int(event.h/18)))
-            menuXOffset = int(event.w/2) - int(960*(event.h/720)/2)
+            #menuXOffset = int(event.w/2) - int(960*(event.h/720)/2)
 
     held = keys
     keys = pygame.key.get_pressed()
