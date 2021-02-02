@@ -79,6 +79,9 @@ def loadPlayerTextures():
     global powerBar
     global healthBar
     global gem
+    global directive
+    global dirNumbers
+    global dirLetters
     
     walkRight = [pygame.image.load(resource_path('assets/body_walk%s.png' % frame)) for frame in range(1, 9)]
     walkLeft = [pygame.transform.flip(pygame.image.load(resource_path('assets/body_walk%s.png' % frame)), True, False) for frame in range(1, 9)]
@@ -104,12 +107,22 @@ def loadPlayerTextures():
     healthBar = pygame.image.load(resource_path('assets/health.png'))
 
     gem = [pygame.image.load(resource_path('assets/gem%s.png' % frame)) for frame in range(1, 10)]
+    
+    directive = pygame.image.load(resource_path('assets/directives/display.png'))
+    dirNumbers = {str(n): pygame.image.load(resource_path('assets/directives/%s.png' % str(n))) for n in range(10)}
+    dirLetters = {letter: pygame.image.load(resource_path('assets/directives/%s.png' % letter)) for letter in ['A', 'B', 'C', 'D']}
 
 def drawHUD(win, player, fonts):
     win.blit(healthBar, (435-(142*(player.hp/player.maxHp)), 28))
-    win.blit(powerBar, (333+(110*(player.gunCooldown/20)), 40))     
+    win.blit(powerBar, (443-(110*(player.power/player.maxPower)), 40))     
     win.blit(gem[int((time()*16)%9)], (10, 10))
     win.blit(fonts["gemCount"].render('x%d' % (player.gems), True, (91, 183, 0)) , (50, 22))
+    if player.quest != "":
+        win.blit(directive, (55,305))
+        win.blit(dirLetters[player.quest[0]], (200,315))
+        win.blit(dirNumbers[player.quest[1]], (220,315))
+        win.blit(dirNumbers[player.quest[2]], (235,315))
+        win.blit(dirNumbers[player.quest[3]], (250,315))
 
 class Player:
     def __init__(self, x, y, save_file):
@@ -135,8 +148,14 @@ class Player:
         self.leftArm = 0
         self.rightHand = 0
         self.leftHand = 0
-        self.gunCooldown = 120
+        self.gunCooldown = 0
+        self.reloadSpeed = 2
+        self.reload = True
+        self.gunPower = 40
+        self.maxPower = 240
+        self.power = 0
         self.aim = 0
+        self.quest = "B116"
         if save_file == None:
             self.x = x
             self.y = y

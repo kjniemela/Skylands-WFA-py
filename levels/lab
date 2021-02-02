@@ -1,4 +1,5 @@
 spawn -640 -310
+#spawn 420 450
 script lab
 music Chase assets/music/Chase.ogg
 overlay lab1 -375 313 750 627 0
@@ -9,7 +10,8 @@ backg lab_back1 -375 348 750 562 0
 backg lab_back2 375 348 750 562 0
 backg lab_back3 -375 -201 750 562 0
 backg lab_back4 375 -201 750 562 0
-backdr 58 58 58 0 0 1600 1250
+backdr 58 58 58 0 0 2000 1250
+backdr 102 102 102 0 725 2000 202
 platc none -760 630 20 1255 0
 platc none -680 -407 1420 26 0
 plat none -616 -400 64 30 0

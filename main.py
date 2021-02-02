@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 2
-VERSION_PATCH = 1
+VERSION_PATCH = 2
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -85,8 +85,9 @@ bg = pygame.transform.scale(sky, (480, 360))
 menu = pygame.transform.scale(menuIsland, (480, 360))
 pl = playText
 
-curChannel = menuMusicStart.play()
-#curChannel.stop()
+if playMusic:
+    curChannel = menuMusicStart.play()
+    #curChannel.stop()
             
 win.blit(introCredits, (0, 0))
 win.blit(loading, (374, 330))
@@ -222,7 +223,7 @@ controlsList = [
     [#page 1
         [['A', "Walk Left"], ['S', "Sneak"]],#column 1
         [['W', "Jump"], ['Space', "Shoot"]],#column 2
-        [['D', "Walk Right"], ['', ""], ['P', "Pause"]] #column 3
+        [['D', "Walk Right"], ['R', "Reload"], ['P', "Pause"]] #column 3
     ],
     [#page 2
         [['B', "Debug Mode"]],#column 1
@@ -241,6 +242,7 @@ def updateControlsMap():
         "right": keyMap[controlsList[0][2][0][0]],
         "fire": keyMap[controlsList[0][1][1][0]],
         "sneak": keyMap[controlsList[0][0][1][0]],
+        "reload": keyMap[controlsList[0][2][1][0]],
         "pause": keyMap[controlsList[0][2][2][0]],
         "debug": keyMap[controlsList[1][0][0][0]],
         "fly": keyMap[controlsList[1][1][0][0]],
@@ -556,29 +558,29 @@ multiplayer = False
 if multiplayer:
     c = Game("localhost:8080", "heine")
 
-while curChannel.get_busy() and run:
-    clock.tick(60)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.VIDEORESIZE:
-            if event.w/480 > event.h/360:
-                winW, winH = int(480*(event.h/360)), event.h
-                menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
-                menuYOffset = 0
-            else:
-                winW, winH = event.w, int(360*(event.w/480))
-                menuXOffset = 0
-                menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
-            surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-            win2 = pygame.Surface((winW, winH))
-            
-    win.blit(introCredits, (0, 0))
-    pygame.transform.scale(win, (960, 720), win2)
-    window.blit(win2, (menuXOffset,menuYOffset))
-    pygame.display.update()
-
 if playMusic:
+    while curChannel.get_busy() and run:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.VIDEORESIZE:
+                if event.w/480 > event.h/360:
+                    winW, winH = int(480*(event.h/360)), event.h
+                    menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+                    menuYOffset = 0
+                else:
+                    winW, winH = event.w, int(360*(event.w/480))
+                    menuXOffset = 0
+                    menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
+                surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                win2 = pygame.Surface((winW, winH))
+                
+        win.blit(introCredits, (0, 0))
+        pygame.transform.scale(win, (winW, winH), win2)
+        window.blit(win2, (menuXOffset,menuYOffset))
+        pygame.display.update()
+        
     curChannel = menuMusic.play(-1)
 
     while run and runMenu:
@@ -641,7 +643,8 @@ if playMusic:
 else:
     gameState = "inGame"
 
-currentlyPlaying = menuMusic
+if playMusic:
+    currentlyPlaying = menuMusic
 
 def startMusic(music):
     global currentlyPlaying
@@ -677,9 +680,11 @@ while run:
                 mouseX *= 480/winW
                 mouseY *= 360/winH
                 if mouseY>318 and mouseX<42:
-                    curChannel.pause()
+                    if playMusic:
+                        curChannel.pause()
                     pauseScreen("inGame")
-                    curChannel.unpause()
+                    if playMusic:
+                        curChannel.unpause()
         if event.type == pygame.VIDEORESIZE:
             if event.w/480 > event.h/360:
                 winW, winH = int(480*(event.h/360)), event.h
@@ -700,9 +705,11 @@ while run:
     keys = pygame.key.get_pressed()
 
     if (keys[controlsMap["pause"]] and not held[controlsMap["pause"]]) or keys[pygame.K_ESCAPE]:
-        curChannel.pause()
+        if playMusic:
+            curChannel.pause()
         pauseScreen("inGame")
-        curChannel.unpause()
+        if playMusic:
+            curChannel.unpause()
 
     xOld = player.x
     yOld = player.y
@@ -780,14 +787,26 @@ while run:
         
     if keys[controlsMap["reset"]]:
         level.__init__(level.src, player)
-    if keys[controlsMap["fire"]] and player.gunCooldown == 0:
+    if keys[controlsMap["fire"]] and player.gunCooldown == 0 and player.power >= player.gunPower and not player.reload:
         GDFSER_shoot.play()
         bulletspeed = 20
         level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), bulletspeed, player))
-        player.gunCooldown = 30
+        player.gunCooldown = 20
+        player.power -= player.gunPower
+        if player.power < player.gunPower:
+            player.reload = True
 
     if player.gunCooldown > 0:
         player.gunCooldown -= 1
+    if keys[controlsMap["reload"]] and player.gunCooldown == 0:
+            player.reload = True
+        
+    if player.reload:
+        player.power += player.reloadSpeed
+        if player.power > player.maxPower:
+            player.power = player.maxPower
+        if player.power == player.maxPower:
+            player.reload = False
 
     if player.y < -2000:
         player.hp = 0
