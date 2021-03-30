@@ -132,7 +132,7 @@ class AchievementRenderer:
 
 class Level:
     debugMode = False
-    def __init__(self, src, player, music={}):
+    def __init__(self, src, player, music={}, sounds={}, vol=1):
 
         self.platforms = []
         self.overlays = []
@@ -150,10 +150,12 @@ class Level:
         self.player.level = self
         self.src = src
 
+        self.sounds = sounds
         self.tracks = {}
 
         for track in music:
             self.tracks[track] = (pygame.mixer.Sound(resource_path(music[track])))
+            self.tracks[track].set_volume(1*vol)
 
         self.entityTypes = {
             "shoaldier": Shoaldier,
@@ -198,12 +200,15 @@ class Level:
                     self.tick = script
             elif i[0] == 'music':
                 self.tracks[i[1]] = (pygame.mixer.Sound(resource_path(' '.join(i[2:]))))
+                self.tracks[i[1]].set_volume(1*vol)
         #self.generate(50)\
 
         try:
             self.curTrack = list(self.tracks.keys())[0]
         except IndexError:
             self.curTrack = None
+    def play_sound(self, sound):
+        self.sounds[sound].play()
     def tick(self, level):
         pass
     def generate(self, times):
@@ -292,7 +297,7 @@ class Level:
                 del self.entities[self.entities.index(entity)]
         for projectile in self.projectiles:
             if projectile.tick() and not projectile.get_touching(self):
-                pygame.draw.aaline(win, (111, 255, 239, 0.5), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)))
+                #pygame.draw.aaline(win, (111, 255, 239, 0.5), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)))
                 blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
             else:
                 del self.projectiles[self.projectiles.index(projectile)]

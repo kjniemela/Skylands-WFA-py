@@ -29,7 +29,7 @@ def resource_path(relative_path):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 2
-VERSION_PATCH = 2
+VERSION_PATCH = 3
     
 pygame.display.init()
 islandIcon = pygame.image.load(resource_path('assets/icon.png'))
@@ -65,8 +65,8 @@ menuXOffset = 0
 menuYOffset = 0
 
 #MENU
-vol = 0.5
-playMusic = True
+vol = 1
+playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
 pygame.mixer.init()
@@ -141,10 +141,56 @@ if playMusic:
     gameMusic.set_volume(1*vol)
     menuMusic.set_volume(1*vol)
 
-GDFSER_shoot = pygame.mixer.Sound(resource_path("assets/GDFSER-fire2.wav"))
-GDFSER_shoot.set_volume(1*vol)
+GDFSER1 = pygame.mixer.Sound(resource_path("assets/GDFSER1.wav"))
+GDFSER1.set_volume(1*vol)
+GDFSER2 = pygame.mixer.Sound(resource_path("assets/GDFSER2.wav"))
+GDFSER2.set_volume(1*vol)
 
-loadEntitySounds(vol)
+step1 = pygame.mixer.Sound(resource_path("assets/step1.wav"))
+step1.set_volume(1*vol)
+step2 = pygame.mixer.Sound(resource_path("assets/step2.wav"))
+step2.set_volume(1*vol)
+step3 = pygame.mixer.Sound(resource_path("assets/step3.wav"))
+step3.set_volume(1*vol)
+land = pygame.mixer.Sound(resource_path("assets/land.wav"))
+land.set_volume(1*vol)
+pickup = pygame.mixer.Sound(resource_path("assets/gem.wav"))
+pickup.set_volume(1*vol)
+alert = pygame.mixer.Sound(resource_path("assets/alert.wav"))
+alert.set_volume(1*vol)
+hurt = pygame.mixer.Sound(resource_path("assets/hurt2.wav"))
+hurt.set_volume(1*vol)
+click = pygame.mixer.Sound(resource_path("assets/click.wav"))
+click.set_volume(1*vol)
+door_open = pygame.mixer.Sound(resource_path("assets/door_open.wav"))
+door_open.set_volume(1*vol)
+door_close = pygame.mixer.Sound(resource_path("assets/door_close.wav"))
+door_close.set_volume(1*vol)
+powerup = pygame.mixer.Sound(resource_path("assets/powerup.wav"))
+powerup.set_volume(1*vol)
+hum = pygame.mixer.Sound(resource_path("assets/hum.wav"))
+hum.set_volume(1*vol)
+button = pygame.mixer.Sound(resource_path("assets/button.wav"))
+button.set_volume(1*vol)
+
+sounds = {
+    'player_shoot': GDFSER1,
+    'stb_shoot': GDFSER2,
+    'step1': step1,
+    'step2': step2,
+    'step3': step3,
+    'land': land,
+    'hurt': hurt,
+    'pickup': pickup,
+    'alert': alert,
+    'click': click,
+    'door_open': door_open,
+    'door_close': door_close,
+    'powerup': powerup,
+    'hum': hum,
+    'button': button
+}
+
 ###########
 
 ###FONTS###
@@ -539,7 +585,6 @@ print(asciiIcon)
 print("Skylands: Worlds from Above v%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
 
 player = Player(125, 25, save_file)
-level = Level("lab", player, {})
 
 run = True
 runMenu = True
@@ -582,63 +627,77 @@ if playMusic:
         pygame.display.update()
         
     curChannel = menuMusic.play(-1)
+else:
+    gameState = "playMenu"
 
-    while run and runMenu:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEMOTION:
+while run and runMenu:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        if event.type == pygame.MOUSEMOTION:
+            mouseX, mouseY = event.pos
+            mouseX -= menuXOffset
+            mouseY -= menuYOffset
+            mouseX *= 480/winW
+            mouseY *= 360/winH
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
                 mouseX, mouseY = event.pos
                 mouseX -= menuXOffset
                 mouseY -= menuYOffset
                 mouseX *= 480/winW
                 mouseY *= 360/winH
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    mouseX, mouseY = event.pos
-                    mouseX -= menuXOffset
-                    mouseY -= menuYOffset
-                    mouseX *= 480/winW
-                    mouseY *= 360/winH
-                    #print(mouseX, mouseY)
-                    if gameState == "playMenu":
-                        if mouseY<32 and 375<mouseX<470:
-                            runMenu = False
-                        if 47<mouseY<77 and 375<mouseX<470:
-                            #LOAD
-                            pass
-                        if 125<mouseY<155 and 375<mouseX<470:
-                            #SETTINGS
-                            controlsScreen("playMenu")
-                        if 310<mouseY<348 and 377<mouseX<465:
-                            fade.fade_white(6, "mainMenu")
-                        if 310<mouseY<348 and 16<mouseX<100:
-                            creditsY = 40
-                            fade.fade_white(6, "credits")
-            if event.type == pygame.VIDEORESIZE:
-                if event.w/480 > event.h/360:
-                    winW, winH = int(480*(event.h/360)), event.h
-                    menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
-                    menuYOffset = 0
-                else:
-                    winW, winH = event.w, int(360*(event.w/480))
-                    menuXOffset = 0
-                    menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
-                surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                win2 = pygame.Surface((winW, winH))
-                #bg = pygame.transform.scale(sky, (event.w, event.h))
-                #menu = pygame.transform.scale(menuIsland, (480, 360))
+                #print(mouseX, mouseY)
+                if gameState == "playMenu":
+                    if mouseY<32 and 375<mouseX<470:
+                        #NEW GAME
+                        runMenu = False
+                        button.play()
+                        level = Level("narbadhir1", player, {}, sounds, vol)
+                    if 47<mouseY<77 and 375<mouseX<470:
+                        #LOAD
+                        pass
+                        button.play()
+                    if 125<mouseY<155 and 375<mouseX<470:
+                        #SETTINGS
+                        button.play()
+                        controlsScreen("playMenu")
+                    if 310<mouseY<348 and 377<mouseX<465:
+                        #RETURN
+                        button.play()
+                        fade.fade_white(6, "mainMenu")
+                    if 310<mouseY<348 and 16<mouseX<100:
+                        #CREDITS
+                        creditsY = 40
+                        button.play()
+                        fade.fade_white(8, "credits")
+        if event.type == pygame.VIDEORESIZE:
+            if event.w/480 > event.h/360:
+                winW, winH = int(480*(event.h/360)), event.h
+                menuXOffset = int(event.w/2) - int(480*(event.h/360)/2)
+                menuYOffset = 0
+            else:
+                winW, winH = event.w, int(360*(event.w/480))
+                menuXOffset = 0
+                menuYOffset = int(event.h/2) - int(360*(event.w/480)/2)
+            surface = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+            win2 = pygame.Surface((winW, winH))
+            #bg = pygame.transform.scale(sky, (event.w, event.h))
+            #menu = pygame.transform.scale(menuIsland, (480, 360))
 
-        keys = pygame.key.get_pressed()
+    keys = pygame.key.get_pressed()
 
-        if gameState == "mainMenu":
-            if keys[pygame.K_SPACE]:
-                fade.fade_white(6, "playMenu")
+    if gameState == "mainMenu":
+        if keys[pygame.K_SPACE]:
+            fade.fade_white(6, "playMenu")
+    elif gameState == "credits":
+        if keys[pygame.K_ESCAPE]:
+            fade.fade_white(8, "playMenu")
 
-        drawGameWindow()
-    if playMusic:
-        menuMusic.fadeout(1000)
+    drawGameWindow()
+if playMusic:
+    menuMusic.fadeout(1000)
     fade.fade_black(6, "inGame")
 else:
     gameState = "inGame"
@@ -730,7 +789,7 @@ while run:
     if not (player.walljump and player.wallJumpTime < 5):
         if keys[controlsMap["left"]]:
             if player.xVel > -3:
-                player.xVel -= 2
+                player.xVel -= 0.5 if player.sneaking else 2
                 player.xVel *= 0.6
             else:
                 pass#player.xVel = -3
@@ -738,7 +797,7 @@ while run:
             #player.facing = -1
         if keys[controlsMap["right"]]:
             if player.xVel < 3:
-                player.xVel += 2
+                player.xVel += 0.5 if player.sneaking else 2
                 player.xVel *= 0.6
             else:
                 pass#player.xVel = 3
@@ -766,14 +825,19 @@ while run:
         elif not  keys[pygame.K_g]:
             player.yVel *= 0.9
     else:
-        if keys[controlsMap["up"]] and player.touchingPlatform and player.jumping == 0:
+        if keys[controlsMap["up"]] and player.touchingPlatform and player.jumping == 0 and not player.sneaking:
             player.jumping = 1
             player.yVel += 10
         elif player.touchingPlatform:
-            if keys[controlsMap["sneak"]]:
-                player.heightHead = 0
-            else:
-                player.heightHead = 18
+            if keys[controlsMap["sneak"]] and not player.falling:
+                #player.heightHead = 0
+                player.heightBody = 36
+                player.sneaking = True
+            elif player.sneaking:
+                #player.heightHead = 18
+                player.heightBody = 48
+                player.sneaking = False
+                player.y += 12
         
     if keys[controlsMap["fly"]] and not held[controlsMap["fly"]]:
         if not fly:
@@ -786,15 +850,20 @@ while run:
         level.debugMode = not level.debugMode
         
     if keys[controlsMap["reset"]]:
-        level.__init__(level.src, player)
-    if keys[controlsMap["fire"]] and player.gunCooldown == 0 and player.power >= player.gunPower and not player.reload:
-        GDFSER_shoot.play()
-        bulletspeed = 20
-        level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), bulletspeed, player))
-        player.gunCooldown = 20
-        player.power -= player.gunPower
-        if player.power < player.gunPower:
-            player.reload = True
+        level.__init__(level.src, player, {}, sounds)
+    if keys[controlsMap["fire"]] and player.gunCooldown == 0:
+        if player.power >= player.gunPower and not player.reload:
+            level.play_sound("player_shoot")
+            bulletspeed = 20
+            player.gunCooldown = 20
+            level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), bulletspeed, player))
+            player.power -= player.gunPower
+            if player.power < player.gunPower:
+                player.reload = True
+        else:
+            level.play_sound("click")
+            player.gunCooldown = 30
+            
 
     if player.gunCooldown > 0:
         player.gunCooldown -= 1
@@ -807,6 +876,7 @@ while run:
             player.power = player.maxPower
         if player.power == player.maxPower:
             player.reload = False
+            player.gunCooldown = 0
 
     if player.y < -2000:
         player.hp = 0

@@ -1,4 +1,5 @@
 from time import time
+from random import randint
 import math
 
 def distance(x1, y1, x2, y2):
@@ -64,6 +65,8 @@ def loadPlayerTextures():
     global walkLeft
     global idleRight
     global idleLeft
+    global sneakRight
+    global sneakLeft
     global headRight
     global headLeft
     global armNearRight
@@ -87,6 +90,8 @@ def loadPlayerTextures():
     walkLeft = [pygame.transform.flip(pygame.image.load(resource_path('assets/body_walk%s.png' % frame)), True, False) for frame in range(1, 9)]
     idleRight = pygame.image.load(resource_path('assets/body_idle.png'))
     idleLeft = pygame.transform.flip(idleRight, True, False)
+    sneakRight = pygame.image.load(resource_path('assets/body_duck.png'))
+    sneakLeft = pygame.transform.flip(sneakRight, True, False)
     headRight = pygame.image.load(resource_path('assets/head.png'))
     headLeft = pygame.transform.flip(headRight, True, False)
 
@@ -140,6 +145,7 @@ class Player:
         self.falling = True
         self.jumping = 0
         self.walljump = False
+        self.sneaking = False
         self.wallJumpTime = 0
         self.gunX = 0
         self.gunY = 0
@@ -156,6 +162,7 @@ class Player:
         self.power = 0
         self.aim = 0
         self.quest = "B116"
+        self.drawHUD = True
         if save_file == None:
             self.x = x
             self.y = y
@@ -218,6 +225,9 @@ class Player:
         if self.walkFrame < 0:
             self.walkFrame = 30
 
+        if (self.walkFrame == 10 or self.walkFrame == 25) and self.touchingPlatform:
+            self.level.play_sound('step%i'%(randint(1, 3)))
+
         for i in playerdata:
             try:
                 self.drawPlayer(playerdata[i][0], playerdata[i][1], -1 if abs(playerdata[i][2])> 90 else 1, playerdata[i][2], camX, camY, win, mouseX, mouseY, winW, winH)
@@ -248,16 +258,22 @@ class Player:
             handY = (-y-(0))+(Sin(-self.leftArm)*(11))
             blitRotateCenter(win, handFarRight, self.leftArm+self.leftHand, (handX,handY), (camX,camY))
 
-        if abs(self.xVel) > 0:
+        if self.sneaking:
             if self.facing < 0:
-                win.blit(walkLeft[self.walkFrame//4], (x-camX,-(y-camY)))
+                win.blit(sneakLeft, (x-camX+3,-(y-camY)))
             elif facing > 0:
-                win.blit(walkRight[self.walkFrame//4], (x-camX,-(y-camY)))
+                win.blit(sneakRight, (x-camX-7,-(y-camY)))
         else:
-            if facing == -1:
-                win.blit(idleLeft, (x-camX,-(y-camY)))
-            elif facing == 1:
-                win.blit(idleRight, (x-camX,-(y-camY)))
+            if abs(self.xVel) > 0:
+                if self.facing < 0:
+                    win.blit(walkLeft[self.walkFrame//4], (x-camX,-(y-camY)))
+                elif facing > 0:
+                    win.blit(walkRight[self.walkFrame//4], (x-camX,-(y-camY)))
+            else:
+                if facing == -1:
+                    win.blit(idleLeft, (x-camX,-(y-camY)))
+                elif facing == 1:
+                    win.blit(idleRight, (x-camX,-(y-camY)))
 
         if facing == -1:
             blitRotateCenter(win, headLeft, min(max(head_rot_left, -45), 45), (x,-y-(20)), (camX,camY))
@@ -281,6 +297,7 @@ class Player:
         """
         0: fall damage - 1: melee damage
         """
+        self.level.play_sound('hurt')
         self.hp -= dmg
         self.xVel += knockback[0]
         self.yVel += knockback[1]
@@ -356,6 +373,8 @@ class Player:
                     self.upTouching = (self.y+(self.heightHead))-(platform.y-(platform.h/2))
                     self.downTouching = (platform.y+(platform.h/2))-(self.y-(self.heightBody))
                     if self.downTouching > 0 and self.downTouching <= -(yChange-2):
+                        if self.yVel < -5:
+                            self.level.play_sound('land')
                         if self.yVel < -20:
                             dmg = math.ceil((abs(self.yVel)-11)/8)
                             self.yVel = 0

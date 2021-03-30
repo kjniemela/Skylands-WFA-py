@@ -61,11 +61,6 @@ def loadEntityTextures(textures):
         shoaldier[1][i[0]] = pygame.image.load(resource_path('assets/shoaldier/%s.png'%(i[0])))
         shoaldier[-1][i[0]] = pygame.transform.flip(shoaldier[1][i[0]], True, False)
     door_controller = pygame.image.load(resource_path('assets/door_controller.png'))
-def loadEntitySounds(vol):
-    global shoaldier_fire
-
-    shoaldier_fire = pygame.mixer.Sound(resource_path("assets/GDFSER-fire2.wav"))
-    shoaldier_fire.set_volume(1*vol)
 
 def blitRotateCenter(surf, image, angle, pos, camPos):
 
@@ -299,6 +294,7 @@ class Shoaldier(Entity):
         if self.brain['fire'] and self.gunCooldown == 0:
             #shoaldier_fire.set_volume(1*vol)
             #shoaldier_fire.play()
+            self.level.play_sound("stb_shoot")
             self.level.projectiles.append(Bullet(self.gunX, -self.gunY, self.rightArm+(self.rightHand*self.facing), 5, self))
             self.gunCooldown = 100
 
@@ -388,7 +384,10 @@ class Shoaldier(Entity):
             self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(15))+4
             blitRotateCenter(win, shoaldier[self.facing]['gun_hand'], self.rightArm+self.rightHand, (handX,handY), (camX,camY))
     def damage(self, dmg, src, knockback=(0,0)): #0: fall damage - 1: melee damage
+        self.level.play_sound('hurt')
         self.hp -= dmg
+        self.xVel += knockback[0]
+        self.yVel += knockback[1]
 
 class DoorController(Entity):
     def __init__(self, level, x, y):
