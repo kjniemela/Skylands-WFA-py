@@ -9,6 +9,7 @@ except ModuleNotFoundError:
     exit()
  
 from entities import *
+from cutscenes import *
 
 def loadLevelTextures():
     global platformTextures
@@ -21,15 +22,16 @@ def loadLevelTextures():
 ##        "lab2Debug": pygame.image.load(resource_path('assets/lab2.png')).convert(),
 ##        "lab3Debug": pygame.image.load(resource_path('assets/lab3.png')).convert(),
 ##        "lab4Debug": pygame.image.load(resource_path('assets/lab4.png')).convert(),
-        "lab1": pygame.image.load(resource_path('assets/lab1.png')),
-        "lab2": pygame.image.load(resource_path('assets/lab2.png')),
-        "lab3": pygame.image.load(resource_path('assets/lab3.png')),
-        "lab4": pygame.image.load(resource_path('assets/lab4.png')),
-        "lab_back1": pygame.image.load(resource_path('assets/lab_back1.png')),
-        "lab_back2": pygame.image.load(resource_path('assets/lab_back2.png')),
-        "lab_back3": pygame.image.load(resource_path('assets/lab_back3.png')),
-        "lab_back4": pygame.image.load(resource_path('assets/lab_back4.png')),
-        "door1": pygame.image.load(resource_path('assets/door1.png')),
+##        "lab1": pygame.image.load(resource_path('assets/lab1.png')),
+##        "lab2": pygame.image.load(resource_path('assets/lab2.png')),
+##        "lab3": pygame.image.load(resource_path('assets/lab3.png')),
+##        "lab4": pygame.image.load(resource_path('assets/lab4.png')),
+##        "lab_back1": pygame.image.load(resource_path('assets/lab_back1.png')),
+##        "lab_back2": pygame.image.load(resource_path('assets/lab_back2.png')),
+##        "lab_back3": pygame.image.load(resource_path('assets/lab_back3.png')),
+##        "lab_back4": pygame.image.load(resource_path('assets/lab_back4.png')),
+##        "door1": pygame.image.load(resource_path('assets/door1.png')),
+##        "jungle2": pygame.image.load(resource_path('assets/levels/narbadhir1/jungle2.png')),
         }
     bullet = pygame.image.load(resource_path('assets/GDFSER-bullet.png'))
 
@@ -132,7 +134,7 @@ class AchievementRenderer:
 
 class Level:
     debugMode = False
-    def __init__(self, src, player, music={}, sounds={}, vol=1):
+    def __init__(self, src, win, win2, window, player, music={}, sounds={}, vol=1):
 
         self.platforms = []
         self.overlays = []
@@ -142,6 +144,8 @@ class Level:
         self.projectiles = []
         self.entities = []
         self.itemEntities = []
+
+        self.textures = platformTextures
 
         self.controls = {}
         self.data = {}
@@ -166,7 +170,7 @@ class Level:
 
         self.gravity = 0.5
         
-        f = open(resource_path("levels/"+src))
+        f = open(resource_path("levels\\"+src+".txt"))
         data = f.read().split("\n")
         f.close()
         data = [i.split(" ") for i in data]
@@ -201,7 +205,10 @@ class Level:
             elif i[0] == 'music':
                 self.tracks[i[1]] = (pygame.mixer.Sound(resource_path(' '.join(i[2:]))))
                 self.tracks[i[1]].set_volume(1*vol)
-        #self.generate(50)\
+            elif i[0] == 'cutscene':
+                play_cutscene(i[1], win, win2, window, player, sounds, vol)
+            elif i[0] == 'texture':
+                self.textures[i[1]] = pygame.image.load(resource_path('assets/levels/%s/%s'%(src, i[2])))
 
         try:
             self.curTrack = list(self.tracks.keys())[0]
@@ -296,8 +303,8 @@ class Level:
             else:
                 del self.entities[self.entities.index(entity)]
         for projectile in self.projectiles:
-            if projectile.tick() and not projectile.get_touching(self):
-                #pygame.draw.aaline(win, (111, 255, 239, 0.5), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)))
+            if projectile.tick() and not projectile.get_touching(self):#(111, 255, 239)
+                pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
                 blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
             else:
                 del self.projectiles[self.projectiles.index(projectile)]

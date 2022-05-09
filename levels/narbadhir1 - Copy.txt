@@ -1,3 +1,5 @@
+#cutscene reboot
+#music Substantial_Situation assets/music/Substantial Situation-Extended.ogg
 plat ground1 -88 -125 188 125 -45
 plat ground1 -202 -80 188 125 0
 plat ground1 -88 -200 188 125 0

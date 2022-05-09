@@ -65,7 +65,7 @@ menuXOffset = 0
 menuYOffset = 0
 
 #MENU
-vol = 1
+vol = 0#.75
 playMusic = False
 
 pygame.mixer.pre_init(44100, -16, 4, 512)
@@ -654,7 +654,7 @@ while run and runMenu:
                         #NEW GAME
                         runMenu = False
                         button.play()
-                        level = Level("narbadhir1", player, {}, sounds, vol)
+                        level = Level("narbadhir1", win, win2, window, player, {}, sounds, vol)
                     if 47<mouseY<77 and 375<mouseX<470:
                         #LOAD
                         pass
@@ -850,7 +850,7 @@ while run:
         level.debugMode = not level.debugMode
         
     if keys[controlsMap["reset"]]:
-        level.__init__(level.src, player, {}, sounds)
+        level.__init__(level.src, win, win2, window, player, {}, sounds)
     if keys[controlsMap["fire"]] and player.gunCooldown == 0:
         if player.power >= player.gunPower and not player.reload:
             level.play_sound("player_shoot")
