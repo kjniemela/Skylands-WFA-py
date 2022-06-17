@@ -1,6 +1,7 @@
 from utils import *
 from timer import timers
 from window import controller
+from game import game_manager
 
 class View:
     def __init__(self):
@@ -12,25 +13,6 @@ class View:
 
     def start(self):
         pass
-
-    def loop_music(self, track):
-        if controller.sound_ctrl.music_enabled:
-            self.music_channel = controller.sound_ctrl.play_music(track)
-            timers.set_condition(
-                lambda:
-                    self.loop_music(track) if self.music_channel != None else None
-                , 
-                lambda:
-                    self.music_channel == None or not self.music_channel.get_busy()
-            )
-
-    def stop_music_loop(self, fadeout=None):
-        if self.music_channel != None:
-            if fadeout != None:
-                self.music_channel.fadeout(fadeout)
-            else:
-                self.music_channel.stop()
-            self.music_channel = None
 
     def render(self):
         win = controller.win
@@ -46,12 +28,18 @@ class View:
     def handle_click(self, mouseX, mouseY, button):
         pass
 
+    def handle_music_end(self):
+        pass
+
 
 class IntroView(View):
     def __init__(self):
         super().__init__()
 
         self.set_background(controller.intro_credits)
+
+    def handle_music_end(self):
+        views.set_view("main_menu")
 
 class MainMenuView(View):
     def __init__(self):
@@ -62,7 +50,8 @@ class MainMenuView(View):
         self.set_background(controller.menu_background)
 
     def start(self):
-        self.loop_music(controller.menu_music)
+        controller.sound_ctrl.load_music("assets/music/Skylands Theme Loop.ogg")
+        controller.sound_ctrl.play_music(loops=-1)
 
     def render(self):
         win = super().render()
@@ -116,8 +105,8 @@ class MainMenuView(View):
                 if 8<mouseY<42 and 362<mouseX<476:
                     #NEW GAME
                     controller.sound_ctrl.play_sound(controller.sounds["button"])
-                    self.stop_music_loop(fadeout=1000)
-                    ## Game Manager Logic here
+                    controller.sound_ctrl.stop_music(fadeout=1000)
+                    game_manager.new_game()
                     def after_fade():
                         views.set_view("cutscene")
                     
@@ -156,8 +145,9 @@ class CutSceneView(View):
         super().__init__()
 
     def start(self):
-        if False:
-            pass
+        cutscene = game_manager.get_cutscene()
+        if cutscene != None:
+            self.next()
         else:
             timers.set_timeout(
                 lambda:
@@ -197,5 +187,7 @@ class ViewController:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 ## Use controller.mouse_pos instead of event.pos to ensure correct scaling
                 self.cur_view.handle_click(*controller.mouse_pos, event.button)
+            elif event.type == MUSIC_END:
+                self.cur_view.handle_music_end()
 
 views = ViewController()

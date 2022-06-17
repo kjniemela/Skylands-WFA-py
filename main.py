@@ -19,15 +19,16 @@ from timer import timers
 from view import views
 
 ## Start intro music while loading to save time
-intro_music_channel = controller.sound_ctrl.play_music(controller.menu_music_start)
+controller.sound_ctrl.load_music("assets/music/Skylands Theme Start.ogg")
+controller.sound_ctrl.play_music()
 
-timers.set_condition(
-    lambda:
-        views.set_view("main_menu")
-    ,
-    lambda:
-        intro_music_channel == None or not intro_music_channel.get_busy()
-)
+# timers.set_condition(
+#     lambda:
+#         views.set_view("main_menu")
+#     ,
+#     lambda:
+#         intro_music_channel == None or not intro_music_channel.get_busy()
+# )
 
 ## TODO ALL OTHER LOADING HERE
 

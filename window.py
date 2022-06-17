@@ -90,11 +90,7 @@ class WindowController:
         try:
             self.sound_ctrl = SoundController()
         except pygame.error:
-            self.sound_ctrl = None
-        
-        if self.sound_ctrl:
-            self.menu_music_start = self.sound_ctrl.load_music("assets/music/Skylands Theme Start.ogg")
-            self.menu_music = self.sound_ctrl.load_music("assets/music/Skylands Theme Loop.ogg")
+            self.sound_ctrl = None ## This should never be none... TODO
 
         self.sounds = {
             "player_shoot": self.sound_ctrl.load_sound("assets/sounds/GDFSER1.wav"),

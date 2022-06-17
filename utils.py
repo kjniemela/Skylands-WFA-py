@@ -2,6 +2,7 @@ import os
 import sys
 import math
 from time import time
+from random import randint
 
 try:
     import pygame
@@ -13,6 +14,9 @@ except ModuleNotFoundError:
         import pygame
     else:
         exit()
+
+## Custom Events
+MUSIC_END = pygame.USEREVENT + 1
 
 def resource_path(relative_path):
     """ Ge absolute path to resource, works for dev and for PyInstaller """
@@ -32,3 +36,10 @@ def Sin(x):
 
 def Cos(x):
     return math.cos(math.radians(x))
+
+def blitRotateCenter(surf, image, angle, pos, camPos):
+
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center = image.get_rect().center)
+
+    surf.blit(rotated_image, (new_rect.topleft[0] + pos[0] - camPos[0], new_rect.topleft[1] + pos[1] + camPos[1]))
