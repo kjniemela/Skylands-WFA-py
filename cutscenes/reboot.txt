@@ -1,0 +1,5 @@
+texture reboot reboot.png
+blit reboot 0 0
+wait 500
+sound SCJingle sounds/SCJingle.wav
+wait 3000

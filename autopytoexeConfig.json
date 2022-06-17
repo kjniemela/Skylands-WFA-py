@@ -38,6 +38,14 @@
    "value": false
   },
   {
+   "optionDest": "disable_windowed_traceback",
+   "value": false
+  },
+  {
+   "optionDest": "embed_manifest",
+   "value": true
+  },
+  {
    "optionDest": "uac_admin",
    "value": false
   },
@@ -58,6 +66,10 @@
    "value": false
   },
   {
+   "optionDest": "argv_emulation",
+   "value": false
+  },
+  {
    "optionDest": "datas",
    "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/assets;assets/"
   },
@@ -71,7 +83,15 @@
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/entities.py;."
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/config.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/fade.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/game.py;."
   },
   {
    "optionDest": "datas",
@@ -80,6 +100,30 @@
   {
    "optionDest": "datas",
    "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/player.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/sound.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/timer.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/utils.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/view.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/window.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Johannes/Documents/GitHub/Skylands-WFA/cutscenes;cutscenes/"
   }
  ],
  "nonPyinstallerOptions": {
