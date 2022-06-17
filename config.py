@@ -2,8 +2,8 @@
 
 config = {
     "debug": False,
-    "enableMusic": False,
+    "enableMusic": True,
     "enableSound": True,
-    "enableCutscenes": False,
-    "enableFade": False,
+    "enableCutscenes": True,
+    "enableFade": True,
 }
