@@ -1,6 +1,4 @@
 # Skylands: Worlds From Above
-v0.1
- 
-Download Python [Launcher](https://github.com/Heine574/Skylands-WFA/raw/master/Skylands%20Launcher.exe)
+v0.3.1
 
-Download [Standalone Executable](https://github.com/Heine574/Skylands-WFA/raw/master/builds/Skylands%200.1.8.exe)
+Download [Standalone Executable](https://github.com/kjniemela/Skylands-WFA/raw/master/builds/Skylands%200.3.1.exe) (For Windows)
