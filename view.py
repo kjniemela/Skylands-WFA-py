@@ -1,4 +1,5 @@
 from utils import *
+from config import config
 from timer import timers
 from window import controller
 from game import game_manager
@@ -23,6 +24,9 @@ class View:
         return win
 
     def handle_keypress(self, key):
+        pass
+
+    def handle_key_release(self, key):
         pass
 
     def handle_click(self, mouseX, mouseY, button):
@@ -151,24 +155,19 @@ class CutSceneView(View):
 
     def start(self):
         cutscene = game_manager.get_cutscene()
-        if cutscene != None:
+        if cutscene != None and config["enableCutscenes"]:
             f = open(resource_path("cutscenes/%s.txt" % (cutscene)))
             data = f.read().split("\n")
             f.close()
             self.instructions = [i.split(" ") for i in data]
             self.run_cutscene()
         else:
-            timers.set_timeout(
-                lambda:
-                    self.next()
-                , 2000
-            )
+            self.next()
 
     def run_cutscene(self):
         while len(self.instructions) > 0:
             line = self.instructions[0]
             del self.instructions[0]
-            print(line)
             if line[0] == "texture":
                 self.textures[line[1]] = controller.load_texture("assets/%s" % (line[2]))
             elif line[0] == "music":
@@ -209,6 +208,31 @@ class CutSceneView(View):
         for data in self.blits:
             win.blit(self.textures[data[0]], data[1])
 
+class GameView(View):
+    def __init__(self):
+        super().__init__()
+
+    def start(self):
+        pass
+
+    def render(self):
+        win = controller.win
+
+        win.fill((240, 240, 255))
+        game_manager.render()
+
+    def handle_keypress(self, key):
+        game_manager.handle_keypress(key)
+
+    def handle_key_release(self, key):
+        game_manager.handle_key_release(key)
+
+    def handle_click(self, mouseX, mouseY, button):
+        game_manager.handle_click(mouseX, mouseY, button)
+
+    def handle_music_end(self):
+        pass
+
 
 class ViewController:
     def __init__(self):
@@ -216,6 +240,7 @@ class ViewController:
             "intro": IntroView(),
             "main_menu": MainMenuView(),
             "cutscene": CutSceneView(),
+            "game": GameView(),
         }
         self.cur_view = None
     
@@ -227,6 +252,8 @@ class ViewController:
         if self.cur_view != None:
             if event.type == pygame.KEYDOWN:
                 self.cur_view.handle_keypress(event.key)
+            elif event.type == pygame.KEYUP:
+                self.cur_view.handle_key_release(event.key)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 ## Use controller.mouse_pos instead of event.pos to ensure correct scaling
                 self.cur_view.handle_click(*controller.mouse_pos, event.button)

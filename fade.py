@@ -1,3 +1,5 @@
+from config import config
+
 class Fade:
     def __init__(self, fadeWhite, fadeBlack):
         self.fadeWhite = fadeWhite
@@ -9,17 +11,23 @@ class Fade:
         self.on_complete = None
         self.fading = True
     def fade_white(self, speed, on_complete):
-        self.color = "white"
-        self.speed = speed
-        self.on_complete = on_complete
-        self.active = True
-        self.fading = True
+        if config["enableFade"]:
+            self.color = "white"
+            self.speed = speed
+            self.on_complete = on_complete
+            self.active = True
+            self.fading = True
+        else:
+            on_complete()
     def fade_black(self, speed, on_complete):
-        self.color = "black"
-        self.speed = speed
-        self.on_complete = on_complete
-        self.active = True
-        self.fading = True
+        if config["enableFade"]:
+            self.color = "black"
+            self.speed = speed
+            self.on_complete = on_complete
+            self.active = True
+            self.fading = True
+        else:
+            on_complete()
     def draw_static(self, win, alpha):
         if self.color == "white":
             self.fadeWhite.set_alpha(alpha)

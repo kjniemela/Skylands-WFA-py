@@ -1,4 +1,5 @@
 from utils import *
+from config import config
 from window import controller
 
 class Level:
@@ -16,23 +17,189 @@ class Level:
         self.data = {}
 
         self.sounds = sounds
-
         self.textures = {}
 
         self.cutscene = None
+        self.level_name = lvl_file
 
         self.player = player
+
+        self.gravity = 0.5
 
         f = open(resource_path("levels/%s.txt" % (lvl_file)))
         data = f.read().split("\n")
         f.close()
         data = [i.split(" ") for i in data]
         for line in data:
-            print(line)
             if line[0] == "cutscene":
                 self.cutscene = line[1]
             elif line[0] == "texture":
                 self.textures[line[1]] = controller.load_texture("assets/%s" % (line[2]))
             elif line[0] == "music":
                 controller.sound_ctrl.load_music("assets/%s" % (' '.join(line[2:])))
+            elif line[0] == 'plat':
+                self.platforms.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
+                if len(line) > 7:
+                    self.controls[line[7]] = self.platforms[-1]
+            elif line[0] == 'platc':
+                self.platforms.append(Platform(line[1], int(line[2])+(int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
+                if len(line) > 7:
+                    self.controls[line[7]] = self.platforms[-1]
+            elif line[0] == 'overlay':
+                self.overlays.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+            elif line[0] == 'backg':
+                self.background.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+            elif line[0] == 'backdr':
+                self.backdrop.append(((int(line[1]), int(line[2]), int(line[3])), (int(line[4]), int(line[5]), int(line[6]), int(line[7]))))
+            elif line[0] == 'entity':
+                self.entities.append(self.entityTypes[line[1]](self, int(line[2]), int(line[3])))
+                if len(line) > 4:
+                    self.controls[line[4]] = self.entities[-1]
+            elif line[0] == 'spawn':
+                self.player.set_spawn(int(line[1]), int(line[2]))
 
+    def tick(self, level):
+        pass
+
+    def draw(self, camX, camY):
+        self.tick(self)
+
+        win = controller.win
+        mouseX, mouseY = controller.mouse_pos
+        winW, winH = controller.win_size
+
+        for backdr in self.backdrop:
+            if distance(self.player.x, self.player.y, backdr[1][0], backdr[1][1]) < max(backdr[1][2]/2, backdr[1][3]/2)+240:
+                pygame.draw.rect(win, backdr[0], (backdr[1][0]-camX-backdr[1][2]/2, -(backdr[1][1]-camY)-backdr[1][3]/2, *backdr[1][2:]))
+        for backg in self.background:
+            if distance(self.player.x, self.player.y, backg.x, backg.y) < max(backg.w/2, backg.h/2)+400:
+                if backg.d == 0:
+                    win.blit(self.textures[backg.texture], (backg.x-(backg.w/2)-camX, -(backg.y+(backg.h/2)-camY)))
+                else:
+                    blitRotateCenter(win, self.textures[backg.texture], backg.d, (backg.x-(backg.w/2),-(backg.y+(backg.h/2))), (camX,camY))
+        for platform in self.platforms:
+            if platform.visible:
+                if distance(self.player.x, self.player.y, platform.x, platform.y) < max(platform.w/2, platform.h/2)+240:
+                    if platform.d == 0:
+                        win.blit(self.textures[platform.texture], (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
+                    else:
+                        blitRotateCenter(win, self.textures[platform.texture], platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
+            elif config["debug"]:
+                if platform.d == 0:
+                        pygame.draw.rect(win, (0, 0, 0),
+                                     (platform.x-camX-platform.w/2,
+                                      -(platform.y-camY)-platform.h/2,
+                                      platform.w, platform.h))
+                else:     
+                    x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+                    y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+                    x2 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
+                    y2 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+                    
+                    x3 = platform.x-((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
+                    y3 = platform.y-((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
+                    x4 = platform.x+((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
+                    y4 = platform.y-((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+                    pygame.draw.polygon(win, (0, 0, 0), [
+                        (x1-camX, -(y1-camY)),
+                        (x2-camX, -(y2-camY)),
+                        (x4-camX, -(y4-camY)),
+                        (x3-camX, -(y3-camY)),
+                        ])
+        for entity in self.entities:
+            if entity.tick():
+                entity.draw(camX, camY, win, mouseX, mouseY, winW, winH)
+            else:
+                del self.entities[self.entities.index(entity)]
+        for projectile in self.projectiles:
+            if projectile.tick() and not projectile.get_touching(self):#(111, 255, 239)
+                pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
+                # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
+            else:
+                del self.projectiles[self.projectiles.index(projectile)]
+    
+    def draw_overlays(self, camX, camY):
+
+        win = controller.win
+        mouseX, mouseY = controller.mouse_pos
+        winW, winH = controller.win_size
+
+        for overlay in self.overlays:
+            if distance(self.player.x, self.player.y, overlay.x, overlay.y) < max(overlay.w/2, overlay.h/2)+400:
+                if overlay.d == 0:
+                    win.blit(self.textures[overlay.texture], (overlay.x-(overlay.w/2)-camX, -(overlay.y+(overlay.h/2)-camY)))
+                else:
+                    blitRotateCenter(win, self.textures[overlay.texture], overlay.d, (overlay.x-(overlay.w/2),-(overlay.y+(overlay.h/2))), (camX,camY))
+
+
+class Platform:
+    def __init__(self, texture, x, y, w, h, d, visible=True):
+        self.x, self.y, self.w, self.h, self.d, self.visible = x, y, w, h, d, visible
+        if visible == True:
+            self.texture = texture
+        
+    def get_verts(self, camX, camY, b=1):
+        x1 = self.x-((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
+        y1 = self.y+((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d)*b)
+        x2 = self.x+((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
+        y2 = self.y+((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d)*b)
+        
+        x3 = self.x-((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
+        y3 = self.y-((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d))
+        x4 = self.x+((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
+        y4 = self.y-((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d))
+
+        return [
+            (x1, y1),
+            (x2, y2),
+            (x3, y3),
+            (x4, y4)
+            ]
+
+##        return [
+##            (x1-camX, -(y1-camY)),
+##            (x2-camX, -(y2-camY)),
+##            (x3-camX, -(y3-camY)),
+##            (x4-camX, -(y4-camY))
+##            ]
+        
+    def collides_with_line(self, px1, py1, px2, py2):
+        x1 = self.x-((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
+        y1 = self.y+((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
+        x2 = self.x+((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
+        y2 = self.y+((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
+        
+        x3 = self.x-((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
+        y3 = self.y-((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
+        x4 = self.x+((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
+        y4 = self.y-((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
+
+##        blitRotateCenter(win, cursor, 0, (x1-8, -y1-8), (camX,camY))
+##        blitRotateCenter(win, cursor, 0, (x2-8, -y2-8), (camX,camY))
+##        blitRotateCenter(win, cursor, 0, (x3-8, -y3-8), (camX,camY))
+##        blitRotateCenter(win, cursor, 0, (x4-8, -y4-8), (camX,camY))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x1-camX, -(y1-camY)), (x2-camX, -(y2-camY)))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x2-camX, -(y2-camY)), (x4-camX, -(y4-camY)))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x3-camX, -(y3-camY)), (x4-camX, -(y4-camY)))
+##        pygame.draw.aaline(win, (111, 255, 239, 0.5), (x3-camX, -(y3-camY)), (x1-camX, -(y1-camY)))
+        #self.d = (self.d+1)%360
+
+        if line_collision((px1, py1, px2, py2), (x1, y1, x2, y2))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x1, y1, x2, y2)))
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        elif line_collision((px1, py1, px2, py2), (x3, y3, x4, y4))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x3, y3, x4, y4)))
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        elif line_collision((px1, py1, px2, py2), (x2, y2, x4, y4))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x2, y2, x4, y4)))
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        elif line_collision((px1, py1, px2, py2), (x3, y3, x1, y1))[0]:
+            #print(line_collision((px1, py1, px2, py2), (x3, y3, x1, y1)))
+            #pygame.draw.aaline(win, (255, 0, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return True
+        else:
+            #pygame.draw.aaline(win, (0, 255, 0, 0.5), (px1-camX, -(py1-camY)), (px2-camX, -(py2-camY)))
+            return False

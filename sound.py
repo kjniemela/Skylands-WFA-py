@@ -1,12 +1,13 @@
 from utils import *
+from config import config
 
 class SoundController:
     def __init__(self):
         self.sounds = {}
         self.music_vol_multiplier = 1
 
-        self.sound_enabled = True
-        self.music_enabled = False
+        self.sound_enabled = config["enableSound"]
+        self.music_enabled = config["enableMusic"]
 
         pygame.mixer.pre_init(44100, -16, 4, 512)
         pygame.mixer.init() ## Throws pygame.error on failure

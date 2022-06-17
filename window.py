@@ -25,11 +25,8 @@ DISPLAY_WIDTH, DISPLAY_HEIGHT = 480, 360
 
 class WindowController:
     def __init__(self):
-        self.textures = {}
-        self.items = {
-            1: {},
-            -1: {}
-        }
+        self.player_textures = {}
+        self.items = {}
 
         self.mouse_pos = (0, 0)
         self.menu_offsets = (0, 0)
@@ -59,8 +56,9 @@ class WindowController:
     def load_item(self, name, path):
         texture_right = self.load_texture(path)
         texture_left = pygame.transform.flip(texture_right, False, True)
-        self.items[1][name] = texture_right
-        self.items[-1][name] = texture_left
+        self.items[name] = {}
+        self.items[name][1] = texture_right
+        self.items[name][-1] = texture_left
 
     def load_texture(self, path):
         return pygame.image.load(resource_path(path))
@@ -68,9 +66,6 @@ class WindowController:
     def set_version(self, major, minor, patch):
         self.version = major, minor, patch
         pygame.display.set_caption("Skylands %d.%d.%d" % self.version)
-
-    def set_player(self, player):
-        self.player = player
 
     def setup_window(self):
         ## Set up pygame window
@@ -129,6 +124,7 @@ class WindowController:
 
         ## ITEMS
         self.load_item("stb", "assets/STB Mk1.png")
+        self.load_item("GDFSER", "assets/GDFSER.png")
 
         ## Cursor
         self.cursor = self.load_texture("assets/cursor.png")
@@ -138,6 +134,32 @@ class WindowController:
             self.load_texture("assets/fadeWhite.png").convert(),
             self.load_texture("assets/fadeBlack.png").convert()
         )
+
+        ## Player Textures
+        player_walk_frames = [self.load_texture("assets/body_walk%s.png" % frame) for frame in range(1, 9)]
+        player_idle = self.load_texture("assets/body_idle.png")
+        player_sneak = self.load_texture("assets/body_duck.png")
+        player_head = self.load_texture("assets/head.png")
+        player_arm_near = self.load_texture("assets/arm_near.png")
+        player_arm_far = self.load_texture("assets/arm_far.png")
+        player_hand_near = self.load_texture("assets/hand_near.png")
+        player_hand_far = self.load_texture("assets/hand_far.png")
+        self.player_textures = {
+            "walk": {1: player_walk_frames, -1: [pygame.transform.flip(texture, True, False) for texture in player_walk_frames]},
+            "idle": {1: player_idle, -1: pygame.transform.flip(player_idle, True, False)},
+            "sneak": {1: player_sneak, -1: pygame.transform.flip(player_sneak, True, False)},
+            "head": {1: player_head, -1: pygame.transform.flip(player_head, True, False)},
+            "arm_near": {1: player_arm_near, -1: pygame.transform.flip(player_arm_near, True, False)},
+            "arm_far": {1: player_arm_far, -1: pygame.transform.flip(player_arm_far, True, False)},
+            "hand_near": {1: player_hand_near, -1: pygame.transform.flip(player_hand_near, True, False)},
+            "hand_far": {1: player_hand_far, -1: pygame.transform.flip(player_hand_far, True, False)},
+            "power": self.load_texture("assets/power.png"),
+            "health": self.load_texture("assets/health.png"),
+            "gem_icon": [pygame.image.load(resource_path("assets/gem%s.png" % frame)) for frame in range(1, 10)],
+            "directive": self.load_texture("assets/directives/display.png"),
+            "dir_numbers": {str(n): self.load_texture('assets/directives/%s.png' % str(n)) for n in range(10)},
+            "dir_letters": {letter: self.load_texture('assets/directives/%s.png' % letter) for letter in ['A', 'B', 'C', 'D']},
+        }
 
     def setup_fonts(self):
         pygame.font.init()

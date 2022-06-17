@@ -1,14 +1,13 @@
 from utils import *
+from config import config
 
 ## Handle command line args
 ## TODO
 
-## Set Version Constants + Debug Mode Constant
+## Set Version Constants
 VERSION_MAJOR = 0
 VERSION_MINOR = 3
 VERSION_PATCH = 1
-
-DEBUG = True
 
 from window import controller, DISPLAY_WIDTH, DISPLAY_HEIGHT
 controller.set_version(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
@@ -87,7 +86,7 @@ while run:
     controller.render_view(views.cur_view)
 
     ## If in debug mode, show debug data
-    if DEBUG:
+    if config["debug"]:
         pygame.display.set_caption(
             "Skylands %d.%d.%d - Mouse Pos: %d / %d"
             % (
