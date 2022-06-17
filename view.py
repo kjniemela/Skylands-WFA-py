@@ -144,10 +144,19 @@ class CutSceneView(View):
     def __init__(self):
         super().__init__()
 
+        self.instructions = []
+        self.textures = {}
+        self.blits = []
+        self.sounds = []
+
     def start(self):
         cutscene = game_manager.get_cutscene()
         if cutscene != None:
-            self.next()
+            f = open(resource_path("cutscenes/%s.txt" % (cutscene)))
+            data = f.read().split("\n")
+            f.close()
+            self.instructions = [i.split(" ") for i in data]
+            self.run_cutscene()
         else:
             timers.set_timeout(
                 lambda:
@@ -155,7 +164,38 @@ class CutSceneView(View):
                 , 2000
             )
 
+    def run_cutscene(self):
+        while len(self.instructions) > 0:
+            line = self.instructions[0]
+            del self.instructions[0]
+            print(line)
+            if line[0] == "texture":
+                self.textures[line[1]] = controller.load_texture("assets/%s" % (line[2]))
+            elif line[0] == "music":
+                print("assets/%s" % (' '.join(line[2:])))
+                controller.sound_ctrl.load_music("assets/%s" % (' '.join(line[2:])))
+                controller.sound_ctrl.play_music()
+            elif line[0] == "sound":
+                print("assets/%s" % (' '.join(line[2:])))
+                sound = controller.sound_ctrl.load_sound("assets/%s" % (' '.join(line[2:])))
+                controller.sound_ctrl.play_sound(sound)
+                self.sounds.append(sound)
+            elif line[0] == "blit":
+                self.blits.append((line[1], (int(line[2]), int(line[3]))))
+            elif line[0] == "wait":
+                timers.set_timeout(
+                    lambda:
+                        self.run_cutscene()
+                    , int(line[1])
+                )
+                return
+
+        self.next()
+
     def next(self):
+        for sound in self.sounds:
+            controller.sound_ctrl.unload_sound(sound)
+
         def after_fade():
             views.set_view("game")
         
@@ -165,6 +205,9 @@ class CutSceneView(View):
         win = super().render()
 
         win.fill((0, 0, 0))
+
+        for data in self.blits:
+            win.blit(self.textures[data[0]], data[1])
 
 
 class ViewController:

@@ -6,7 +6,7 @@ class SoundController:
         self.music_vol_multiplier = 1
 
         self.sound_enabled = True
-        self.music_enabled = True
+        self.music_enabled = False
 
         pygame.mixer.pre_init(44100, -16, 4, 512)
         pygame.mixer.init() ## Throws pygame.error on failure
@@ -25,6 +25,9 @@ class SoundController:
         pygame.mixer.music.load(resource_path(path))
         self.music_vol_multiplier = vol_multiplier
 
+    def unload_sound(self, sound_id):
+        del self.sounds[sound_id]
+
     # def update_volumes(self):
     #     pygame.mixer.music.set_volume(self.)
 
@@ -38,6 +41,8 @@ class SoundController:
             pygame.mixer.music.set_volume(self.music_vol * self.music_vol_multiplier)
             pygame.mixer.music.set_endevent(MUSIC_END)
             pygame.mixer.music.play(loops, start, fade_ms)
+        else:
+            pygame.event.post(pygame.event.Event(MUSIC_END))
 
     def stop_sound(self, sound_id, fadeout=None):
         if fadeout != None:
@@ -45,7 +50,7 @@ class SoundController:
         else:
             self.sounds[sound_id][0].stop()
 
-    def stop_music(self, music_id, fadeout=None):
+    def stop_music(self, fadeout=None):
         pygame.mixer.music.set_endevent()
         if fadeout != None:
             pygame.mixer.music.fadeout(fadeout)

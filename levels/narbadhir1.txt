@@ -1,8 +1,8 @@
-texture jungl jungl.png
-texture jungle2 jungle2.png
-#cutscene reboot
-#music Substantial_Situation assets/music/Substantial Situation-Extended.ogg
-spawn 0 -100
+texture jungl levels/narbadhir1/jungl.png
+texture jungle2 levels/narbadhir1/jungle2.png
+cutscene reboot
+music Substantial_Situation music/Substantial Situation-Extended.ogg
+#spawn 0 -100
 #entity shoaldier 200 -75
 backg jungle2 0 0 1067 527 0
 platc none -600 -272 1600 20 0

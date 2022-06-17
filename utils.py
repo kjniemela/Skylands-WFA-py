@@ -16,7 +16,7 @@ except ModuleNotFoundError:
         exit()
 
 ## Custom Events
-MUSIC_END = pygame.USEREVENT + 1
+MUSIC_END = pygame.event.custom_type()
 
 def resource_path(relative_path):
     """ Ge absolute path to resource, works for dev and for PyInstaller """
