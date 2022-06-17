@@ -35,3 +35,15 @@ class SoundController:
     def play_music(self, music_id):
         if self.music_enabled:
             return self.tracks[music_id][0].play()
+
+    def stop_sound(self, sound_id, fadeout=None):
+        if fadeout != None:
+            self.sounds[sound_id][0].fadeout(fadeout)
+        else:
+            self.sounds[sound_id][0].stop()
+
+    def stop_music(self, music_id, fadeout=None):
+        if fadeout != None:
+            self.tracks[music_id][0].fadeout(fadeout)
+        else:
+            self.tracks[music_id][0].stop()

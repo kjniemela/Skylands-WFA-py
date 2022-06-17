@@ -34,3 +34,4 @@ class TimerController:
                 del self.events[i]
             i += 1
             
+timers = TimerController()

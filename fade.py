@@ -6,18 +6,18 @@ class Fade:
         self.active = False
         self.color = "black"
         self.speed = 1
-        self.next_state = ""
+        self.on_complete = None
         self.fading = True
-    def fade_white(self, speed, next_state):
+    def fade_white(self, speed, on_complete):
         self.color = "white"
         self.speed = speed
-        self.next_state = next_state
+        self.on_complete = on_complete
         self.active = True
         self.fading = True
-    def fade_black(self, speed, next_state):
+    def fade_black(self, speed, on_complete):
         self.color = "black"
         self.speed = speed
-        self.next_state = next_state
+        self.on_complete = on_complete
         self.active = True
         self.fading = True
     def draw_static(self, win, alpha):
@@ -42,7 +42,8 @@ class Fade:
                     self.alpha += self.speed
                 else:
                     self.fading = False
-                    gameState = self.next_state
+                    if self.on_complete != None:
+                        self.on_complete()
             else:
                 if self.alpha > 0:
                     self.alpha -= self.speed

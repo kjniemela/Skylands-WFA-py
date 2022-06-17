@@ -93,7 +93,6 @@ class WindowController:
             self.sound_ctrl = None
         
         if self.sound_ctrl:
-            ## TODO OBS: these should indicate to the controller that they are music files and not sound effects!
             self.menu_music_start = self.sound_ctrl.load_music("assets/music/Skylands Theme Start.ogg")
             self.menu_music = self.sound_ctrl.load_music("assets/music/Skylands Theme Loop.ogg")
 
@@ -118,7 +117,7 @@ class WindowController:
     def setup_textures(self):
         self.play_text = self.load_texture("assets/play.png")
         self.sky = pygame.transform.scale( self.load_texture('assets/sky.png').convert_alpha() , (480, 360))
-        self.menu_island = pygame.transform.scale( self.load_texture('assets/menu.png').convert() , (480, 360))
+        self.menu_background = pygame.transform.scale( self.load_texture('assets/menu.png').convert() , (480, 360))
 
         ## PLAY MENU
         self.play_menu = self.load_texture("assets/playMenu.png")
@@ -176,3 +175,5 @@ class WindowController:
             ),
         )
         pygame.display.update()
+
+controller = WindowController()

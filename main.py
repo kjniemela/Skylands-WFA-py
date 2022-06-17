@@ -1,37 +1,31 @@
 from utils import *
-from window import WindowController, DISPLAY_WIDTH, DISPLAY_HEIGHT
 
 ## Handle command line args
 ## TODO
 
-## Set Version Constants
+## Set Version Constants + Debug Mode Constant
 VERSION_MAJOR = 0
 VERSION_MINOR = 3
 VERSION_PATCH = 1
 
-controller = WindowController()
+DEBUG = True
+
+from window import controller, DISPLAY_WIDTH, DISPLAY_HEIGHT
 controller.set_version(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 
+from timer import timers
+
 ## Create Views
-from view import ViewController
-views = ViewController(controller)
+from view import views
 
 ## Start intro music while loading to save time
 intro_music_channel = controller.sound_ctrl.play_music(controller.menu_music_start)
 
-from timer import TimerController
-timers = TimerController()
-
-timers.set_timeout(
-    lambda:
-        print("test")
-    , 2000
-)
-
 timers.set_condition(
     lambda:
         views.set_view("main_menu")
-    , lambda:
+    ,
+    lambda:
         intro_music_channel == None or not intro_music_channel.get_busy()
 )
 
@@ -90,3 +84,13 @@ while run:
 
     ## Render current view
     controller.render_view(views.cur_view)
+
+    ## If in debug mode, show debug data
+    if DEBUG:
+        pygame.display.set_caption(
+            "Skylands %d.%d.%d - Mouse Pos: %d / %d"
+            % (
+                VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
+                *controller.mouse_pos
+            )
+        )
