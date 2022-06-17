@@ -2,22 +2,22 @@ from utils import *
 from sound import SoundController
 from fade import Fade
 
-ascii_icon = """                   
-         %%%%@  *@@@            
-      *##################       
-    ######################(     
+ascii_icon = """
+         %%%%@  *@@@
+      *##################
+    ######################(
  ###########################@###
   ,,,,,,,##########,,,*,,,,,&,,#
-   ,,,,,,,,,,,,#,,,,,,,,,,,,%,, 
-     ,,,,,,,,,,,,,,,,,,,,,,,%,  
-      ,,,,,,,,,,,,,,,,,,,,,,#   
-      .,,,,,,,,,,,,,,,,,,,,,(   
-        ,,,,,,,,,,,,,,,,,,, @   
-           ,,,,,,,,,,,,,,.  @   
-            .,  ,,,,,,,,,   @   
-                ,,,,,,,,    @   
-                  ,,,,          
-                   , .     
+   ,,,,,,,,,,,,#,,,,,,,,,,,,%,,
+     ,,,,,,,,,,,,,,,,,,,,,,,%,
+      ,,,,,,,,,,,,,,,,,,,,,,#
+      .,,,,,,,,,,,,,,,,,,,,,(
+        ,,,,,,,,,,,,,,,,,,, @
+           ,,,,,,,,,,,,,,.  @
+            .,  ,,,,,,,,,   @
+                ,,,,,,,,    @
+                  ,,,,
+                   , .
 """
 
 ## Constants
@@ -81,11 +81,7 @@ class WindowController:
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
 
     def setup_sound(self):
-        ## Try to create sound controller
-        try:
-            self.sound_ctrl = SoundController()
-        except pygame.error:
-            self.sound_ctrl = None ## This should never be none... TODO
+        self.sound_ctrl = SoundController()
 
         self.sounds = {
             "player_shoot": self.sound_ctrl.load_sound("assets/sounds/GDFSER1.wav"),
@@ -186,7 +182,7 @@ class WindowController:
         # pygame.transform.scale(self.win, self.win_size, self.win2)
         self.draw(self.win_size, self.menu_offsets)
         self.window.blit(
-            self.win2, 
+            self.win2,
             (
                 self.menu_offsets[0] - ( self.win_size[0] * ( 0.5 * (zoom - 1))),
                 self.menu_offsets[1] - ( self.win_size[0] * ( 0.5 * (zoom - 1))),

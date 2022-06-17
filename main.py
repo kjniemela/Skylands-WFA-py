@@ -74,7 +74,7 @@ while run:
             else:
                 controller.win_size = event.w, int(DISPLAY_HEIGHT * (event.w / DISPLAY_WIDTH))
                 controller.menu_offsets = 0, int(event.h / 2) - int(DISPLAY_HEIGHT * (event.w / DISPLAY_WIDTH) / 2)
-            
+
             controller.win2 = pygame.Surface(controller.win_size)
         else:
             views.handle_event(event)
@@ -91,6 +91,6 @@ while run:
             "Skylands %d.%d.%d - Mouse Pos: %d / %d"
             % (
                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
-                *controller.mouse_pos
+                controller.mouse_pos[0], controller.mouse_pos[1]
             )
         )

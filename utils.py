@@ -4,6 +4,15 @@ import math
 from time import time
 from random import randint
 
+if sys.version_info[0] == 2:
+    print("Fatal Error: Skylands WFA is not compatible with python %i.%i.%i. Please use python 3." % (
+        sys.version_info[0],
+        sys.version_info[1],
+        sys.version_info[2],
+    ))
+    raw_input("Press ENTER to exit.")
+    sys.exit()
+
 try:
     import pygame
 except ModuleNotFoundError:
@@ -57,7 +66,7 @@ def extend_line_up(x1, y1, x2, y2, y):
     else:
         s = (x2-x1)/(y2-y1)
         return (x1, y, x2+((y-y2)*s), y2)
-    
+
 def extend_line_down(x1, y1, x2, y2, y):
     if y1 > y2:
         s = (x1-x2)/(y2-y1)
