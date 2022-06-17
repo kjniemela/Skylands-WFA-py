@@ -17,7 +17,7 @@ try:
     import pygame
 except ModuleNotFoundError:
     print("ModuleNotFoundError: Pygame module could not be found.")
-    if input("Install pygame [y/n]? ").lower() == "y":
+    if input("Install pygame [Y/n]? ").lower() == "y":
         import subprocess
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
         import pygame
@@ -34,8 +34,6 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
-
-    print(base_path)
 
     return os.path.join(base_path, relative_path)
 

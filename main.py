@@ -1,13 +1,54 @@
 from utils import *
 from config import config
 
-## Handle command line args
-## TODO
-
 ## Set Version Constants
 VERSION_MAJOR = 0
 VERSION_MINOR = 3
 VERSION_PATCH = 1
+
+## Handle command line args
+i = 0
+while i < len(sys.argv):
+    try:
+        flag = sys.argv[i]
+        if flag == "-h":
+            print("Skylands %i.%i.%i" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
+            print("usage: python main.py")
+            print("Options and arguments:")
+            print("  -h              print this message and exit")
+            print("  -s [save_file]  load game state from the provided file")
+            print("  -m [Y/n]        override the config.enableMusic option")
+            print("  -a [Y/n]        override the config.enableSound option")
+            print("  -d              launch Skylands in debug mode")
+            print("  -D              debug mode + disable sounds / transitions")
+
+            sys.exit()
+        elif flag == "-s":
+            i += 1
+            arg = sys.argv[i]
+            if input("Loading games from file is not fully supported yet! Continue anyway? [Y/n] ").lower() != "y":
+                sys.exit()
+        elif flag == "-m":
+            i += 1
+            arg = sys.argv[i]
+            config["enableMusic"] = True if arg.lower() == "y" else False
+        elif flag == "-a":
+            i += 1
+            arg = sys.argv[i]
+            config["enableSound"] = True if arg.lower() == "y" else False
+        elif flag == "-d":
+            config["debug"] = True
+        elif flag == "-D":
+            config["debug"] = True
+            config["enableMusic"] = False
+            config["enableSound"] = False
+            config["enableCutscenes"] = False
+            config["enableFade"] = False
+
+        i += 1
+    except IndexError:
+        print("Malformed or missing argument for flag \"%s\". Exiting." % (flag))
+        sys.exit()
 
 from window import controller, DISPLAY_WIDTH, DISPLAY_HEIGHT
 controller.set_version(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
