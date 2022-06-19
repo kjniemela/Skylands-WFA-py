@@ -95,11 +95,11 @@ class Level:
                         # )
                         if (p - intersection_point).normalized() @ surface.normal < 0:
                             correction_line = (p, p + (surface.normal * (q - p).magnitude()))
-                            new_correction_vec = line_collision(correction_line, surface.line)[1] - p
+                            new_correction_vec = line_collision(correction_line, surface.line, seg=False)[1] - p
                             
                         else:
                             correction_line = (q, q + (surface.normal * (q - p).magnitude()))
-                            new_correction_vec = line_collision(correction_line, surface.line)[1] - q
+                            new_correction_vec = line_collision(correction_line, surface.line, seg=False)[1] - q
 
                         if new_correction_vec.magnitude() > correction_vec.magnitude():
                             correction_vec = new_correction_vec
@@ -205,6 +205,8 @@ class Surface:
         self.normal = self.dst.perpendicular().normalized()
         print("dst:", self.dst)
         print("normal:", self.normal)
+
+        print(self.normal @ Vec(0, 1))
 
 
 class Platform:
