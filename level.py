@@ -78,12 +78,12 @@ class Level:
             if not entity.update():
                 del self.entities[self.entities.index(entity)]
                 continue
-     
+
             for surface in self.surfaces:
                 verticies = entity.get_hitbox()
                 correction_vec = Vec(0, 0)
                 collided = False
-                        
+
                 for i in range(len(verticies)):
                     p = verticies[i]
                     q = verticies[(i+1) % len(verticies)]
@@ -146,7 +146,7 @@ class Level:
                         win.blit(self.textures[platform.texture], (platform.x-(platform.w/2)-camX, -(platform.y+(platform.h/2)-camY)))
                     else:
                         blitRotateCenter(win, self.textures[platform.texture], platform.d, (platform.x-(platform.w/2),-(platform.y+(platform.h/2))), (camX,camY))
-    
+
         for entity in self.entities:
             entity.render(camera_pos)
 
@@ -173,10 +173,12 @@ class Surface:
         self.line = (p, q)
         self.dst = (q - p)
         self.normal = self.dst.perpendicular().normalized()
+
+        if self.normal @ Vec(0, 1) >= 1 - math.sin(math.radians(0.25)):
+            self.normal = Vec(0, 1)
+
         print("dst:", self.dst)
         print("normal:", self.normal)
-
-        print(self.normal @ Vec(0, 1))
 
 
 class Platform:
@@ -209,13 +211,13 @@ class Platform:
 ##            (x3-camX, -(y3-camY)),
 ##            (x4-camX, -(y4-camY))
 ##            ]
-        
+
     def collides_with_line(self, px1, py1, px2, py2):
         x1 = self.x-((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y1 = self.y+((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
         x2 = self.x+((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y2 = self.y+((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
-        
+
         x3 = self.x-((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
         y3 = self.y-((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
         x4 = self.x+((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
