@@ -1,10 +1,11 @@
+from entity.entity import Entity
 from utils import *
 from config import config
+from vec import Vec
 from window import controller
 
 class Level:
     def __init__(self, lvl_file, player, sounds):
-
         self.platforms = []
         self.overlays = []
         self.background = []
@@ -12,6 +13,8 @@ class Level:
         self.projectiles = []
         self.entities = []
         self.item_entities = []
+
+        self.surfaces = []
 
         self.controls = {}
         self.data = {}
@@ -25,6 +28,10 @@ class Level:
         self.player = player
 
         self.gravity = 0.5
+
+        self.entity_type_map = {
+            "shoaldier": Entity ## TODO - give this its own class
+        }
 
         f = open(resource_path("levels/%s.txt" % (lvl_file)))
         data = f.read().split("\n")
@@ -45,6 +52,8 @@ class Level:
                 self.platforms.append(Platform(line[1], int(line[2])+(int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
                 if len(line) > 7:
                     self.controls[line[7]] = self.platforms[-1]
+            elif line[0] == 'cline':
+                self.surfaces.append(Surface(Vec(int(line[1]), int(line[2])), Vec(int(line[3]), int(line[4]))))
             elif line[0] == 'overlay':
                 self.overlays.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
             elif line[0] == 'backg':
@@ -52,18 +61,32 @@ class Level:
             elif line[0] == 'backdr':
                 self.backdrop.append(((int(line[1]), int(line[2]), int(line[3])), (int(line[4]), int(line[5]), int(line[6]), int(line[7]))))
             elif line[0] == 'entity':
-                self.entities.append(self.entityTypes[line[1]](self, int(line[2]), int(line[3])))
+                self.entities.append(self.entity_type_map[line[1]](Vec(int(line[2]), int(line[3]))))
                 if len(line) > 4:
                     self.controls[line[4]] = self.entities[-1]
             elif line[0] == 'spawn':
                 self.player.set_spawn(int(line[1]), int(line[2]))
 
-    def tick(self, level):
-        pass
+    def update(self):
+        for entity in self.entities:
+            if not entity.update():
+                del self.entities[self.entities.index(entity)]
+                continue
+     
+            for platform in self.platforms:
+                pass
+                ## collision logic here
+
+        for projectile in self.projectiles:
+            if not projectile.update(): ## TODO or projectile.get_touching(self):
+                del self.projectiles[self.projectiles.index(projectile)]
+                continue
+
+            for platform in self.platforms:
+                pass
+                ## collision logic here
 
     def draw(self, camX, camY):
-        self.tick(self)
-
         win = controller.win
         mouseX, mouseY = controller.mouse_pos
         winW, winH = controller.win_size
@@ -71,12 +94,14 @@ class Level:
         for backdr in self.backdrop:
             if distance(self.player.x, self.player.y, backdr[1][0], backdr[1][1]) < max(backdr[1][2]/2, backdr[1][3]/2)+240:
                 pygame.draw.rect(win, backdr[0], (backdr[1][0]-camX-backdr[1][2]/2, -(backdr[1][1]-camY)-backdr[1][3]/2, *backdr[1][2:]))
+
         for backg in self.background:
             if distance(self.player.x, self.player.y, backg.x, backg.y) < max(backg.w/2, backg.h/2)+400:
                 if backg.d == 0:
                     win.blit(self.textures[backg.texture], (backg.x-(backg.w/2)-camX, -(backg.y+(backg.h/2)-camY)))
                 else:
                     blitRotateCenter(win, self.textures[backg.texture], backg.d, (backg.x-(backg.w/2),-(backg.y+(backg.h/2))), (camX,camY))
+
         for platform in self.platforms:
             if platform.visible:
                 if distance(self.player.x, self.player.y, platform.x, platform.y) < max(platform.w/2, platform.h/2)+240:
@@ -106,18 +131,19 @@ class Level:
                         (x4-camX, -(y4-camY)),
                         (x3-camX, -(y3-camY)),
                         ])
-        for entity in self.entities:
-            if entity.tick():
-                entity.draw(camX, camY, win, mouseX, mouseY, winW, winH)
-            else:
-                del self.entities[self.entities.index(entity)]
-        for projectile in self.projectiles:
-            if projectile.tick() and not projectile.get_touching(self):#(111, 255, 239)
-                pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
-                # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
-            else:
-                del self.projectiles[self.projectiles.index(projectile)]
     
+        for entity in self.entities:
+            entity.render(camX, camY)
+
+        for projectile in self.projectiles:
+            pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
+            # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
+
+        ## TODO - debug rendering
+        if config["debug"]:
+            for surface in self.surfaces:
+                pygame.draw.line(win, (0, 0, 0), (surface.p-Vec(camX, camY)).screen_coords(), (surface.q-Vec(camX, camY)).screen_coords(), 5)
+
     def draw_overlays(self, camX, camY):
 
         win = controller.win
@@ -132,22 +158,32 @@ class Level:
                     blitRotateCenter(win, self.textures[overlay.texture], overlay.d, (overlay.x-(overlay.w/2),-(overlay.y+(overlay.h/2))), (camX,camY))
 
 
+class Surface:
+    def __init__(self, p, q):
+        self.p = p
+        self.q = q
+        self.line = (q - p)
+        self.normal = self.line.perpendicular().normalized()
+        print("line:", self.line)
+        print("normal:", self.normal)
+
+
 class Platform:
     def __init__(self, texture, x, y, w, h, d, visible=True):
         self.x, self.y, self.w, self.h, self.d, self.visible = x, y, w, h, d, visible
         if visible == True:
             self.texture = texture
-        
+
     def get_verts(self, camX, camY, b=1):
-        x1 = self.x-((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
-        y1 = self.y+((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d)*b)
-        x2 = self.x+((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
-        y2 = self.y+((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d)*b)
-        
-        x3 = self.x-((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
-        y3 = self.y-((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d))
-        x4 = self.x+((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
-        y4 = self.y-((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d))
+        x1 = self.x - ((self.w/2) * Cos(-self.d)*b) + ((self.h/2) * Sin(-self.d)*b)
+        y1 = self.y + ((self.h/2) * Cos(-self.d)*b) + ((self.w/2) * Sin(-self.d)*b)
+        x2 = self.x + ((self.w/2) * Cos(-self.d)*b) + ((self.h/2) * Sin(-self.d)*b)
+        y2 = self.y + ((self.h/2) * Cos(-self.d)*b) - ((self.w/2) * Sin(-self.d)*b)
+
+        x3 = self.x - ((self.w/2) * Cos(-self.d)*b) - ((self.h/2) * Sin(-self.d))
+        y3 = self.y - ((self.h/2) * Cos(-self.d)*b) + ((self.w/2) * Sin(-self.d))
+        x4 = self.x + ((self.w/2) * Cos(-self.d)*b) - ((self.h/2) * Sin(-self.d))
+        y4 = self.y - ((self.h/2) * Cos(-self.d)*b) - ((self.w/2) * Sin(-self.d))
 
         return [
             (x1, y1),

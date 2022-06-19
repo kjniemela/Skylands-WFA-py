@@ -74,6 +74,10 @@ def extend_line_down(x1, y1, x2, y2, y):
         return (x1, y, x2+((y-y2)*s), y2)
 
 def line_collision(line1, line2):
+    """
+    line1 = (x1, y1, x2, y2)
+    line2 = (x3, y3, x4, y4)
+    """
     x1, y1, x2, y2 = line1
     x3, y3, x4, y4 = line2
     try:

@@ -1,0 +1,5 @@
+texture jungle2 levels/narbadhir1/jungle2.png
+backg jungle2 0 0 1067 527 0
+#spawn 0 -100
+cline -100 -200 100 -200
+entity shoaldier 0 -120
