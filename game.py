@@ -52,7 +52,7 @@ class AchievementRenderer:
         if not self.achievements_got["ANewStart"]:
             self.trigger("ANewStart")
         if not self.achievements_got["Dropout"]:
-            if level.player.y < -1000:
+            if level.player.pos.y < -1000:
                 self.trigger("Dropout")
         if not self.is_displaying:
             if len(self.queue) > 0:
@@ -89,7 +89,7 @@ class GameManager:
         self.level = None
         self.achievement_handler = AchievementRenderer()
         self.camera_pos = Vec(-240, 0)
-        self.player = Player(0, 0)
+        self.player = Player(Vec(0, 0))
         self.previous_player_pos = (0, 0)
 
         self.controls = {
@@ -136,8 +136,8 @@ class GameManager:
         win = controller.win
         player_textures = controller.player_textures
 
-        win.blit(player_textures["health"], (435 - (142 * (self.player.hp / self.player.maxHp)), 28))
-        win.blit(player_textures["power"], (443 - (110 * (self.player.power / self.player.maxPower)), 40))     
+        win.blit(player_textures["health"], (435 - (142 * (self.player.hp / self.player.max_hp)), 28))
+        win.blit(player_textures["power"], (443 - (110 * (self.player.power / self.player.max_power)), 40))     
         win.blit(player_textures["gem_icon"][int((time() * 16) % 9)], (10, 10))
         win.blit(controller.fonts["gemCount"].render('x%d' % (self.player.gems), True, (91, 183, 0)) , (50, 22))
         if self.player.quest != "":
@@ -161,34 +161,29 @@ class GameManager:
     def handle_click(self, mouseX, mouseY, button):
         pass
 
-    def update_player(self):
+    def player_controls(self):
+        ## TODO - much of this should be shared by all humanoid entities...
+        ## TODO - properly convert this to use vectors
+
         player = self.player
         controls = self.controls
 
-        previous_player_pos = (player.x, player.y)
-
-        player.x += player.xVel
-        player.y += player.yVel
-
-        player.get_touching(self.level, self.controls, *previous_player_pos)
+        previous_player_pos = Vec(*player.pos)
 
         if not (player.walljump and player.wallJumpTime < 5):
             if controls["left"]:
-                if player.xVel > -3:
-                    player.xVel -= 0.5 if player.sneaking else 2
-                    player.xVel *= 0.6
-                else:
-                    pass#player.xVel = -3
-                player.walkFrame += player.facing*-1
-                #player.facing = -1
+                if player.vel.x > -3:
+                    player.vel.x -= 0.5 if player.view.states["sneaking"] else 2
+                    player.vel.x *= 0.6
+
+                player.view.walk_frame += player.view.facing * -1
+
             if controls["right"]:
-                if player.xVel < 3:
-                    player.xVel += 0.5 if player.sneaking else 2
-                    player.xVel *= 0.6
-                else:
-                    pass#player.xVel = 3
-                player.walkFrame += player.facing
-                #player.facing = 1
+                if player.vel.x < 3:
+                    player.vel.x += 0.5 if player.view.states["sneaking"] else 2
+                    player.vel.x *= 0.6
+                
+                player.view.walk_frame += player.view.facing
 
         if player.walljump and not player.falling:
             player.walljump = False
@@ -197,11 +192,11 @@ class GameManager:
             player.wallJumpTime += 1
 
         if not player.walljump and not (controls["right"] or controls["left"]):
-            player.xVel *= 0.6
-        if abs(player.xVel) < 0.01:
-            player.xVel = 0
+            player.vel.x *= 0.6
+        if abs(player.vel.x) < 0.01:
+            player.vel.x = 0
         if player.falling and not False: ## FLIGHT CHECK HERE TODO ??
-            player.yVel -= self.level.gravity
+            player.vel.y -= self.level.gravity
 
         if False: ## FLIGHT CHECK HERE TODO ??
             if keys[controlsMap["up"]]:
@@ -211,69 +206,62 @@ class GameManager:
             elif not  keys[pygame.K_g]:
                 player.yVel *= 0.9
         else:
-            if controls["jump"] and player.touchingPlatform and player.jumping == 0 and not player.sneaking:
+            if controls["jump"] and player.touching_platform and player.jumping == 0 and not player.view.states["sneaking"]:
                 player.jumping = 1
-                player.yVel += 10
-            elif player.touchingPlatform:
+                player.vel.y += 10
+            elif player.touching_platform:
                 if controls["sneak"] and not player.falling:
-                    #player.heightHead = 0
-                    player.heightBody = 36
-                    player.sneaking = True
-                elif player.sneaking:
-                    #player.heightHead = 18
-                    player.heightBody = 48
-                    player.sneaking = False
-                    player.y += 12
+                    player.model.height_body = 36
+                    player.view.states["sneaking"] = True
+                elif player.view.states["sneaking"]:
+                    player.model.height_body = 48
+                    player.view.states["sneaking"] = False
+                    player.pos.y += 12
 
         if controls["reset"]:
             self.level.__init__(self.level.level_name, player, controller.sounds)
-        if controls["shoot"] and player.gunCooldown == 0:
-            if player.power >= player.gunPower and not player.reload:
+        if controls["shoot"] and player.gun_cooldown == 0:
+            if player.power >= 40 and not player.reload: ## TODO - these magic numbers are gunPower
                 controller.sound_ctrl.play_sound(controller.sounds["player_shoot"])
                 bulletspeed = 20
-                player.gunCooldown = 20
-                self.level.projectiles.append(Bullet(player.gunX, -player.gunY, player.rightArm+(player.rightHand*player.facing), bulletspeed, player))
-                player.power -= player.gunPower
-                if player.power < player.gunPower:
+                player.gun_cooldown = 20
+                self.level.projectiles.append(Bullet(*player.view.held_pos, player.view.aim, bulletspeed, player))
+                player.power -= 40 ## TODO - magic number
+                if player.power < 40:
                     player.reload = True
             else:
                 controller.sound_ctrl.play_sound(controller.sounds["click"])
-                player.gunCooldown = 30
+                player.gun_cooldown = 30
 
-        if player.gunCooldown > 0:
-            player.gunCooldown -= 1
-        if controls["reload"] and player.gunCooldown == 0:
+        if player.gun_cooldown > 0:
+            player.gun_cooldown -= 1
+        if controls["reload"] and player.gun_cooldown == 0:
                 player.reload = True
 
         if player.reload:
-            player.power += player.reloadSpeed
-            if player.power > player.maxPower:
-                player.power = player.maxPower
-            if player.power == player.maxPower:
+            player.power += player.reload_speed
+            if player.power > player.max_power:
+                player.power = player.max_power
+            if player.power == player.max_power:
                 player.reload = False
-                player.gunCooldown = 0
+                player.gun_cooldown = 0
 
-        if player.y < -2000:
+        if player.pos.y < -2000:
             player.hp = 0
 
         if player.hp <= 0:
             player.kill()
             self.achievement_handler.trigger("StillAlive")
 
-        self.camera_x += (((player.x + 5) - (480 / 2)) - self.camera_x) * 0.2
-        self.camera_y += (((player.y + 20) + (360 / 2)) - self.camera_y) * 0.2
+        self.camera_pos.x += (((player.pos.x + 5) - (480 / 2)) - self.camera_pos.x) * 0.2
+        self.camera_pos.y += (((player.pos.y + 20) + (360 / 2)) - self.camera_pos.y) * 0.2
 
     def update(self):
         self.level.update()
-        # self.update_player()
+        self.player_controls()
 
     def render(self):
-        ## TODO - remove entity and projectile ticking from level.draw
-        self.level.draw(self.camera_pos)
-
-        # self.player.draw(self.camera_x, self.camera_y)
-
-        self.level.draw_overlays(*self.camera_pos)
+        self.level.render(self.camera_pos)
 
         controller.win.blit(controller.hud_back, (293, 28))
         self.render_hud()

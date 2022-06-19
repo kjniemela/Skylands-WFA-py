@@ -132,14 +132,14 @@ class WindowController:
         )
 
         ## Player Textures
-        player_walk_frames = [self.load_texture("assets/body_walk%s.png" % frame) for frame in range(1, 9)]
-        player_idle = self.load_texture("assets/body_idle.png")
-        player_sneak = self.load_texture("assets/body_duck.png")
-        player_head = self.load_texture("assets/head.png")
-        player_arm_near = self.load_texture("assets/arm_near.png")
-        player_arm_far = self.load_texture("assets/arm_far.png")
-        player_hand_near = self.load_texture("assets/hand_near.png")
-        player_hand_far = self.load_texture("assets/hand_far.png")
+        player_walk_frames = [self.load_texture("assets/player/body_walk%s.png" % frame) for frame in range(1, 9)]
+        player_idle = self.load_texture("assets/player/body_idle.png")
+        player_sneak = self.load_texture("assets/player/body_duck.png")
+        player_head = self.load_texture("assets/player/head.png")
+        player_arm_near = self.load_texture("assets/player/arm_near.png")
+        player_arm_far = self.load_texture("assets/player/arm_far.png")
+        player_hand_near = self.load_texture("assets/player/hand_near.png")
+        player_hand_far = self.load_texture("assets/player/hand_far.png")
         self.player_textures = {
             "walk": {1: player_walk_frames, -1: [pygame.transform.flip(texture, True, False) for texture in player_walk_frames]},
             "idle": {1: player_idle, -1: pygame.transform.flip(player_idle, True, False)},

@@ -1,6 +1,6 @@
 texture jungle2 levels/narbadhir1/jungle2.png
 backg jungle2 0 0 1067 527 0
 #spawn 0 -100
-cline -100 -200 100 -400
+cline -200 -200 200 -200
 #cline 100 -250 100 0
-entity shoaldier 0 -160
+#entity shoaldier 100 -160
