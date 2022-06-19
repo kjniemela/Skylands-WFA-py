@@ -10,7 +10,6 @@ class Entity:
     def __init__(self, pos):
         self.touching_platform = False
         self.falling = True
-        self.sneaking = False
         self.jumping = 0
 
         self.model = Model()
@@ -31,11 +30,24 @@ class Entity:
         self.max_power = 240
 
     def get_held_pos(self):
-        return (self.view.held_x, self.view.held_y)
+        return self.view.held_pos
 
-    def set_spawn(self, x, y):
-        self.pos = Vec(x, y)
-        self.spawnpoint = (x, y)
+    def get_hitbox(self):
+        top_left = self.pos + Vec(self.model.x_offset, self.model.height_head)
+        bottom_left = self.pos + Vec(self.model.x_offset, -self.model.height_body)
+        top_right = top_left + Vec(self.model.width, 0)
+        bottom_right = bottom_left + Vec(self.model.width, 0)
+
+        return [
+            top_left,
+            top_right,
+            bottom_right,
+            bottom_left,
+        ]
+
+    def set_spawn(self, pos):
+        self.pos = pos
+        self.spawnpoint = pos
 
     def update(self):
         self.pos += self.vel
@@ -45,88 +57,21 @@ class Entity:
 
         return True
 
-    def render(self, camera_x, camera_y):
+    def render(self, camera_pos):
 
-        win = controller.win
-        entity_textures = controller.player_textures ## TODO - THIS SHOULD FETCH THE CORRECT ENTITY TEXTURES!
-        mouse_x, mouse_y = controller.mouse_pos
-        x, y = self.pos
-        facing = self.view.facing
-
-        ## TODO - MOST OF THIS SHOULD BE IN entity.view!
+        ## TODO more logic to decide if sounds should be played... or maybe volume/pan control?
+        if (self.view.walk_frame == 10 or self.view.walk_frame == 25) and self.touching_platform:
+            controller.sound_ctrl.play_sound(controller.sounds["step%i"%(randint(1, 3))])
 
         ## Render hitbox
         if config["debug"]:
+            win = controller.win
+
             pygame.draw.rect(win, (0, 0, 0),
-                ((x + self.model.x_offset) - camera_x, -((y + self.model.height_head) - camera_y),
+                (*((self.pos + Vec(self.model.x_offset, self.model.height_head) - camera_pos).screen_coords()),
                 self.model.width, self.model.height_head + self.model.height_body))
 
-        head_rot = -math.degrees(math.atan2(mouse_y-(180+24), mouse_x-(240+16)))
-        head_rot_left = ((360+(head_rot))%360)-180
-        self.aim = head_rot
-        
-        if abs(head_rot)> 90:
-            self.facing = -1
-        else:
-            self.facing = 1
-        
-        if self.view.walk_frame + 1 >= 32:
-            self.view.walk_frame = 0
-        if self.view.walk_frame < 0:
-            self.view.walk_frame = 30
-
-        ## TODO more logic to decide if sounds should be played... or maybe volume/pan control?
-        if (self.view.walk_frame == 10 or self.view.walk_frame == 25) and self.touchingPlatform:
-            controller.sound_ctrl.play_sound(controller.sounds["step%i"%(randint(1, 3))])
-
-        head_rot_left = ((360+(head_rot))%360)-180
-        self.right_arm = head_rot-(15*facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
-        self.left_arm = (Sin(time()*40)*10)-90-(5*facing)
-        self.right_hand = 15
-        self.left_hand = 10
-
-        #arm position is a bit buggy
-        
-        if facing == -1:
-            blitRotateCenter(win, entity_textures["arm_far"][-1], self.right_arm, (x-(3),-y-(2)), (camera_x,camera_y))
-            hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
-            self.held_x = (hand_x+(8))+(Cos(-(self.right_arm-self.right_hand))*(15))
-            self.held_y = hand_y+(Sin(-(self.right_arm-self.right_hand))*(16))
-            blitRotateCenter(win, entity_textures["hand_far"][-1], self.right_arm-self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
-            blitRotateCenter(win, controller.items["GDFSER"][-1], self.right_arm-self.right_hand, (self.held_x,self.held_y), (camera_x,camera_y))
-        elif facing == 1:
-            blitRotateCenter(win, entity_textures["arm_far"][1], self.left_arm, (x+(15),-y-(2)), (camera_x,camera_y))
-            hand_x = (x+(11))+(Cos(-self.left_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
-            blitRotateCenter(win, entity_textures["hand_far"][1], self.left_arm+self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
-
-        if self.sneaking:
-            win.blit(entity_textures["sneak"][facing], (x-camera_x+3,-(y-camera_y)) if self.facing < 0 else (x-camera_x-7,-(y-camera_y)))
-        else:
-            if abs(self.vel.x) > 0:
-                win.blit(entity_textures["walk"][facing][self.view.walk_frame//4], (x-camera_x,-(y-camera_y)))
-            else:
-                win.blit(entity_textures["idle"][facing], (x-camera_x,-(y-camera_y)))
-
-        if facing == -1:
-            blitRotateCenter(win, entity_textures["head"][-1], min(max(head_rot_left, -45), 45), (x,-y-(20)), (camera_x,camera_y))
-        elif facing == 1:
-            blitRotateCenter(win, entity_textures["head"][1], min(max(head_rot, -45), 45), (x,-y-(20)), (camera_x,camera_y))
-
-        if facing == -1:
-            blitRotateCenter(win, entity_textures["arm_near"][-1], -self.left_arm, (x+17,-y-0), (camera_x,camera_y))
-            hand_x = (x+(12))-(Cos(-self.left_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
-            blitRotateCenter(win, entity_textures["hand_near"][-1], -self.left_arm-self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
-        elif facing == 1:
-            blitRotateCenter(win, entity_textures["arm_near"][1], self.right_arm, (x-2,-y-(2)), (camera_x,camera_y))
-            hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
-            self.held_x = (hand_x+(8))+(Cos(-(self.right_arm+self.right_hand))*(15))
-            self.held_y = hand_y+(Sin(-(self.right_arm+self.right_hand))*(16))
-            blitRotateCenter(win, controller.items["GDFSER"][1], self.right_arm+self.right_hand, (self.held_x,self.held_y), (camera_x,camera_y))
-            blitRotateCenter(win, entity_textures["hand_near"][1], self.right_arm+self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
+        self.view.render(self.pos, camera_pos)
 
     def damage(self, dmg, src, knockback=Vec(0,0)):
         """
@@ -141,9 +86,9 @@ class Entity:
         self.__init__(*self.spawnpoint, self.save_file)
         self.level = level
 
-    def check_inside(self, x, y):
-        if self.x<x and self.x+(self.width)>x and self.y+(self.heightHead)>y and self.y-(self.heightBody)<y:
-            return (True, (self.x+(self.width/2))-x, self.y-y)
+    def check_inside(self, pos):
+        if self.x < pos.x and self.x + (self.width) > pos.x and self.y + (self.heightHead) > pos.y and self.y - (self.heightBody) < pos.y:
+            return (True, (self.x + (self.width/2)) - pos.x, self.y - pos.y)
         else:
             return (False, 0, 0)
 

@@ -4,6 +4,8 @@ import math
 from time import time
 from random import randint
 
+from vec import Vec
+
 if sys.version_info[0] == 2:
     print("Fatal Error: Skylands WFA is not compatible with python %i.%i.%i. Please use python 3." % (
         sys.version_info[0],
@@ -75,19 +77,21 @@ def extend_line_down(x1, y1, x2, y2, y):
 
 def line_collision(line1, line2):
     """
-    line1 = (x1, y1, x2, y2)
-    line2 = (x3, y3, x4, y4)
+    line1 = (p1: Vec, p2: Vec)
+    line2 = (p3: Vec, p4: Vec)
     """
-    x1, y1, x2, y2 = line1
-    x3, y3, x4, y4 = line2
+    (x1, y1), (x2, y2) = line1
+    (x3, y3), (x4, y4) = line2
+
     try:
         uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
         uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
     except ZeroDivisionError:
-        return (False, 0, 0)
+        return (False, Vec(0, 0))
+
     if uA >= 0 and uA <= 1 and uB >= 0 and uB <= 1:
-        intersectionX = x1 + (uA * (x2-x1))
-        intersectionY = y1 + (uA * (y2-y1))
-        return (True, intersectionX, intersectionY)
+        intersection_x = x1 + (uA * (x2-x1))
+        intersection_y = y1 + (uA * (y2-y1))
+        return (True, Vec(intersection_x, intersection_y))
     else:
-        return (False, 0, 0)
+        return (False, Vec(0, 0))

@@ -1,4 +1,5 @@
 from utils import *
+from vec import Vec
 from window import controller
 from level import Level
 from player import Bullet, Player
@@ -87,8 +88,7 @@ class GameManager:
     def __init__(self):
         self.level = None
         self.achievement_handler = AchievementRenderer()
-        self.camera_x = -240
-        self.camera_y = 0 #180
+        self.camera_pos = Vec(-240, 0)
         self.player = Player(0, 0)
         self.previous_player_pos = (0, 0)
 
@@ -269,11 +269,11 @@ class GameManager:
 
     def render(self):
         ## TODO - remove entity and projectile ticking from level.draw
-        self.level.draw(self.camera_x, self.camera_y)
+        self.level.draw(self.camera_pos)
 
         # self.player.draw(self.camera_x, self.camera_y)
 
-        self.level.draw_overlays(self.camera_x, self.camera_y)
+        self.level.draw_overlays(*self.camera_pos)
 
         controller.win.blit(controller.hud_back, (293, 28))
         self.render_hud()

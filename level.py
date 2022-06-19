@@ -49,7 +49,7 @@ class Level:
                 if len(line) > 7:
                     self.controls[line[7]] = self.platforms[-1]
             elif line[0] == 'platc':
-                self.platforms.append(Platform(line[1], int(line[2])+(int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
+                self.platforms.append(Platform(line[1], int(line[2]) + (int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
                 if len(line) > 7:
                     self.controls[line[7]] = self.platforms[-1]
             elif line[0] == 'cline':
@@ -69,12 +69,48 @@ class Level:
 
     def update(self):
         for entity in self.entities:
+            ## Apply gravity - TODO should this be done elsewhere?
+            entity.vel += Vec(0, -self.gravity)
+
             if not entity.update():
                 del self.entities[self.entities.index(entity)]
                 continue
      
-            for platform in self.platforms:
-                pass
+            for surface in self.surfaces:
+                verticies = entity.get_hitbox()
+                correction_vec = Vec(0, 0)
+                collided = False
+                        
+                for i in range(len(verticies)):
+                    p = verticies[i]
+                    q = verticies[(i+1) % len(verticies)]
+                    edge = (p, q)
+                    intersects, intersection_point = line_collision(edge, surface.line)
+                    if intersects:
+                        collided = True
+                        # print(p, q)
+                        # print(
+                        #     (p - intersection_point).normalized() @ surface.normal,
+                        #     (q - intersection_point).normalized() @ surface.normal
+                        # )
+                        if (p - intersection_point).normalized() @ surface.normal < 0:
+                            correction_line = (p, p + (surface.normal * (q - p).magnitude()))
+                            new_correction_vec = line_collision(correction_line, surface.line)[1] - p
+                            
+                        else:
+                            correction_line = (q, q + (surface.normal * (q - p).magnitude()))
+                            new_correction_vec = line_collision(correction_line, surface.line)[1] - q
+
+                        if new_correction_vec.magnitude() > correction_vec.magnitude():
+                            correction_vec = new_correction_vec
+
+                        # print(correction_line, p, q, intersection_point, surface.normal)
+
+                # print(correction_vec)
+                entity.pos += correction_vec
+                if collided:
+                    entity.vel = Vec(0, 0)
+
                 ## collision logic here
 
         for projectile in self.projectiles:
@@ -82,14 +118,16 @@ class Level:
                 del self.projectiles[self.projectiles.index(projectile)]
                 continue
 
-            for platform in self.platforms:
+            for surface in self.surfaces:
                 pass
                 ## collision logic here
 
-    def draw(self, camX, camY):
+    def draw(self, camera_pos):
         win = controller.win
+        ## TODO - refactor code so that these are not needed
         mouseX, mouseY = controller.mouse_pos
         winW, winH = controller.win_size
+        camX, camY = camera_pos
 
         for backdr in self.backdrop:
             if distance(self.player.x, self.player.y, backdr[1][0], backdr[1][1]) < max(backdr[1][2]/2, backdr[1][3]/2)+240:
@@ -133,7 +171,7 @@ class Level:
                         ])
     
         for entity in self.entities:
-            entity.render(camX, camY)
+            entity.render(camera_pos)
 
         for projectile in self.projectiles:
             pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
@@ -142,7 +180,7 @@ class Level:
         ## TODO - debug rendering
         if config["debug"]:
             for surface in self.surfaces:
-                pygame.draw.line(win, (0, 0, 0), (surface.p-Vec(camX, camY)).screen_coords(), (surface.q-Vec(camX, camY)).screen_coords(), 5)
+                pygame.draw.line(win, (0, 0, 0), (surface.p-camera_pos).screen_coords(), (surface.q-camera_pos).screen_coords(), 5)
 
     def draw_overlays(self, camX, camY):
 
@@ -162,9 +200,10 @@ class Surface:
     def __init__(self, p, q):
         self.p = p
         self.q = q
-        self.line = (q - p)
-        self.normal = self.line.perpendicular().normalized()
-        print("line:", self.line)
+        self.line = (p, q)
+        self.dst = (q - p)
+        self.normal = self.dst.perpendicular().normalized()
+        print("dst:", self.dst)
         print("normal:", self.normal)
 
 
