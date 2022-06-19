@@ -15,6 +15,9 @@ class View:
     def start(self):
         pass
 
+    def update(self):
+        pass
+
     def render(self):
         win = controller.win
 
@@ -175,7 +178,6 @@ class CutSceneView(View):
                 controller.sound_ctrl.load_music("assets/%s" % (' '.join(line[2:])))
                 controller.sound_ctrl.play_music()
             elif line[0] == "sound":
-                print("assets/%s" % (' '.join(line[2:])))
                 sound = controller.sound_ctrl.load_sound("assets/%s" % (' '.join(line[2:])))
                 controller.sound_ctrl.play_sound(sound)
                 self.sounds.append(sound)
@@ -214,6 +216,9 @@ class GameView(View):
 
     def start(self):
         pass
+
+    def update(self):
+        game_manager.update()
 
     def render(self):
         win = controller.win

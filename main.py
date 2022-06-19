@@ -124,6 +124,7 @@ while run:
     keys = pygame.key.get_pressed()
 
     ## Render current view
+    views.cur_view.update()
     controller.render_view(views.cur_view)
 
     ## If in debug mode, show debug data

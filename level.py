@@ -1,10 +1,11 @@
+from entity.entity import Entity
 from utils import *
 from config import config
+from vec import Vec
 from window import controller
 
 class Level:
     def __init__(self, lvl_file, player, sounds):
-
         self.platforms = []
         self.overlays = []
         self.background = []
@@ -12,6 +13,8 @@ class Level:
         self.projectiles = []
         self.entities = []
         self.item_entities = []
+
+        self.surfaces = []
 
         self.controls = {}
         self.data = {}
@@ -25,6 +28,10 @@ class Level:
         self.player = player
 
         self.gravity = 0.5
+
+        self.entity_type_map = {
+            "shoaldier": Entity ## TODO - give this its own class
+        }
 
         f = open(resource_path("levels/%s.txt" % (lvl_file)))
         data = f.read().split("\n")
@@ -42,9 +49,11 @@ class Level:
                 if len(line) > 7:
                     self.controls[line[7]] = self.platforms[-1]
             elif line[0] == 'platc':
-                self.platforms.append(Platform(line[1], int(line[2])+(int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
+                self.platforms.append(Platform(line[1], int(line[2]) + (int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
                 if len(line) > 7:
                     self.controls[line[7]] = self.platforms[-1]
+            elif line[0] == 'cline':
+                self.surfaces.append(Surface(Vec(int(line[1]), int(line[2])), Vec(int(line[3]), int(line[4]))))
             elif line[0] == 'overlay':
                 self.overlays.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
             elif line[0] == 'backg':
@@ -52,31 +61,85 @@ class Level:
             elif line[0] == 'backdr':
                 self.backdrop.append(((int(line[1]), int(line[2]), int(line[3])), (int(line[4]), int(line[5]), int(line[6]), int(line[7]))))
             elif line[0] == 'entity':
-                self.entities.append(self.entityTypes[line[1]](self, int(line[2]), int(line[3])))
+                self.entities.append(self.entity_type_map[line[1]](Vec(int(line[2]), int(line[3]))))
                 if len(line) > 4:
                     self.controls[line[4]] = self.entities[-1]
             elif line[0] == 'spawn':
                 self.player.set_spawn(int(line[1]), int(line[2]))
 
-    def tick(self, level):
-        pass
+    def update(self):
+        for entity in self.entities:
+            ## Apply gravity - TODO should this be done elsewhere?
+            entity.vel += Vec(0, -self.gravity)
 
-    def draw(self, camX, camY):
-        self.tick(self)
+            if not entity.update():
+                del self.entities[self.entities.index(entity)]
+                continue
 
+            for surface in self.surfaces:
+                verticies = entity.get_hitbox()
+                correction_vec = Vec(0, 0)
+                collided = False
+
+                for i in range(len(verticies)):
+                    p = verticies[i]
+                    q = verticies[(i+1) % len(verticies)]
+                    edge = (p, q)
+                    intersects, intersection_point = line_collision(edge, surface.line)
+                    if intersects:
+                        collided = True
+                        # print(p, q)
+                        # print(
+                        #     (p - intersection_point).normalized() @ surface.normal,
+                        #     (q - intersection_point).normalized() @ surface.normal
+                        # )
+                        if (p - intersection_point).normalized() @ surface.normal < 0:
+                            correction_line = (p, p + (surface.normal * (q - p).magnitude()))
+                            new_correction_vec = line_collision(correction_line, surface.line, seg=False)[1] - p
+
+                        else:
+                            correction_line = (q, q + (surface.normal * (q - p).magnitude()))
+                            new_correction_vec = line_collision(correction_line, surface.line, seg=False)[1] - q
+
+                        if new_correction_vec.magnitude() > correction_vec.magnitude():
+                            correction_vec = new_correction_vec
+
+                        # print(correction_line, p, q, intersection_point, surface.normal)
+
+                # print(correction_vec)
+                entity.pos += correction_vec
+                if collided:
+                    entity.vel = Vec(0, 0)
+
+                ## collision logic here
+
+        for projectile in self.projectiles:
+            if not projectile.update(): ## TODO or projectile.get_touching(self):
+                del self.projectiles[self.projectiles.index(projectile)]
+                continue
+
+            for surface in self.surfaces:
+                pass
+                ## collision logic here
+
+    def draw(self, camera_pos):
         win = controller.win
+        ## TODO - refactor code so that these are not needed
         mouseX, mouseY = controller.mouse_pos
         winW, winH = controller.win_size
+        camX, camY = camera_pos
 
         for backdr in self.backdrop:
             if distance(self.player.x, self.player.y, backdr[1][0], backdr[1][1]) < max(backdr[1][2]/2, backdr[1][3]/2)+240:
                 pygame.draw.rect(win, backdr[0], (backdr[1][0]-camX-backdr[1][2]/2, -(backdr[1][1]-camY)-backdr[1][3]/2, *backdr[1][2:]))
+
         for backg in self.background:
             if distance(self.player.x, self.player.y, backg.x, backg.y) < max(backg.w/2, backg.h/2)+400:
                 if backg.d == 0:
                     win.blit(self.textures[backg.texture], (backg.x-(backg.w/2)-camX, -(backg.y+(backg.h/2)-camY)))
                 else:
                     blitRotateCenter(win, self.textures[backg.texture], backg.d, (backg.x-(backg.w/2),-(backg.y+(backg.h/2))), (camX,camY))
+
         for platform in self.platforms:
             if platform.visible:
                 if distance(self.player.x, self.player.y, platform.x, platform.y) < max(platform.w/2, platform.h/2)+240:
@@ -90,12 +153,12 @@ class Level:
                                      (platform.x-camX-platform.w/2,
                                       -(platform.y-camY)-platform.h/2,
                                       platform.w, platform.h))
-                else:     
+                else:
                     x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
                     y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
                     x2 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
                     y2 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
-                    
+
                     x3 = platform.x-((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
                     y3 = platform.y-((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
                     x4 = platform.x+((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
@@ -106,18 +169,19 @@ class Level:
                         (x4-camX, -(y4-camY)),
                         (x3-camX, -(y3-camY)),
                         ])
+
         for entity in self.entities:
-            if entity.tick():
-                entity.draw(camX, camY, win, mouseX, mouseY, winW, winH)
-            else:
-                del self.entities[self.entities.index(entity)]
+            entity.render(camera_pos)
+
         for projectile in self.projectiles:
-            if projectile.tick() and not projectile.get_touching(self):#(111, 255, 239)
-                pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
-                # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
-            else:
-                del self.projectiles[self.projectiles.index(projectile)]
-    
+            pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
+            # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
+
+        ## TODO - debug rendering
+        if config["debug"]:
+            for surface in self.surfaces:
+                pygame.draw.line(win, (0, 0, 0), (surface.p-camera_pos).screen_coords(), (surface.q-camera_pos).screen_coords(), 5)
+
     def draw_overlays(self, camX, camY):
 
         win = controller.win
@@ -132,22 +196,37 @@ class Level:
                     blitRotateCenter(win, self.textures[overlay.texture], overlay.d, (overlay.x-(overlay.w/2),-(overlay.y+(overlay.h/2))), (camX,camY))
 
 
+class Surface:
+    def __init__(self, p, q):
+        self.p = p
+        self.q = q
+        self.line = (p, q)
+        self.dst = (q - p)
+        self.normal = self.dst.perpendicular().normalized()
+
+        if self.normal @ Vec(0, 1) >= 1 - math.sin(math.radians(0.25)):
+            self.normal = Vec(0, 1)
+
+        print("dst:", self.dst)
+        print("normal:", self.normal)
+
+
 class Platform:
     def __init__(self, texture, x, y, w, h, d, visible=True):
         self.x, self.y, self.w, self.h, self.d, self.visible = x, y, w, h, d, visible
         if visible == True:
             self.texture = texture
-        
+
     def get_verts(self, camX, camY, b=1):
-        x1 = self.x-((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
-        y1 = self.y+((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d)*b)
-        x2 = self.x+((self.w/2)*Cos(-self.d)*b)+((self.h/2)*Sin(-self.d)*b)
-        y2 = self.y+((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d)*b)
-        
-        x3 = self.x-((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
-        y3 = self.y-((self.h/2)*Cos(-self.d)*b)+((self.w/2)*Sin(-self.d))
-        x4 = self.x+((self.w/2)*Cos(-self.d)*b)-((self.h/2)*Sin(-self.d))
-        y4 = self.y-((self.h/2)*Cos(-self.d)*b)-((self.w/2)*Sin(-self.d))
+        x1 = self.x - ((self.w/2) * Cos(-self.d)*b) + ((self.h/2) * Sin(-self.d)*b)
+        y1 = self.y + ((self.h/2) * Cos(-self.d)*b) + ((self.w/2) * Sin(-self.d)*b)
+        x2 = self.x + ((self.w/2) * Cos(-self.d)*b) + ((self.h/2) * Sin(-self.d)*b)
+        y2 = self.y + ((self.h/2) * Cos(-self.d)*b) - ((self.w/2) * Sin(-self.d)*b)
+
+        x3 = self.x - ((self.w/2) * Cos(-self.d)*b) - ((self.h/2) * Sin(-self.d))
+        y3 = self.y - ((self.h/2) * Cos(-self.d)*b) + ((self.w/2) * Sin(-self.d))
+        x4 = self.x + ((self.w/2) * Cos(-self.d)*b) - ((self.h/2) * Sin(-self.d))
+        y4 = self.y - ((self.h/2) * Cos(-self.d)*b) - ((self.w/2) * Sin(-self.d))
 
         return [
             (x1, y1),
@@ -162,13 +241,13 @@ class Platform:
 ##            (x3-camX, -(y3-camY)),
 ##            (x4-camX, -(y4-camY))
 ##            ]
-        
+
     def collides_with_line(self, px1, py1, px2, py2):
         x1 = self.x-((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y1 = self.y+((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
         x2 = self.x+((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y2 = self.y+((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
-        
+
         x3 = self.x-((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
         y3 = self.y-((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
         x4 = self.x+((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))

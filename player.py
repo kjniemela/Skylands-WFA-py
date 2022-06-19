@@ -77,6 +77,10 @@ class Player:
                 str(self.maxHp),
                 ]
             f.write('\n'.join(data))
+
+    def update(self):
+        pass
+
     def draw(self, playerdata, camX, camY):
 
         win = controller.win
@@ -167,6 +171,7 @@ class Player:
             self.gunY = handY+(Sin(-(self.rightArm+self.rightHand))*(16))
             blitRotateCenter(win, controller.items["GDFSER"][1], self.rightArm+self.rightHand, (self.gunX,self.gunY), (camX,camY))
             blitRotateCenter(win, player_textures["hand_near"][1], self.rightArm+self.rightHand, (handX,handY), (camX,camY))
+
     def damage(self, dmg, src, knockback=(0,0)):
         """
         0: fall damage - 1: melee damage
@@ -175,21 +180,25 @@ class Player:
         self.hp -= dmg
         self.xVel += knockback[0]
         self.yVel += knockback[1]
+
     def kill(self):
         level = self.level
         self.__init__(*self.spawnpoint, self.save_file)
         self.level = level
+
     def check_inside(self, x, y):
         if self.x<x and self.x+(self.width)>x and self.y+(self.heightHead)>y and self.y-(self.heightBody)<y:
             return (True, (self.x+(self.width/2))-x, self.y-y)
         else:
             return (False, 0, 0)
+
     def get_colliding_platform(self, platform, down):
         x3 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
         y3 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
         x4 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
         y4 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
         return self.get_colliding_lines(x3, y3, x4, y4, platform.d)
+
     def get_colliding_lines(self, x3, y3, x4, y4, d, down=True):
         if ((d+180)%360)-180 > 0:
             col1 = line_collision((self.x+self.width+self.xOffset, self.y+(self.heightHead),
@@ -226,6 +235,7 @@ class Player:
             else:
                 self.leftTouching = col2[1]-self.x
         return col1[0] if down else col2[0]
+
     def get_touching(self, level, controlsMap, xOld, yOld):
         self.rightTouching = 0
         self.leftTouching = 0
@@ -235,6 +245,7 @@ class Player:
         self.touchingPlatform = False
         xChange = self.xVel
         yChange = self.yVel
+
         for platform in level.platforms:
             if platform.d == 0:
                 if self.x+self.xOffset<platform.x+(platform.w/2) and\
@@ -330,48 +341,60 @@ class Bullet:
         self.yVel = (Sin(d)*(speed))#+owner.yVel
         self.speed = speed
         self.age = 0
-    def tick(self):
+
+    def update(self):
         self.x += self.xVel
         self.y += self.yVel
         self.age += 1
         #self.yVel -= 1
+
         return 0 < self.age < 100
+
     def check_forward(self, pr, platform):
-        if self.x+(self.xVel*pr)<platform.x+(platform.w/2) and\
-            self.x+(self.xVel*pr)>platform.x-(platform.w/2) and\
-            self.y+(self.yVel*pr)>platform.y-(platform.h/2) and\
-            self.y+(self.yVel*pr)<platform.y+(platform.h/2):
+        if (
+            self.x + (self.xVel*pr) < platform.x + (platform.w/2) and
+            self.x + (self.xVel*pr) > platform.x - (platform.w/2) and
+            self.y + (self.yVel*pr) > platform.y - (platform.h/2) and
+            self.y + (self.yVel*pr) < platform.y + (platform.h/2)
+        ):
             return True
         else:
             return False
+
     def get_touching(self, level):
         self.touchingPlatform = False
         self.rightTouching = 0
         self.leftTouching = 0
         self.upTouching = 0
         self.downTouching = 0
+
         for platform in level.platforms:
             if platform.d == 0:
-                if self.x<platform.x+(platform.w/2) and\
-                    self.x>platform.x-(platform.w/2) and\
-                    self.y>platform.y-(platform.h/2) and\
-                    self.y<platform.y+(platform.h/2):
+                if (
+                    self.x < platform.x + (platform.w/2) and
+                    self.x > platform.x - (platform.w/2) and
+                    self.y > platform.y - (platform.h/2) and
+                    self.y < platform.y + (platform.h/2)
+                ):
                     return True
                 elif distance(self.x, self.y, platform.x, platform.y)<=max(platform.w,platform.h):
                     pr = -1
+
                     while abs(pr*self.speed)>2:
                         pr *= 0.9
+
                         if self.check_forward(pr, platform):
                             return True
             else:
-                x3 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
-                y3 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
-                x4 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
-                y4 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
+                x3 = platform.x - ((platform.w/2) * Cos(-platform.d)) + ((platform.h/2) * Sin(-platform.d))
+                y3 = platform.y + ((platform.h/2) * Cos(-platform.d)) + ((platform.w/2) * Sin(-platform.d))
+                x4 = platform.x + ((platform.w/2) * Cos(-platform.d)) + ((platform.h/2) * Sin(-platform.d))
+                y4 = platform.y + ((platform.h/2) * Cos(-platform.d)) - ((platform.w/2) * Sin(-platform.d))
                 col = line_collision((self.x, self.y, self.x-self.xVel, self.y-self.yVel),
                                      (x3, y3, x4, y4))
                 if col[0]:
                     return True
+
         for entity in level.entities:
             if not entity == self.owner:
                 hit, xD, yD = entity.check_inside(self.x, self.y)

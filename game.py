@@ -1,4 +1,5 @@
 from utils import *
+from vec import Vec
 from window import controller
 from level import Level
 from player import Bullet, Player
@@ -87,8 +88,7 @@ class GameManager:
     def __init__(self):
         self.level = None
         self.achievement_handler = AchievementRenderer()
-        self.camera_x = -240
-        self.camera_y = 180
+        self.camera_pos = Vec(-240, 0)
         self.player = Player(0, 0)
         self.previous_player_pos = (0, 0)
 
@@ -129,7 +129,8 @@ class GameManager:
 
     def new_game(self):
         self.level = 1
-        self.set_level("narbadhir1")
+        # self.set_level("narbadhir1")
+        self.set_level("test")
 
     def render_hud(self):
         win = controller.win
@@ -160,7 +161,7 @@ class GameManager:
     def handle_click(self, mouseX, mouseY, button):
         pass
 
-    def tick_player(self):
+    def update_player(self):
         player = self.player
         controls = self.controls
 
@@ -262,13 +263,17 @@ class GameManager:
         self.camera_x += (((player.x + 5) - (480 / 2)) - self.camera_x) * 0.2
         self.camera_y += (((player.y + 20) + (360 / 2)) - self.camera_y) * 0.2
 
+    def update(self):
+        self.level.update()
+        # self.update_player()
+
     def render(self):
-        self.level.draw(self.camera_x, self.camera_y)
+        ## TODO - remove entity and projectile ticking from level.draw
+        self.level.draw(self.camera_pos)
 
-        self.tick_player()
-        self.player.draw([], self.camera_x, self.camera_y)
+        # self.player.draw(self.camera_x, self.camera_y)
 
-        self.level.draw_overlays(self.camera_x, self.camera_y)
+        self.level.draw_overlays(*self.camera_pos)
 
         controller.win.blit(controller.hud_back, (293, 28))
         self.render_hud()
