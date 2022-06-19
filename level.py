@@ -75,12 +75,12 @@ class Level:
             if not entity.update():
                 del self.entities[self.entities.index(entity)]
                 continue
-     
+
             for surface in self.surfaces:
                 verticies = entity.get_hitbox()
                 correction_vec = Vec(0, 0)
                 collided = False
-                        
+
                 for i in range(len(verticies)):
                     p = verticies[i]
                     q = verticies[(i+1) % len(verticies)]
@@ -96,7 +96,7 @@ class Level:
                         if (p - intersection_point).normalized() @ surface.normal < 0:
                             correction_line = (p, p + (surface.normal * (q - p).magnitude()))
                             new_correction_vec = line_collision(correction_line, surface.line, seg=False)[1] - p
-                            
+
                         else:
                             correction_line = (q, q + (surface.normal * (q - p).magnitude()))
                             new_correction_vec = line_collision(correction_line, surface.line, seg=False)[1] - q
@@ -153,12 +153,12 @@ class Level:
                                      (platform.x-camX-platform.w/2,
                                       -(platform.y-camY)-platform.h/2,
                                       platform.w, platform.h))
-                else:     
+                else:
                     x1 = platform.x-((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
                     y1 = platform.y+((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
                     x2 = platform.x+((platform.w/2)*Cos(-platform.d))+((platform.h/2)*Sin(-platform.d))
                     y2 = platform.y+((platform.h/2)*Cos(-platform.d))-((platform.w/2)*Sin(-platform.d))
-                    
+
                     x3 = platform.x-((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
                     y3 = platform.y-((platform.h/2)*Cos(-platform.d))+((platform.w/2)*Sin(-platform.d))
                     x4 = platform.x+((platform.w/2)*Cos(-platform.d))-((platform.h/2)*Sin(-platform.d))
@@ -169,7 +169,7 @@ class Level:
                         (x4-camX, -(y4-camY)),
                         (x3-camX, -(y3-camY)),
                         ])
-    
+
         for entity in self.entities:
             entity.render(camera_pos)
 
@@ -203,10 +203,12 @@ class Surface:
         self.line = (p, q)
         self.dst = (q - p)
         self.normal = self.dst.perpendicular().normalized()
+
+        if self.normal @ Vec(0, 1) >= 1 - math.sin(math.radians(0.25)):
+            self.normal = Vec(0, 1)
+
         print("dst:", self.dst)
         print("normal:", self.normal)
-
-        print(self.normal @ Vec(0, 1))
 
 
 class Platform:
@@ -239,13 +241,13 @@ class Platform:
 ##            (x3-camX, -(y3-camY)),
 ##            (x4-camX, -(y4-camY))
 ##            ]
-        
+
     def collides_with_line(self, px1, py1, px2, py2):
         x1 = self.x-((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y1 = self.y+((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
         x2 = self.x+((self.w/2)*Cos(-self.d))+((self.h/2)*Sin(-self.d))
         y2 = self.y+((self.h/2)*Cos(-self.d))-((self.w/2)*Sin(-self.d))
-        
+
         x3 = self.x-((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
         y3 = self.y-((self.h/2)*Cos(-self.d))+((self.w/2)*Sin(-self.d))
         x4 = self.x+((self.w/2)*Cos(-self.d))-((self.h/2)*Sin(-self.d))
