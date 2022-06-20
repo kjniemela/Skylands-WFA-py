@@ -82,7 +82,7 @@ class SkyScript:
             return None, None
 
     def __look(self):
-        if self.index + 1 < len(self.tokens):
+        if self.index < len(self.tokens):
             return self.tokens[self.index]
         else:
             return None, None
@@ -306,9 +306,14 @@ class SkyScript:
     def __run_if(self):
         self.__eat()
 
-        bool = self.__run_exp()
+        boolean = self.__run_exp()
 
-        print("IF %s" % (str(bool)))
+        print("IF %s" % (str(boolean)))
+
+        if boolean:
+            self.__run_block()
+        else:
+            self.__skip_block()
 
     def __run_let(self):
         self.__eat()
@@ -328,23 +333,59 @@ class SkyScript:
     def __run_send(self):
         self.__eat()
 
-        token, event = self.__eat()
-        self.__assert(token, Token.ID)
+        event = self.__run_exp()
+        params = {}
 
         if self.__look() == Token.WITH:
             self.__eat()
-            values = self.__run_with()
+            token, param_name = self.__eat()
+            while token != Token.END:
+                self.__assert(token, Token.ID)
+                self.__assert(self.__eat()[0], Token.COLON)
+                token, param_val = self.__run_exp()
+
+                params[param_name] = param_val
+
+                token, param_name = self.__eat()
+
+        print("SEND %s TO %s" % (params, event))
 
     def __run_block(self):
         self.__eat()
         print("ENTER BLOCK")
 
         while self.__look()[0] != Token.END:
-            print(self.__look())
             self.__run_stm()
-            print(self.__look())
 
         print("EXIT BLOCK")
+
+    def __skip_block(self):
+        self.__eat()
+        print("SKIP BLOCK")
+        depth = 1
+        last_open = None
+
+        token, _ = self.__look()
+        while token != None and depth > 0:
+            self.__eat()
+
+            if token == Token.DO and last_open == Token.WITH:
+                depth -= 1
+
+            if token == Token.END:
+                depth -= 1
+            elif token in (
+                Token.ON,
+                Token.IF,
+                Token.WITH,
+            ):
+                last_open = token
+                depth += 1
+
+            token, _ = self.__look()
+
+
+        print("EXIT SKIP")
 
     def __run_stm(self):
         token, _ = self.__look()
