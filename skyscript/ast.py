@@ -62,7 +62,7 @@ class LetStm(Stm):
     def display(self, indent=0):
         rep = "LetStm(\n"
         rep += tab(indent+1) + self.var + "\n"
-        rep += tab(indent+1) + self.exp.display(indent+1)
+        rep += tab(indent+1) + self.exp.display(indent+1) if self.exp else "None"
         rep += tab(indent) + ")\n"
 
         return rep
@@ -85,20 +85,22 @@ class IfStm(Stm):
         return rep
 
 class OnStm(Stm):
-    def __init__(self, event, args):
+    def __init__(self, event, args, block):
         self.event = event
         self.args = args
+        self.block = block
 
     def run(self):
         pass
 
     def display(self, indent=0):
         rep = "OnStm(\n"
-        rep += tab(indent+1) + str(self.event) + "\n"
-        rep += tab(indent+1) + "args("
+        rep += tab(indent+1) + self.event.display(indent+1)
+        rep += tab(indent+1) + "args(\n"
         for arg in self.args:
-            rep += tab(indent+2) + arg.display(indent+2)
-        rep += tab(indent+1) + ")"
+            rep += tab(indent+2) + arg + "\n"
+        rep += tab(indent+1) + ")\n"
+        rep += tab(indent+1) + self.block.display(indent+1)
         rep += tab(indent) + ")\n"
 
         return rep
@@ -113,11 +115,11 @@ class SendStm(Stm):
 
     def display(self, indent=0):
         rep = "SendStm(\n"
-        rep += tab(indent+1) + str(self.event) + "\n"
-        rep += tab(indent+1) + "args("
+        rep += tab(indent+1) + self.event.display(indent+1)
+        rep += tab(indent+1) + "args(\n"
         for arg in self.args:
             rep += tab(indent+2) + arg.display(indent+2)
-        rep += tab(indent+1) + ")"
+        rep += tab(indent+1) + ")\n"
         rep += tab(indent) + ")\n"
 
         return rep
@@ -131,7 +133,7 @@ class ExpStm(Stm):
 
     def display(self, indent=0):
         rep = "ExpStm(\n"
-        rep += tab(indent+1) + self.exp.display(indent+1)
+        rep += tab(indent+1) + (self.exp.display(indent+1) if self.exp else "None") + "\n"
         rep += tab(indent) + ")\n"
 
         return rep
@@ -149,7 +151,6 @@ class Exp(Node):
 class NumExp(Exp):
     def __init__(self, num):
         self.num = num
-        pass
 
     def run(self):
         return self.num
@@ -164,7 +165,6 @@ class NumExp(Exp):
 class IdExp(Exp):
     def __init__(self, id):
         self.id = id
-        pass
 
     def run(self):
         pass
@@ -196,7 +196,6 @@ class OpExp(Exp):
         self.op = op
         self.exp1 = exp1
         self.exp2 = exp2
-        pass
 
     def run(self):
         if op == Token.MUL:
@@ -225,7 +224,6 @@ class UnaryOpExp(Exp):
     def __init__(self, op, exp):
         self.op = op
         self.exp = exp
-        pass
 
     def run(self):
         if op == Token.SUB:
@@ -245,7 +243,6 @@ class ProcExp(Exp):
     def __init__(self, proc, args):
         self.proc = proc
         self.args = args
-        pass
 
     def run(self):
         pass
@@ -253,10 +250,41 @@ class ProcExp(Exp):
     def display(self, indent=0):
         rep = "ProcExp(\n"
         rep += tab(indent+1) + str(self.proc) + "\n"
-        rep += tab(indent+1) + "args("
+        rep += tab(indent+1) + "args(\n"
         for arg in self.args:
             rep += tab(indent+2) + arg.display(indent+2)
-        rep += tab(indent+1) + ")"
+        rep += tab(indent+1) + ")\n"
+        rep += tab(indent) + ")\n"
+
+        return rep
+
+class EventExp(Exp):
+    def __init__(self, event, target):
+        self.event = event
+        self.target = target
+
+    def run(self):
+        pass
+
+    def display(self, indent=0):
+        rep = "EventExp(\n"
+        rep += tab(indent+1) + str(self.event) + " @ " + str(self.target) + "\n"
+        rep += tab(indent) + ")\n"
+
+        return rep
+
+class ParamExp(Exp):
+    def __init__(self, var, exp):
+        self.var = var
+        self.exp = exp
+
+    def run(self):
+        pass
+
+    def display(self, indent=0):
+        rep = "ParamExp(\n"
+        rep += tab(indent+1) + self.var + "\n"
+        rep += tab(indent+1) + self.exp.display(indent+1)
         rep += tab(indent) + ")\n"
 
         return rep

@@ -6,7 +6,8 @@ from window import controller
 from entity.base import Entity
 from entity.biped import EntityBiped
 
-from skyscript.skyscript import SkyScript
+# from skyscript.skyscript import SkyScript
+from skyscript.interpreter import Interpreter
 
 class Level:
     def __init__(self, lvl_file, player, sounds):
@@ -38,13 +39,13 @@ class Level:
             "shoaldier": EntityBiped ## TODO - give this its own class
         }
 
-        self.interpreter = SkyScript(self)
+        self.interpreter = Interpreter(self)
 
         f = open(resource_path("levels/%s.txt" % (lvl_file)))
         data = f.read()
         f.close()
 
-        self.interpreter.run(data)
+        self.interpreter.load(data)
 
         # data = [i.split(" ") for i in data]
         # for line in data:

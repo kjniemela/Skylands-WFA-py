@@ -1,12 +1,13 @@
 from enum import Enum, auto
-from ast import *  ## TODO - imports need to be fixed for prod
-from lookuptable import LookupTable
-from lexer import Lexer, Token
+from skyscript.ast import *  ## TODO - imports need to be fixed for prod
+from skyscript.lookuptable import LookupTable
+from skyscript.lexer import Lexer, Token
 
 class Event:
     def __init__(self, event, target):
         self.event = event
         self.target = target
+        self.ast = None
 
     def __repr__(self):
         return "Event(%s @ %s)" % (self.event, self.target)
@@ -41,7 +42,7 @@ class Parser:
         if self.index < len(self.tokens):
             self.index += 1
             token = self.tokens[self.index - 1]
-            # print("%i:" % (self.index), token[0], token[1])
+            print("%i:" % (self.index), token[0], token[1])
             return token
         else:
             return None, None
@@ -131,9 +132,11 @@ class Parser:
                 self.__eat()
                 token, target_value = self.__eat()
                 self.__assert(token, Token.ID)
-                return Event(value, target_value)
+
+                return EventExp(value, target_value)
             else:
-                return self.env.lookup(value)
+                return IdExp(value)
+                #return self.env.lookup(value)
 
         elif token == Token.STRING:
             self.__eat()
@@ -151,14 +154,10 @@ class Parser:
             self.__eat()
             exp = self.__parse_exp()
 
-            # self.__type_assert(exp, Type.NUMERICAL)
-
             return UnaryOpExp(token, exp)
         elif token == Token.NOT:
             self.__eat()
             exp = self.__parse_exp()
-
-            # self.__type_assert(exp, Type.BOOLEAN)
 
             return UnaryOpExp(token, exp)
         else:
@@ -171,9 +170,6 @@ class Parser:
         if token == Token.MUL or token == Token.DIV:
             self.__eat()
             factor2 = self.__parse_factor()
-
-            # self.__type_assert(factor, Type.NUMERICAL)
-            # self.__type_assert(factor2, Type.NUMERICAL)
 
             return OpExp(token, factor, factor2)
         else:
@@ -188,9 +184,6 @@ class Parser:
             self.__eat()
             term2 = self.__parse_term()
 
-            # self.__type_assert(term, Type.NUMERICAL)
-            # self.__type_assert(term2, Type.NUMERICAL)
-
             return OpExp(token, term, term2)
         else:
             return term
@@ -204,16 +197,10 @@ class Parser:
             self.__eat()
             term2 = self.__parse_arithmetic()
 
-            # self.__type_assert(term, Type.NUMERICAL)
-            # self.__type_assert(term2, Type.NUMERICAL)
-
             return OpExp(token, term, term2)
         elif token == Token.AND or token == Token.OR:
             self.__eat()
             term2 = self.__parse_arithmetic()
-
-            # self.__type_assert(term, Type.BOOLEAN)
-            # self.__type_assert(term2, Type.BOOLEAN)
 
             return OpExp(token, term, term2)
         else:
@@ -230,7 +217,7 @@ class Parser:
             token, value = self.__eat()
             while token != Token.DO:
                 self.__assert(token, Token.ID)
-                params.append(IdExp(value))
+                params.append(value)
 
                 token, value = self.__eat()
 
@@ -238,7 +225,8 @@ class Parser:
 
         print("ON %s WITH %s DO" % (event_name, str(params)))
 
-        return OnStm(event_name, params)
+        block = self.__parse_block()
+        return OnStm(event_name, params, block)
 
         print(self.env)
         self.env.push_scope()
@@ -285,7 +273,6 @@ class Parser:
         self.__eat()
 
         event = self.__parse_exp()
-        #params = {}
         params = []
 
         if self.__look()[0] == Token.WITH:
@@ -296,8 +283,7 @@ class Parser:
                 self.__assert(self.__eat()[0], Token.COLON)
                 param_val = self.__parse_exp()
 
-                #params[param_name] = param_val
-                params.append(param_val)
+                params.append(ParamExp(param_name, param_val))
 
                 token, param_name = self.__eat()
 
@@ -308,10 +294,14 @@ class Parser:
     def __parse_block(self):
         self.__eat()
 
+        stms = []
+
         while self.__look()[0] != Token.END:
-            self.__parse_stm()
+            stms.append(self.__parse_stm())
 
         self.__eat()
+
+        return Block(stms)
 
     def __skip_block(self):
         self.__eat()
@@ -365,44 +355,7 @@ class Parser:
     def parse(self, tokens):
         self.tokens = tokens
         print(tokens)
-        print(self.__parse().display())
+        self.ast = self.__parse()
+        print(self.ast.display())
 
-parser = Parser()
-lexer = Lexer()
-src = """
-texture "jungle2" "levels/narbadhir1/jungle2.png"
-background "jungle2" 0 0 1067 527 0
-
-let surf1 : surface 200 (-200) 200 (-200)
-surface 200 (-200) 200 0
-
-let test : (1 + 2)
-
-let entity1 : entity "shoaldier" 100 (-160)
-
-send "spawn" with
-    x : 0
-    y : (-100)
-end
-
-on hurt @ entity1 with damage do
-  let a : (1 + 2) * 5
-  let x : 100
-
-  if damage < x then
-    send "slide_door" with
-      door : surf1
-      speed : 100 + damage
-    end
-  end
-  send "play_sound" with sound : "ouch" end
-  send "test_event"
-end
-
-send hurt @ entity1 with damage : 0 end
-send hurt @ entity1 with damage : 120 end
-
-let test2 : hurt @ entity1
-let x : 1
-"""
-parser.parse(lexer.tokenize(src))
+        return self.ast
