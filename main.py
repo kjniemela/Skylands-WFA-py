@@ -21,6 +21,7 @@ while i < len(sys.argv):
             print("  -a [Y/n]        override the config.enableSound option")
             print("  -d              launch Skylands in debug mode")
             print("  -D              debug mode + disable sounds / transitions")
+            print("  -i [script]     load the script n debug mode and exit")
 
             sys.exit()
         elif flag == "-s":
@@ -44,6 +45,14 @@ while i < len(sys.argv):
             config["enableSound"] = False
             config["enableCutscenes"] = False
             config["enableFade"] = False
+        elif flag == "-i":
+            i += 1
+            arg = sys.argv[i]
+            config["debug"] = True
+            from level import Level
+            from player import Player
+            Level(arg, Player(Vec(0, 0)), {})
+            sys.exit()
 
         i += 1
     except IndexError:
