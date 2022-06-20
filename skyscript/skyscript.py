@@ -11,24 +11,26 @@ class Event:
         self.target = target
 
     def __repr__(self):
-        return "Event: %s @ %s" % (self.event, self.target)
+        return "Event(%s @ %s)" % (self.event, self.target)
 
 class Type(Enum):
     NUMERICAL = auto()
     STRING = auto()
+    BOOLEAN = auto()
 
 class LookupTable:
     def __init__(self):
         self.env = {}
+        self.parent = None
 
     def __repr__(self):
-        return str(self.env)
+        return "LookupTable(%s, $=%s)" % (str(self.env), repr(self.parent))
 
     def lookup(self, var):
         if var in self.env:
             return self.env[var]
-        elif "$" in self.env:
-            return self.env["$"].lookup(var)
+        elif self.parent != None:
+            return self.parent.lookup(var)
         else:
             return None
 
@@ -36,17 +38,22 @@ class LookupTable:
         self.env[var] = val
 
     def push_scope(self):
-        self.env = {"$": self.env}
+        parent = LookupTable()
+        parent.env = self.env
+        parent.parent = self.parent
+        self.__init__()
+        self.parent = parent
 
     def pop_scope(self):
-        if "$" in self.env:
-            self.env = self.env["$"]
+        if self.parent != None:
+            self.env = self.parent.env
+            self.parent = self.parent.parent
 
 class SkyScript:
     def __init__(self, level):
         self.index = 0
         self.tokens = []
-        
+
         self.level = level
 
         self.env = LookupTable()
@@ -59,6 +66,8 @@ class SkyScript:
         if expected == Type.STRING and type(actual) == str:
             pass
         elif expected == Type.NUMERICAL and type(actual) in (int, float):
+            pass
+        elif expected == Type.BOOLEAN and type(actual) == bool:
             pass
         else:
             raise SyntaxError("Expected %s got %s at %i" % (expected, type(actual), self.index))
@@ -84,7 +93,7 @@ class SkyScript:
         if token == Token.TEXTURE:
             name = self.__run_exp()
             path = self.__run_exp()
-            
+
             self.__type_assert(name, Type.STRING)
             self.__type_assert(path, Type.STRING)
 
@@ -98,7 +107,7 @@ class SkyScript:
             width = self.__run_exp()
             height = self.__run_exp()
             direction = self.__run_exp()
-            
+
             self.__type_assert(name, Type.STRING)
             self.__type_assert(x, Type.NUMERICAL)
             self.__type_assert(y, Type.NUMERICAL)
@@ -177,7 +186,16 @@ class SkyScript:
             self.__eat()
             exp = self.__run_exp()
 
+            self.__type_assert(exp, Type.NUMERICAL)
+
             return -exp
+        elif token == Token.NOT:
+            self.__eat()
+            exp = self.__run_exp()
+
+            self.__type_assert(exp, Type.BOOLEAN)
+
+            return not exp
         else:
             return self.__run_keyword()
 
@@ -191,7 +209,7 @@ class SkyScript:
         else:
             return factor
 
-    def __run_exp(self):
+    def __run_val_exp(self):
         term = self.__run_term()
 
         token, _ = self.__look()
@@ -215,6 +233,46 @@ class SkyScript:
         else:
             return term
 
+    def __run_exp(self): ## Booleans
+        term = self.__run_val_exp()
+
+        token, _ = self.__look()
+
+        if token == Token.GT:
+            self.__eat()
+            term2 = self.__run_val_exp()
+
+            self.__type_assert(term, Type.NUMERICAL)
+            self.__type_assert(term2, Type.NUMERICAL)
+
+            return term > term2
+        elif token == Token.LT:
+            self.__eat()
+            term2 = self.__run_val_exp()
+
+            self.__type_assert(term, Type.NUMERICAL)
+            self.__type_assert(term2, Type.NUMERICAL)
+
+            return term < term2
+        elif token == Token.AND:
+            self.__eat()
+            term2 = self.__run_val_exp()
+
+            self.__type_assert(term, Type.BOOLEAN)
+            self.__type_assert(term2, Type.BOOLEAN)
+
+            return term and term2
+        elif token == Token.OR:
+            self.__eat()
+            term2 = self.__run_val_exp()
+
+            self.__type_assert(term, Type.BOOLEAN)
+            self.__type_assert(term2, Type.BOOLEAN)
+
+            return term or term2
+        else:
+            return term
+
     def __run_on(self):
         self.__eat()
 
@@ -234,10 +292,23 @@ class SkyScript:
 
         print("ON %s WITH %s DO" % (event_name, str(params)))
 
+        print(self.env)
+        self.env.push_scope()
+        print(self.env)
+
+        for param in params: ## TODO - this should not be here!
+            self.env.insert(param, 0)
+
+        self.__run_block()
+        self.env.pop_scope()
+        print(self.env)
+
     def __run_if(self):
         self.__eat()
 
-        exp = self.__run_exp()
+        bool = self.__run_exp()
+
+        print("IF %s" % (str(bool)))
 
     def __run_let(self):
         self.__eat()
@@ -265,11 +336,18 @@ class SkyScript:
             values = self.__run_with()
 
     def __run_block(self):
-        while self.__look()[0] != Token.end:
+        self.__eat()
+        print("ENTER BLOCK")
+
+        while self.__look()[0] != Token.END:
+            print(self.__look())
             self.__run_stm()
+            print(self.__look())
+
+        print("EXIT BLOCK")
 
     def __run_stm(self):
-        token, value = self.__look()
+        token, _ = self.__look()
         if token == Token.ON:
             self.__run_on()
         elif token == Token.IF:
@@ -318,9 +396,9 @@ class SkyScript:
 #   send play_sound with sound : idc end
 # end
 
-# on 
+# on
 
 # on slide_door with door speed do
-  
+
 # end
 # """)

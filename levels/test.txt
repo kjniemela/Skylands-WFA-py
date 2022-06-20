@@ -14,15 +14,15 @@ send spawn with
 end
 
 on hurt @ entity1 with damage do
-  a : calc (1 + 2) * 5 end
-  x : 100
+  let a : (1 + 2) * 5
+  let x : 100
 
-  if damage > x then
+  if (damage > x) then
     send slide_door with
       door : prop door
       speed : 100
     end
   end
   send play_sound with sound : Ouch end
-  send play_sound with sound : idc end
+  send test_event
 end

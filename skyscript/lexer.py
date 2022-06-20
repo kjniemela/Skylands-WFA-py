@@ -18,6 +18,10 @@ class Token(Enum):
     GT = auto()
     LT = auto()
 
+    AND = auto()
+    OR = auto()
+    NOT = auto()
+
     AT = auto()
 
     # Punctuation
@@ -90,6 +94,12 @@ class Lexer:
                     self.__push(Token.ON)
                 elif self.value == "if":
                     self.__push(Token.IF)
+                elif self.value == "or":
+                    self.__push(Token.OR)
+                elif self.value == "and":
+                    self.__push(Token.AND)
+                elif self.value == "not":
+                    self.__push(Token.NOT)
                 elif self.value == "send":
                     self.__push(Token.SEND)
                 elif self.value == "with":
