@@ -1,9 +1,7 @@
 from enum import Enum, auto
 
-from skyscript.lookuptable import LookupTable
-
 from skyscript.lexer import Lexer, Token
-# from skyscript.parser import Parser
+from skyscript.parser import Parser
 
 from vec import Vec
 from entity.base import Entity
@@ -21,6 +19,36 @@ class Type(Enum):
     STRING = auto()
     BOOLEAN = auto()
 
+class LookupTable:
+    def __init__(self):
+        self.env = {}
+        self.parent = None
+
+    def __repr__(self):
+        return "LookupTable(%s, $=%s)" % (str(self.env), repr(self.parent))
+
+    def lookup(self, var):
+        if var in self.env:
+            return self.env[var]
+        elif self.parent != None:
+            return self.parent.lookup(var)
+        else:
+            return None
+
+    def insert(self, var, val):
+        self.env[var] = val
+
+    def push_scope(self):
+        parent = LookupTable()
+        parent.env = self.env
+        parent.parent = self.parent
+        self.__init__()
+        self.parent = parent
+
+    def pop_scope(self):
+        if self.parent != None:
+            self.env = self.parent.env
+            self.parent = self.parent.parent
 
 class SkyScript:
     def __init__(self, level):
@@ -49,7 +77,7 @@ class SkyScript:
         if self.index < len(self.tokens):
             self.index += 1
             token = self.tokens[self.index - 1]
-            # print("%i:" % (self.index), token[0], token[1])
+            print("%i:" % (self.index), token[0], token[1])
             return token
         else:
             return None, None
@@ -263,7 +291,7 @@ class SkyScript:
 
         self.__assert(token, Token.DO)
 
-        print("OPEN ON %s WITH %s DO" % (event_name, str(params)))
+        print("ON %s WITH %s DO" % (event_name, str(params)))
 
         print(self.env)
         self.env.push_scope()
@@ -274,22 +302,19 @@ class SkyScript:
 
         self.__run_block()
         self.env.pop_scope()
-
-        print("CLOSE ON %s WITH %s DO" % (event_name, str(params)))
+        print(self.env)
 
     def __run_if(self):
         self.__eat()
 
         boolean = self.__run_exp()
 
-        print("OPEN IF %s" % (str(boolean)))
+        print("IF %s" % (str(boolean)))
 
         if boolean:
             self.__run_block()
         else:
             self.__skip_block()
-
-        print("CLOSE IF %s" % (str(boolean)))
 
     def __run_let(self):
         self.__eat()
@@ -328,15 +353,16 @@ class SkyScript:
 
     def __run_block(self):
         self.__eat()
+        print("ENTER BLOCK")
 
         while self.__look()[0] != Token.END:
             self.__run_stm()
 
-        self.__eat()
+        print("EXIT BLOCK")
 
     def __skip_block(self):
         self.__eat()
-
+        print("SKIP BLOCK")
         depth = 1
         last_open = None
 
@@ -358,6 +384,9 @@ class SkyScript:
                 depth += 1
 
             token, _ = self.__look()
+
+
+        print("EXIT SKIP")
 
     def __run_stm(self):
         token, _ = self.__look()
