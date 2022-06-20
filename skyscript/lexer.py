@@ -15,6 +15,9 @@ class Token(Enum):
     ADD = auto()
     SUB = auto()
 
+    GT = auto()
+    LT = auto()
+
     AT = auto()
 
     # Punctuation
@@ -132,6 +135,10 @@ class Lexer:
                 self.__push(Token.SUB)
             elif char == ':':
                 self.__push(Token.COLON)
+            elif char == '>':
+                self.__push(Token.GT)
+            elif char == '<':
+                self.__push(Token.LT)
             elif char == '.':
                 self.__push(Token.DOT)
             elif char == '@':
