@@ -1,6 +1,28 @@
-texture jungle2 levels/narbadhir1/jungle2.png
-backg jungle2 0 0 1067 527 0
-#spawn 0 -100
-cline -200 -200 200 -200
-#cline 100 -250 100 0
-#entity shoaldier 100 -160
+texture "jungle2" "levels/narbadhir1/jungle2.png"
+background "jungle2" 0 0 1067 527 0
+
+let surf1 : surface 200 (-200) 200 (-200)
+surface 200 (-200) 200 0
+
+let test : (1 + 2)
+
+let entity1 : entity "shoaldier" 100 (-160)
+
+send spawn with
+    x : 0
+    y : (-100)
+end
+
+on hurt @ entity1 with damage do
+  a : calc (1 + 2) * 5 end
+  x : 100
+
+  if damage > x then
+    send slide_door with
+      door : prop door
+      speed : 100
+    end
+  end
+  send play_sound with sound : Ouch end
+  send play_sound with sound : idc end
+end

@@ -6,6 +6,8 @@ from window import controller
 from entity.base import Entity
 from entity.biped import EntityBiped
 
+from skyscript.skyscript import SkyScript
+
 class Level:
     def __init__(self, lvl_file, player, sounds):
         self.platforms = []
@@ -36,39 +38,44 @@ class Level:
             "shoaldier": EntityBiped ## TODO - give this its own class
         }
 
+        self.interpreter = SkyScript(self)
+
         f = open(resource_path("levels/%s.txt" % (lvl_file)))
-        data = f.read().split("\n")
+        data = f.read()
         f.close()
-        data = [i.split(" ") for i in data]
-        for line in data:
-            if line[0] == "cutscene":
-                self.cutscene = line[1]
-            elif line[0] == "texture":
-                self.textures[line[1]] = controller.load_texture("assets/%s" % (line[2]))
-            elif line[0] == "music":
-                controller.sound_ctrl.load_music("assets/%s" % (' '.join(line[2:])))
-            elif line[0] == 'plat':
-                self.platforms.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
-                if len(line) > 7:
-                    self.controls[line[7]] = self.platforms[-1]
-            elif line[0] == 'platc':
-                self.platforms.append(Platform(line[1], int(line[2]) + (int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
-                if len(line) > 7:
-                    self.controls[line[7]] = self.platforms[-1]
-            elif line[0] == 'cline':
-                self.surfaces.append(Surface(Vec(int(line[1]), int(line[2])), Vec(int(line[3]), int(line[4]))))
-            elif line[0] == 'overlay':
-                self.overlays.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
-            elif line[0] == 'backg':
-                self.background.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
-            elif line[0] == 'backdr':
-                self.backdrop.append(((int(line[1]), int(line[2]), int(line[3])), (int(line[4]), int(line[5]), int(line[6]), int(line[7]))))
-            elif line[0] == 'entity':
-                self.entities.append(self.entity_type_map[line[1]](Vec(int(line[2]), int(line[3]))))
-                if len(line) > 4:
-                    self.controls[line[4]] = self.entities[-1]
-            elif line[0] == 'spawn':
-                self.player.set_spawn(int(line[1]), int(line[2]))
+
+        self.interpreter.run(data)
+
+        # data = [i.split(" ") for i in data]
+        # for line in data:
+        #     if line[0] == "cutscene":
+        #         self.cutscene = line[1]
+        #     elif line[0] == "texture":
+        #         self.textures[line[1]] = controller.load_texture("assets/%s" % (line[2]))
+        #     elif line[0] == "music":
+        #         controller.sound_ctrl.load_music("assets/%s" % (' '.join(line[2:])))
+        #     elif line[0] == 'plat':
+        #         self.platforms.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
+        #         if len(line) > 7:
+        #             self.controls[line[7]] = self.platforms[-1]
+        #     elif line[0] == 'platc':
+        #         self.platforms.append(Platform(line[1], int(line[2]) + (int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
+        #         if len(line) > 7:
+        #             self.controls[line[7]] = self.platforms[-1]
+        #     elif line[0] == 'cline':
+        #         self.surfaces.append(Surface(Vec(int(line[1]), int(line[2])), Vec(int(line[3]), int(line[4]))))
+        #     elif line[0] == 'overlay':
+        #         self.overlays.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+        #     elif line[0] == 'backg':
+        #         self.background.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
+        #     elif line[0] == 'backdr':
+        #         self.backdrop.append(((int(line[1]), int(line[2]), int(line[3])), (int(line[4]), int(line[5]), int(line[6]), int(line[7]))))
+        #     elif line[0] == 'entity':
+        #         self.entities.append(self.entity_type_map[line[1]](Vec(int(line[2]), int(line[3]))))
+        #         if len(line) > 4:
+        #             self.controls[line[4]] = self.entities[-1]
+        #     elif line[0] == 'spawn':
+        #         self.player.set_spawn(int(line[1]), int(line[2]))
 
     def update(self):
         for entity in self.entities:
