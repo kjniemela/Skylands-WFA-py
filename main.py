@@ -13,14 +13,16 @@ while i < len(sys.argv):
         flag = sys.argv[i]
         if flag == "-h":
             print("Skylands %i.%i.%i" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
-            print("usage: python main.py")
+            print("usage: python main.py [options]")
             print("Options and arguments:")
             print("  -h              print this message and exit")
             print("  -s [save_file]  load game state from the provided file")
             print("  -m [Y/n]        override the config.enableMusic option")
             print("  -a [Y/n]        override the config.enableSound option")
             print("  -d              launch Skylands in debug mode")
+            print("  -v              launch Skylands in verbose debug mode")
             print("  -D              debug mode + disable sounds / transitions")
+            print("  -i [script]     load script in verbose debug mode and exit")
 
             sys.exit()
         elif flag == "-s":
@@ -44,6 +46,21 @@ while i < len(sys.argv):
             config["enableSound"] = False
             config["enableCutscenes"] = False
             config["enableFade"] = False
+        elif flag == "-i":
+            i += 1
+            arg = sys.argv[i]
+            config["debug"] = True
+            config["verbose"] = True
+            from level import Level
+            from player import Player
+            from game import game_manager
+            level = Level(game_manager, arg, {})
+            player = Player(level, Vec(0, 0))
+            level.set_player(player)
+            level.start()
+            sys.exit()
+        elif flag == "-v":
+            config["debug"] = True
 
         i += 1
     except IndexError:

@@ -8,8 +8,8 @@ from entity.model.base import Model
 from entity.view.biped import ViewBiped
 
 class EntityBiped(Entity):
-    def __init__(self, pos):
-        super().__init__(pos)
+    def __init__(self, level, pos):
+        super().__init__(level, pos)
 
         self.model = Model()
         self.view = ViewBiped()

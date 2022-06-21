@@ -88,8 +88,11 @@ class GameManager:
     def __init__(self):
         self.level = None
         self.achievement_handler = AchievementRenderer()
+
+        self.next_entity_id = 0
+
         self.camera_pos = Vec(-240, 0)
-        self.player = Player(Vec(0, 0))
+        self.player = None
         self.previous_player_pos = (0, 0)
 
         self.controls = {
@@ -117,8 +120,9 @@ class GameManager:
         }
         self.keys_controls_map = {self.controls_keys_map[key]: key for key in self.controls_keys_map}
 
-    def set_level(self, level_name):
-        self.level = Level(level_name, self.player, controller.sounds)
+    def get_next_entity_id(self):
+        self.next_entity_id += 1
+        return self.next_entity_id - 1
 
     def get_cutscene(self):
         if self.level != None:
@@ -126,6 +130,12 @@ class GameManager:
                 return self.level.cutscene
         
         return None
+
+    def set_level(self, level_name):
+        self.level = Level(self, level_name, controller.sounds)
+        self.player = Player(self.level, Vec(0, 0))
+        self.level.set_player(self.player)
+        self.level.start()
 
     def new_game(self):
         self.level = 1

@@ -7,7 +7,8 @@ from entity.model.base import Model
 from entity.view.base import View
 
 class Entity:
-    def __init__(self, pos):
+    def __init__(self, level, pos):
+        self.id = level.get_next_entity_id()
         self.alive = True
 
         self.touching_platform = False
@@ -25,6 +26,9 @@ class Entity:
         self.max_hp = 10
         self.power = 0
         self.max_power = 240
+
+    def get_uuid(self):
+        return "entity" + str(self.id)
 
     def get_held_pos(self):
         return self.view.held_pos
