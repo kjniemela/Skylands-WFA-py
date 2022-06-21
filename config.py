@@ -2,6 +2,7 @@
 
 config = {
     "debug": False,
+    "verbose": False,
     "enableMusic": True,
     "enableSound": True,
     "enableCutscenes": True,

@@ -51,7 +51,11 @@ while i < len(sys.argv):
             config["debug"] = True
             from level import Level
             from player import Player
-            Level(arg, Player(Vec(0, 0)), {})
+            from game import game_manager
+            level = Level(game_manager, arg, {})
+            player = Player(level, Vec(0, 0))
+            level.set_player(player)
+            level.start()
             sys.exit()
 
         i += 1

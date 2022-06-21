@@ -1,16 +1,7 @@
 from enum import Enum, auto
-from skyscript.ast import *  ## TODO - imports need to be fixed for prod
-from skyscript.lookuptable import LookupTable
+from config import config
+from skyscript.ast import *
 from skyscript.lexer import Lexer, Token
-
-class Event:
-    def __init__(self, event, target):
-        self.event = event
-        self.target = target
-        self.ast = None
-
-    def __repr__(self):
-        return "Event(%s @ %s)" % (self.event, self.target)
 
 class Type(Enum):
     NUMERICAL = auto()
@@ -21,8 +12,6 @@ class Parser:
     def __init__(self):
         self.index = 0
         self.tokens = []
-
-        self.env = LookupTable()
 
     def __assert(self, actual, expected):
         if actual != expected:
@@ -42,7 +31,8 @@ class Parser:
         if self.index < len(self.tokens):
             self.index += 1
             token = self.tokens[self.index - 1]
-            print("%i:" % (self.index), token[0], token[1])
+            if config["debug"] and config["verbose"]:
+                print("%i:" % (self.index), token[0], token[1])
             return token
         else:
             return None, None
@@ -60,11 +50,6 @@ class Parser:
             name = self.__parse_exp()
             path = self.__parse_exp()
 
-            # self.__type_assert(name, Type.STRING)
-            # self.__type_assert(path, Type.STRING)
-
-            # print("TODO HOOKUP TEXTURE LOADER", name, path)
-
             return ProcExp(token, [name, path])
         elif token == Token.BACKGROUND:
             name = self.__parse_exp()
@@ -74,15 +59,6 @@ class Parser:
             height = self.__parse_exp()
             direction = self.__parse_exp()
 
-            # self.__type_assert(name, Type.STRING)
-            # self.__type_assert(x, Type.NUMERICAL)
-            # self.__type_assert(y, Type.NUMERICAL)
-            # self.__type_assert(width, Type.NUMERICAL)
-            # self.__type_assert(height, Type.NUMERICAL)
-            # self.__type_assert(direction, Type.NUMERICAL)
-
-            # print("TODO HOOKUP BACKG LOADER", name, x, y, width, height, direction)
-
             return ProcExp(token, [name, x, y, width, height, direction])
         elif token == Token.SURFACE:
             x1 = self.__parse_exp()
@@ -90,24 +66,11 @@ class Parser:
             x2 = self.__parse_exp()
             y2 = self.__parse_exp()
 
-            # self.__type_assert(x1, Type.NUMERICAL)
-            # self.__type_assert(y1, Type.NUMERICAL)
-            # self.__type_assert(x2, Type.NUMERICAL)
-            # self.__type_assert(y2, Type.NUMERICAL)
-
-            # print("TODO HOOKUP SURF LOADER", x1, y1, x2, y2)
-
             return ProcExp(token, [x1, y1, x2, y2])
         elif token == Token.ENTITY:
             name = self.__parse_exp()
             x = self.__parse_exp()
             y = self.__parse_exp()
-
-            # self.__type_assert(name, Type.STRING)
-            # self.__type_assert(x, Type.NUMERICAL)
-            # self.__type_assert(y, Type.NUMERICAL)
-
-            # print("TODO HOOKUP ENTITY LOADER", name, x, y)
 
             return ProcExp(token, [name, x, y])
 
@@ -123,20 +86,15 @@ class Parser:
 
             token, _ = self.__look()
             if token == Token.DOT:
-                # self.__eat()
-                # token, _ = self.__eat()
-                # self.__assert(token, Token.ID)
-                # return self.env.lookup(value)
                 pass
             elif token == Token.AT:
                 self.__eat()
                 token, target_value = self.__eat()
                 self.__assert(token, Token.ID)
 
-                return EventExp(value, target_value)
+                return EventExp(value, IdExp(target_value))
             else:
                 return IdExp(value)
-                #return self.env.lookup(value)
 
         elif token == Token.STRING:
             self.__eat()
@@ -200,7 +158,7 @@ class Parser:
             return OpExp(token, term, term2)
         elif token == Token.AND or token == Token.OR:
             self.__eat()
-            term2 = self.__parse_arithmetic()
+            term2 = self.__parse_exp()
 
             return OpExp(token, term, term2)
         else:
@@ -214,45 +172,26 @@ class Parser:
 
         token, _ = self.__eat()
         if token == Token.WITH:
-            token, value = self.__eat()
-            while token != Token.DO:
+            while self.__look()[0] != Token.DO:
+                token, value = self.__eat()
                 self.__assert(token, Token.ID)
                 params.append(value)
 
-                token, value = self.__eat()
+        token, value = self.__look()
 
         self.__assert(token, Token.DO)
 
-        print("ON %s WITH %s DO" % (event_name, str(params)))
-
         block = self.__parse_block()
         return OnStm(event_name, params, block)
-
-        print(self.env)
-        self.env.push_scope()
-        print(self.env)
-
-        for param in params: ## TODO - this should not be here!
-            self.env.insert(param, 0)
-
-        self.__run_block()
-        self.env.pop_scope()
-        print(self.env)
 
     def __parse_if(self):
         self.__eat()
 
         exp = self.__parse_exp()
 
-        print("IF %s" % (str(exp)))
-
         block = self.__parse_block()
 
         return IfStm(exp, block)
-        # if boolean:
-        #     self.__run_block()
-        # else:
-        #     self.__skip_block()
 
     def __parse_let(self):
         self.__eat()
@@ -265,7 +204,7 @@ class Parser:
 
         exp = self.__parse_exp()
 
-        self.env.insert(var, exp)
+        # self.env.insert(var, exp)
 
         return LetStm(var, exp)
 
@@ -286,9 +225,7 @@ class Parser:
                 params.append(ParamExp(param_name, param_val))
 
                 token, param_name = self.__eat()
-
-        print("SEND %s TO %s" % (params, event))
-
+        
         return SendStm(event, params)
 
     def __parse_block(self):
@@ -302,34 +239,6 @@ class Parser:
         self.__eat()
 
         return Block(stms)
-
-    def __skip_block(self):
-        self.__eat()
-        print("SKIP BLOCK")
-        depth = 1
-        last_open = None
-
-        token, _ = self.__look()
-        while token != None and depth > 0:
-            self.__eat()
-
-            if token == Token.DO and last_open == Token.WITH:
-                depth -= 1
-
-            if token == Token.END:
-                depth -= 1
-            elif token in (
-                Token.ON,
-                Token.IF,
-                Token.WITH,
-            ):
-                last_open = token
-                depth += 1
-
-            token, _ = self.__look()
-
-
-        print("EXIT SKIP")
 
     def __parse_stm(self):
         token, _ = self.__look()
@@ -354,8 +263,8 @@ class Parser:
 
     def parse(self, tokens):
         self.tokens = tokens
-        print(tokens)
-        self.ast = self.__parse()
-        print(self.ast.display())
+        ast = self.__parse()
+        if config["debug"] and config["verbose"]:
+            print(ast.display())
 
-        return self.ast
+        return ast

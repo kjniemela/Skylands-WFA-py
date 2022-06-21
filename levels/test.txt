@@ -1,10 +1,10 @@
 texture "jungle2" "levels/narbadhir1/jungle2.png"
 background "jungle2" 0 0 1067 527 0
 
-let surf1 : surface 200 (-200) 200 (-200)
+let surf1 : surface (-200) (-200) 200 (-200)
 surface 200 (-200) 200 0
 
-let test : (1 + 2)
+let test : (1 + 2) * 5
 
 let entity1 : entity "shoaldier" 100 (-160)
 
@@ -17,7 +17,7 @@ on hurt @ entity1 with damage do
   let a : (1 + 2) * 5
   let x : 100
 
-  if damage < x then
+  if (damage > 5) and (damage < x) then
     send "slide_door" with
       door : surf1
       speed : 100 + damage
@@ -28,6 +28,7 @@ on hurt @ entity1 with damage do
 end
 
 send hurt @ entity1 with damage : 0 end
+send hurt @ entity1 with damage : 60 end
 send hurt @ entity1 with damage : 120 end
 
 let test2 : hurt @ entity1

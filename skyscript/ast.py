@@ -1,3 +1,20 @@
+from config import config
+from vec import Vec
+from platform import Surface
+
+from skyscript.lexer import Token
+
+class Event:
+    def __init__(self, event, target):
+        self.event = event
+        self.target = target
+
+    def __repr__(self):
+        return "Event(%s @ %s)" % (self.event, self.target)
+
+    def get_key(self):
+        return "%s@%s" % (self.event, self.target.get_uuid())
+
 def tab(indent):
     return indent * "  "
 
@@ -5,7 +22,7 @@ class Node:
     def __init__(self):
         pass
 
-    def run(self):
+    def run(self, env):
         pass
 
     def display(self, indent=0):
@@ -15,9 +32,9 @@ class Block(Node):
     def __init__(self, stms):
         self.stms = stms
 
-    def run(self):
+    def run(self, env):
         for stm in self.stms:
-            stm.run()
+            stm.run(env)
 
     def display(self, indent=0):
         rep = "Block(\n"
@@ -31,8 +48,8 @@ class Prog(Node):
     def __init__(self, block):
         self.block = block
 
-    def run(self):
-        self.block.run()
+    def run(self, env):
+        self.block.run(env)
 
     def display(self, indent=0):
         rep = "Prog(\n"
@@ -45,7 +62,7 @@ class Stm(Node):
     def __init__(self):
         pass
 
-    def run(self):
+    def run(self, env):
         pass
 
     def display(self, indent=0):
@@ -56,8 +73,8 @@ class LetStm(Stm):
         self.var = var
         self.exp = exp
 
-    def run(self):
-        pass
+    def run(self, env):
+        env.scope.insert(self.var, self.exp.run(env))
 
     def display(self, indent=0):
         rep = "LetStm(\n"
@@ -72,9 +89,9 @@ class IfStm(Stm):
         self.exp = exp
         self.block = block
 
-    def run(self):
-        if self.exp.run():
-            return self.block.run()
+    def run(self, env):
+        if self.exp.run(env):
+            return self.block.run(env)
 
     def display(self, indent=0):
         rep = "IfStm(\n"
@@ -90,8 +107,18 @@ class OnStm(Stm):
         self.args = args
         self.block = block
 
-    def run(self):
-        pass
+    def run(self, env):
+        env.add_func(self.event.run(env), self)
+
+    def trigger(self, env, args):
+        ## TODO
+        event = self.event.run(env) 
+        # print("ONSTM TRIGGERED", event.get_key() if type(event) == Event else event, args, self.args)
+        env.scope.push_scope()
+        for arg in self.args:
+            env.scope.insert(arg, args[arg])
+        self.block.run(env)
+        env.scope.pop_scope()
 
     def display(self, indent=0):
         rep = "OnStm(\n"
@@ -110,8 +137,13 @@ class SendStm(Stm):
         self.event = event
         self.args = args
 
-    def run(self):
-        pass
+    def run(self, env):
+        event = self.event.run(env)
+        if type(event) == Event:
+            key = event.get_key()
+        else:
+            key = event
+        env.trigger(key, {key: val for key, val in [arg.run(env) for arg in self.args]})
 
     def display(self, indent=0):
         rep = "SendStm(\n"
@@ -128,8 +160,8 @@ class ExpStm(Stm):
     def __init__(self, exp):
         self.exp = exp
 
-    def run(self):
-        self.exp.run()
+    def run(self, env):
+        self.exp.run(env)
 
     def display(self, indent=0):
         rep = "ExpStm(\n"
@@ -142,7 +174,7 @@ class Exp(Node):
     def __init__(self):
         pass
 
-    def run(self):
+    def run(self, env):
         pass
 
     def display(self, indent=0):
@@ -152,7 +184,7 @@ class NumExp(Exp):
     def __init__(self, num):
         self.num = num
 
-    def run(self):
+    def run(self, env):
         return self.num
 
     def display(self, indent=0):
@@ -166,8 +198,8 @@ class IdExp(Exp):
     def __init__(self, id):
         self.id = id
 
-    def run(self):
-        pass
+    def run(self, env):
+        return env.scope.lookup(self.id)
 
     def display(self, indent=0):
         rep = "IdExp(\n"
@@ -179,9 +211,8 @@ class IdExp(Exp):
 class StrExp(Exp):
     def __init__(self, str):
         self.str = str
-        pass
 
-    def run(self):
+    def run(self, env):
         return self.str
 
     def display(self, indent=0):
@@ -197,19 +228,23 @@ class OpExp(Exp):
         self.exp1 = exp1
         self.exp2 = exp2
 
-    def run(self):
-        if op == Token.MUL:
-            return exp1.run() * exp2.run()
-        elif op == Token.DIV:
-            return exp1.run() / exp2.run()
-        elif op == Token.ADD:
-            return exp1.run() + exp2.run()
-        elif op == Token.SUB:
-            return exp1.run() - exp2.run()
-        elif op == Token.GT:
-            return exp1.run() > exp2.run()
-        elif op == Token.LT:
-            return exp1.run() < exp2.run()
+    def run(self, env):
+        if self.op == Token.MUL:
+            return self.exp1.run(env) * self.exp2.run(env)
+        elif self.op == Token.DIV:
+            return self.exp1.run(env) / self.exp2.run(env)
+        elif self.op == Token.ADD:
+            return self.exp1.run(env) + self.exp2.run(env)
+        elif self.op == Token.SUB:
+            return self.exp1.run(env) - self.exp2.run(env)
+        elif self.op == Token.GT:
+            return self.exp1.run(env) > self.exp2.run(env)
+        elif self.op == Token.LT:
+            return self.exp1.run(env) < self.exp2.run(env)
+        elif self.op == Token.AND:
+            return self.exp1.run(env) and self.exp2.run(env)
+        elif self.op == Token.OR:
+            return self.exp1.run(env) or self.exp2.run(env)
 
     def display(self, indent=0):
         rep = "OpExp(\n"
@@ -225,11 +260,11 @@ class UnaryOpExp(Exp):
         self.op = op
         self.exp = exp
 
-    def run(self):
-        if op == Token.SUB:
-            return -exp.run()
-        elif op == Token.NOT:
-            return not exp.run()
+    def run(self, env):
+        if self.op == Token.SUB:
+            return -self.exp.run(env)
+        elif self.op == Token.NOT:
+            return not self.exp.run(env)
 
     def display(self, indent=0):
         rep = "UnaryOpExp(\n"
@@ -244,8 +279,18 @@ class ProcExp(Exp):
         self.proc = proc
         self.args = args
 
-    def run(self):
-        pass
+    def run(self, env):
+        args = [arg.run(env) for arg in self.args]
+        if config["debug"] and config["verbose"]:
+            print("PROC", self.proc, args)
+        if self.proc == Token.ENTITY:
+            entity = env.level.entity_type_map[args[0]](env.level, Vec(args[1], args[2]))
+            env.level.add_entity(entity)
+            return entity
+        elif self.proc == Token.SURFACE:
+            surface = Surface(Vec(args[0], args[1]), Vec(args[2], args[3]))
+            env.level.add_surface(surface)
+            return surface
 
     def display(self, indent=0):
         rep = "ProcExp(\n"
@@ -263,12 +308,12 @@ class EventExp(Exp):
         self.event = event
         self.target = target
 
-    def run(self):
-        pass
+    def run(self, env):
+        return Event(self.event, self.target.run(env))
 
     def display(self, indent=0):
         rep = "EventExp(\n"
-        rep += tab(indent+1) + str(self.event) + " @ " + str(self.target) + "\n"
+        rep += tab(indent+1) + str(self.event) + " @ " + self.target.display(indent+1)
         rep += tab(indent) + ")\n"
 
         return rep
@@ -278,8 +323,8 @@ class ParamExp(Exp):
         self.var = var
         self.exp = exp
 
-    def run(self):
-        pass
+    def run(self, env):
+        return self.var, self.exp.run(env)
 
     def display(self, indent=0):
         rep = "ParamExp(\n"
