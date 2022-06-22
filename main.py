@@ -23,6 +23,7 @@ while i < len(sys.argv):
             print("  -v              launch Skylands in verbose debug mode")
             print("  -D              debug mode + disable sounds / transitions")
             print("  -i [script]     load script in verbose debug mode and exit")
+            print("  -L [level]      load level directly and skip the menu")
 
             sys.exit()
         elif flag == "-s":
@@ -59,6 +60,17 @@ while i < len(sys.argv):
             level.set_player(player)
             level.start()
             sys.exit()
+        elif flag == "-L":
+            i += 1
+            arg = sys.argv[i]
+            config["debug"] = True
+            config["verbose"] = True
+            config["displayMenu"] = False
+            from game import game_manager
+            game_manager.set_level(arg)
+            from view import views
+            views.set_view('game')
+
         elif flag == "-v":
             config["debug"] = True
 
@@ -76,8 +88,9 @@ from timer import timers
 from view import views
 
 ## Start intro music while loading to save time
-controller.sound_ctrl.load_music("assets/music/Skylands Theme Start.ogg")
-controller.sound_ctrl.play_music()
+if config["displayMenu"]:
+    controller.sound_ctrl.load_music("assets/music/Skylands Theme Start.ogg")
+    controller.sound_ctrl.play_music()
 
 if config["debug"]:
     from game import game_manager
@@ -87,7 +100,8 @@ if config["debug"]:
 controller.cl_intro()
 
 ## Set the intro view now that loading is complete
-views.set_view("intro")
+if config["displayMenu"]:
+    views.set_view("intro")
 
 ## globals
 clock = pygame.time.Clock()

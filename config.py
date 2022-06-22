@@ -7,4 +7,5 @@ config = {
     "enableSound": True,
     "enableCutscenes": True,
     "enableFade": True,
+    "displayMenu": True,
 }
