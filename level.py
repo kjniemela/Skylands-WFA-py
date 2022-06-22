@@ -136,8 +136,9 @@ class Level:
                 # if correction_vec.magnitude() > 0:
                 #     print(correction_vec)
                 if collided:
-                    entity.pos += correction_vec
-                    avg_col_vec = (avg_col_vec + correction_vec).normalized()
+                    if entity.vel.magnitude() >= correction_vec.magnitude():
+                        entity.pos += correction_vec
+                        avg_col_vec = (avg_col_vec + correction_vec).normalized()
 
             if collided:
                 # print(entity.vel, -avg_col_vec, entity.vel.normalized() @ -avg_col_vec)
