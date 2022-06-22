@@ -44,6 +44,9 @@ class Player(EntityBiped):
 
         controls = self.level.game.controls
 
+        mouse_x, mouse_y = controller.mouse_pos
+        self.view.aim = -math.degrees(math.atan2(mouse_y-(180+24), mouse_x-(240+16)))
+
         if not (self.walljump and self.wallJumpTime < 5):
             if controls["left"]:
                 self.walk(-1)
