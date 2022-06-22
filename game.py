@@ -2,7 +2,7 @@ from utils import *
 from vec import Vec
 from window import controller
 from level import Level
-from player import Bullet, Player
+from player import Player
 
 class AchievementRenderer:
     def __init__(self):
@@ -169,101 +169,7 @@ class GameManager:
 
 
     def handle_click(self, mouseX, mouseY, button):
-        pass
-
-    def player_controls(self):
-        ## TODO - much of this should be shared by all humanoid entities...
-        ## TODO - properly convert this to use vectors
-
-        player = self.player
-        controls = self.controls
-
-        # previous_player_pos = Vec(*player.pos)
-
-        if not (player.walljump and player.wallJumpTime < 5):
-            if controls["left"]:
-                if player.vel.x > -3:
-                    player.vel.x -= 0.5 if player.view.states["sneaking"] else 2
-                    player.vel.x *= 0.6
-
-                player.view.walk_frame += player.view.facing * -1
-
-            if controls["right"]:
-                if player.vel.x < 3:
-                    player.vel.x += 0.5 if player.view.states["sneaking"] else 2
-                    player.vel.x *= 0.6
-                
-                player.view.walk_frame += player.view.facing
-
-        if player.walljump and not player.falling:
-            player.walljump = False
-            player.wallJumpTime = 0
-        elif player.walljump:
-            player.wallJumpTime += 1
-
-        if not player.walljump and not (controls["right"] or controls["left"]):
-            player.vel.x *= 0.6
-        if abs(player.vel.x) < 0.01:
-            player.vel.x = 0
-        if player.falling and not False: ## FLIGHT CHECK HERE TODO ??
-            player.vel.y -= self.level.gravity
-
-        if False: ## FLIGHT CHECK HERE TODO ??
-            if keys[controlsMap["up"]]:
-                player.yVel = 5
-            elif keys[controlsMap["sneak"]]:
-                player.yVel = -5
-            elif not  keys[pygame.K_g]:
-                player.yVel *= 0.9
-        else:
-            if controls["jump"] and player.touching_platform and player.jumping == 0 and not player.view.states["sneaking"]:
-                player.jumping = 1
-                player.vel.y += 10
-            elif player.touching_platform:
-                if controls["sneak"] and not player.falling:
-                    player.model.height_body = 36
-                    player.view.states["sneaking"] = True
-                elif player.view.states["sneaking"]:
-                    player.model.height_body = 48
-                    player.view.states["sneaking"] = False
-                    player.pos.y += 12
-
-        if controls["reset"]:
-            self.level.__init__(self.level.level_name, player, controller.sounds)
-        if controls["shoot"] and player.gun_cooldown == 0:
-            if player.power >= 40 and not player.reload: ## TODO - these magic numbers are gunPower
-                controller.sound_ctrl.play_sound(controller.sounds["player_shoot"])
-                bulletspeed = 20
-                player.gun_cooldown = 20
-                self.level.projectiles.append(Bullet(*player.view.held_pos, player.view.aim, bulletspeed, player))
-                player.power -= 40 ## TODO - magic number
-                if player.power < 40:
-                    player.reload = True
-            else:
-                controller.sound_ctrl.play_sound(controller.sounds["click"])
-                player.gun_cooldown = 30
-
-        if player.gun_cooldown > 0:
-            player.gun_cooldown -= 1
-        if controls["reload"] and player.gun_cooldown == 0:
-                player.reload = True
-
-        if player.reload:
-            player.power += player.reload_speed
-            if player.power > player.max_power:
-                player.power = player.max_power
-            if player.power == player.max_power:
-                player.reload = False
-                player.gun_cooldown = 0
-
-        if player.pos.y < -2000:
-            player.hp = 0
-
-        if player.hp <= 0:
-            player.kill()
-            self.achievement_handler.trigger("StillAlive")
-
-        
+        pass    
 
     def update(self):
         self.level.update()

@@ -11,6 +11,8 @@ class Entity:
         self.id = level.get_next_entity_id()
         self.alive = True
 
+        self.level = level
+
         self.touching_platform = False
         self.falling = False ## TODO - this is currently unused
         self.jumping = 0

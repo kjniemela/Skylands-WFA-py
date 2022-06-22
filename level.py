@@ -146,8 +146,14 @@ class Level:
                 ground_normal = avg_col_vec * max((entity.vel.magnitude() * (entity.vel.normalized() @ -avg_col_vec)), 0)
                 entity.vel += ground_normal
 
+                ## Friction - TODO
+                entity.vel.x *= 0.6
+            else:
+                entity.vel.x *= 0.925
+
             entity.touching_platform = collided
             entity.ground_normal = ground_normal
+                
 
         for projectile in self.projectiles:
             if not projectile.update(): ## TODO or projectile.get_touching(self):
