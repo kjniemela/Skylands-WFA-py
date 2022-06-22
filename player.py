@@ -81,7 +81,10 @@ class Player(EntityBiped):
                     self.unsneak()
                     
         if controls["reset"]:
-            self.level.__init__(self.level.level_name, self, controller.sounds)
+            self.level.__init__(self.level.game, self.level.level_name, controller.sounds)
+            self.level.set_player(self)
+            self.level.start()
+        
         if controls["shoot"] and self.gun_cooldown == 0:
             if self.power >= 40 and not self.reload: ## TODO - these magic numbers are gunPower
                 controller.sound_ctrl.play_sound(controller.sounds["player_shoot"])

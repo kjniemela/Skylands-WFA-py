@@ -2,7 +2,8 @@ texture "jungle2" "levels/narbadhir1/jungle2.png"
 background "jungle2" 0 0 1067 527 0
 
 let surf1 : surface (-200) (-200) 200 (-200)
-surface 200 (-200) 200 0
+surface 203 (-197) 203 0
+surface (-203) (-250) (-203) (-203)
 
 let test : (1 + 2) * 5
 
@@ -12,7 +13,7 @@ send "spawn" with
     x : 0
     y : (-100)
 end
-
+W
 on hurt @ entity1 with damage do
   let a : (1 + 2) * 5
   let x : 100
