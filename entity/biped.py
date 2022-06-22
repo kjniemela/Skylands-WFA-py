@@ -24,6 +24,11 @@ class EntityBiped(Entity):
     # def update(self):
     #     return super().update()
 
+    def walk(self, direction):
+        super().walk(direction)
+
+        self.view.walk_frame += self.view.facing * direction
+
     def render(self, camera_pos):
 
         ## TODO more logic to decide if sounds should be played... or maybe volume/pan control?

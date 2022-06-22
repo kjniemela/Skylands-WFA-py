@@ -22,6 +22,9 @@ class Entity:
         self.vel = Vec(0, 0)
         self.ground_normal = Vec(0, 0)
 
+        self.speed = 2
+        self.max_speed = 3
+
         # HUD data
         self.hp = 10
         self.max_hp = 10
@@ -75,6 +78,15 @@ class Entity:
         # self.model.height_body += self.model.sneak_height_diff
         self.pos.y += self.model.sneak_height_diff
         self.view.states["sneaking"] = False
+
+    def walk(self, direction):
+        if self.vel.x * direction < self.max_speed:
+            speed = self.speed * direction
+            if self.view.states["sneaking"]:
+                speed /= 4
+
+            self.vel.x += speed
+            self.vel.x *= 0.6 ## TODO - magic number for friction
 
 
     def render(self, camera_pos):

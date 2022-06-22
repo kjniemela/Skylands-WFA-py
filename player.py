@@ -39,7 +39,7 @@ class Player(EntityBiped):
         super().kill()
 
         ## TODO - MAKE RESPAWNING WORK AGAIN!
-        # self.__init__(self.spawnpoint)
+        self.__init__(self.level, self.spawnpoint)
 
     def update(self):
         super().update()
@@ -48,18 +48,10 @@ class Player(EntityBiped):
 
         if not (self.walljump and self.wallJumpTime < 5):
             if controls["left"]:
-                if self.vel.x > -3:
-                    self.vel.x -= 0.5 if self.view.states["sneaking"] else 2
-                    self.vel.x *= 0.6
-
-                self.view.walk_frame += self.view.facing * -1
+                self.walk(-1)
 
             if controls["right"]:
-                if self.vel.x < 3:
-                    self.vel.x += 0.5 if self.view.states["sneaking"] else 2
-                    self.vel.x *= 0.6
-                
-                self.view.walk_frame += self.view.facing
+                self.walk(1)
 
         if self.walljump and not self.falling:
             self.walljump = False
