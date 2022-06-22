@@ -4,7 +4,7 @@ from config import config
 ## Set Version Constants
 VERSION_MAJOR = 0
 VERSION_MINOR = 3
-VERSION_PATCH = 3
+VERSION_PATCH = 4
 
 ## Handle command line args
 i = 0

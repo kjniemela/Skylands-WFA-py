@@ -80,18 +80,14 @@ class Player(EntityBiped):
             elif not  keys[pygame.K_g]:
                 self.yVel *= 0.9
         else:
-            if controls["jump"] and self.touching_platform and self.jumping == 0 and not self.view.states["sneaking"]:
-                self.jumping = 1
-                self.vel.y += 10
+            if controls["jump"]:
+                self.jump(Vec(0, 10))
             elif self.touching_platform:
                 if controls["sneak"] and not self.falling:
-                    self.model.height_body = 36
-                    self.view.states["sneaking"] = True
+                    self.sneak()
                 elif self.view.states["sneaking"]:
-                    self.model.height_body = 48
-                    self.view.states["sneaking"] = False
-                    self.pos.y += 12
-
+                    self.unsneak()
+                    
         if controls["reset"]:
             self.level.__init__(self.level.level_name, self, controller.sounds)
         if controls["shoot"] and self.gun_cooldown == 0:

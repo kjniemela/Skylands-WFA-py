@@ -12,7 +12,7 @@ class Entity:
         self.alive = True
 
         self.touching_platform = False
-        self.falling = True
+        self.falling = False ## TODO - this is currently unused
         self.jumping = 0
 
         self.model = Model()
@@ -35,8 +35,10 @@ class Entity:
         return self.view.held_pos
 
     def get_hitbox(self):
+        height_body = self.model.height_body - (self.model.sneak_height_diff if self.view.states["sneaking"] else 0)
+
         top_left = self.pos + Vec(self.model.x_offset, self.model.height_head)
-        bottom_left = self.pos + Vec(self.model.x_offset, -self.model.height_body)
+        bottom_left = self.pos + Vec(self.model.x_offset, -height_body)
         top_right = top_left + Vec(self.model.width, 0)
         bottom_right = bottom_left + Vec(self.model.width, 0)
 
@@ -59,15 +61,38 @@ class Entity:
 
         return self.alive
 
+    def jump(self, force):
+        if self.touching_platform and self.jumping == 0 and not self.view.states["sneaking"]:
+            self.jumping = 1
+            self.vel += force
+
+    def sneak(self):
+        if not self.view.states["sneaking"]:
+            # self.model.height_body -= self.model.sneak_height_diff
+            self.view.states["sneaking"] = True
+
+    def unsneak(self):
+        # self.model.height_body += self.model.sneak_height_diff
+        self.pos.y += self.model.sneak_height_diff
+        self.view.states["sneaking"] = False
+
+
     def render(self, camera_pos):
 
         ## Render hitbox
         if config["debug"]:
             win = controller.win
 
+            (
+                top_left,
+                top_right,
+                bottom_right,
+                bottom_left
+            ) = self.get_hitbox()
+
             pygame.draw.rect(win, (0, 0, 0),
-                (*((self.pos + Vec(self.model.x_offset, self.model.height_head) - camera_pos).screen_coords()),
-                self.model.width, self.model.height_head + self.model.height_body))
+                (*((top_left - camera_pos).screen_coords()),
+                (top_right - top_left).x, (top_left - bottom_left).y))
 
         self.view.render(self.pos, camera_pos)
 

@@ -6,3 +6,30 @@ surface 200 (-200) 200 0
 
 let test : (1 + 2) * 5
 
+let entity1 : entity "shoaldier" 100 (-160)
+
+send "spawn" with
+    x : 0
+    y : (-100)
+end
+
+on hurt @ entity1 with damage do
+  let a : (1 + 2) * 5
+  let x : 100
+
+  if (damage > 5) and (damage < x) then
+    send "slide_door" with
+      door : surf1
+      speed : 100 + damage
+    end
+  end
+  send "play_sound" with sound : "ouch" end
+  send "test_event"
+end
+
+send hurt @ entity1 with damage : 0 end
+send hurt @ entity1 with damage : 60 end
+send hurt @ entity1 with damage : 120 end
+
+let test2 : hurt @ entity1
+let x : 1
