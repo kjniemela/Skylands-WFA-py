@@ -49,7 +49,7 @@ class EntityBiped(Entity):
                 controller.sound_ctrl.play_sound(self.shoot_sound)
                 bulletspeed = 20
                 self.gun_cooldown = 20
-                self.level.projectiles.append(Bullet(*self.view.held_pos, self.view.aim, bulletspeed, self))
+                self.level.projectiles.append(Bullet(*self.view.held_pos.screen_coords(), self.view.aim, bulletspeed, self))
                 self.power -= 40 ## TODO - magic number
                 if self.power < 40:
                     self.reload = True
