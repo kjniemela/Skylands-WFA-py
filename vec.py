@@ -20,6 +20,12 @@ class Vec:
 
         return Vec(x, y)
 
+    def __neg__(self):
+        x = -self.x
+        y = -self.y
+
+        return Vec(x, y)
+
     def __mul__(self, other):
         if type(other) == Vec:
             pass

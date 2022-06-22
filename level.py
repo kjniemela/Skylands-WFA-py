@@ -104,10 +104,12 @@ class Level:
                 del self.entities[self.entities.index(entity)]
                 continue
 
+            collided = False
+            avg_col_vec = Vec(0, 0)
+
             for surface in self.surfaces:
                 verticies = entity.get_hitbox()
                 correction_vec = Vec(0, 0)
-                collided = False
 
                 for i in range(len(verticies)):
                     p = verticies[i]
@@ -129,15 +131,20 @@ class Level:
 
                         # print(i, i+1, correction_line, p, q, intersection_point, surface.normal)
 
-                entity.touching_platform = collided
 
                 # if correction_vec.magnitude() > 0:
                 #     print(correction_vec)
-                entity.pos += correction_vec
                 if collided:
-                    entity.vel = Vec(0, 0)
+                    entity.pos += correction_vec
+                    avg_col_vec = (avg_col_vec + correction_vec).normalized()
 
-                ## collision logic here
+            if collided:
+                # print(entity.vel, -avg_col_vec, entity.vel.normalized() @ -avg_col_vec)
+                # print(avg_col_vec * (entity.vel.magnitude() * (entity.vel.normalized() @ -avg_col_vec)))
+                entity.vel += avg_col_vec * (entity.vel.magnitude() * (entity.vel.normalized() @ -avg_col_vec))
+
+            entity.touching_platform = collided
+            entity.ground_normal = avg_col_vec
 
         for projectile in self.projectiles:
             if not projectile.update(): ## TODO or projectile.get_touching(self):

@@ -20,6 +20,7 @@ class Entity:
 
         self.pos = pos
         self.vel = Vec(0, 0)
+        self.ground_normal = Vec(0, 0)
 
         # HUD data
         self.hp = 10
@@ -49,10 +50,14 @@ class Entity:
     def update(self):
         self.pos += self.vel
 
+        # print(self.ground_normal @ Vec(0, 1))
+        if self.touching_platform and self.ground_normal @ Vec(0, 1) > 0.64:
+            self.jumping = 0 ## TODO - more checks are probably required here...
+
         ## TODO add animation logic here
         ## like "self.view.update()"
 
-        return True
+        return self.alive
 
     def render(self, camera_pos):
 

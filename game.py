@@ -178,7 +178,7 @@ class GameManager:
         player = self.player
         controls = self.controls
 
-        previous_player_pos = Vec(*player.pos)
+        # previous_player_pos = Vec(*player.pos)
 
         if not (player.walljump and player.wallJumpTime < 5):
             if controls["left"]:
@@ -263,12 +263,13 @@ class GameManager:
             player.kill()
             self.achievement_handler.trigger("StillAlive")
 
-        self.camera_pos.x += (((player.pos.x + 5) - (480 / 2)) - self.camera_pos.x) * 0.2
-        self.camera_pos.y += (((player.pos.y + 20) + (360 / 2)) - self.camera_pos.y) * 0.2
+        
 
     def update(self):
         self.level.update()
-        self.player_controls()
+        
+        self.camera_pos.x += (((self.player.pos.x + 5) - (480 / 2)) - self.camera_pos.x) * 0.2
+        self.camera_pos.y += (((self.player.pos.y + 20) + (360 / 2)) - self.camera_pos.y) * 0.2
 
     def render(self):
         self.level.render(self.camera_pos)

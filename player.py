@@ -7,6 +7,8 @@ from entity.biped import EntityBiped
 class Player(EntityBiped):
     def __init__(self, level, pos):
         super().__init__(level, pos)
+
+        self.level = level
         
         self.spawnpoint = Vec(*pos)
         self.walljump = False
@@ -36,10 +38,98 @@ class Player(EntityBiped):
     def kill(self):
         super().kill()
 
-        self.__init__(self.spawnpoint)
+        ## TODO - MAKE RESPAWNING WORK AGAIN!
+        # self.__init__(self.spawnpoint)
 
-    # def update(self):
-    #     return super().update()
+    def update(self):
+        super().update()
+
+        controls = self.level.game.controls
+
+        if not (self.walljump and self.wallJumpTime < 5):
+            if controls["left"]:
+                if self.vel.x > -3:
+                    self.vel.x -= 0.5 if self.view.states["sneaking"] else 2
+                    self.vel.x *= 0.6
+
+                self.view.walk_frame += self.view.facing * -1
+
+            if controls["right"]:
+                if self.vel.x < 3:
+                    self.vel.x += 0.5 if self.view.states["sneaking"] else 2
+                    self.vel.x *= 0.6
+                
+                self.view.walk_frame += self.view.facing
+
+        if self.walljump and not self.falling:
+            self.walljump = False
+            self.wallJumpTime = 0
+        elif self.walljump:
+            self.wallJumpTime += 1
+
+        if not self.walljump and not (controls["right"] or controls["left"]):
+            self.vel.x *= 0.6
+        if abs(self.vel.x) < 0.01:
+            self.vel.x = 0
+        if self.falling and not False: ## FLIGHT CHECK HERE TODO ??
+            self.vel.y -= self.level.gravity
+
+        if False: ## FLIGHT CHECK HERE TODO ??
+            if keys[controlsMap["up"]]:
+                self.yVel = 5
+            elif keys[controlsMap["sneak"]]:
+                self.yVel = -5
+            elif not  keys[pygame.K_g]:
+                self.yVel *= 0.9
+        else:
+            if controls["jump"] and self.touching_platform and self.jumping == 0 and not self.view.states["sneaking"]:
+                self.jumping = 1
+                self.vel.y += 10
+            elif self.touching_platform:
+                if controls["sneak"] and not self.falling:
+                    self.model.height_body = 36
+                    self.view.states["sneaking"] = True
+                elif self.view.states["sneaking"]:
+                    self.model.height_body = 48
+                    self.view.states["sneaking"] = False
+                    self.pos.y += 12
+
+        if controls["reset"]:
+            self.level.__init__(self.level.level_name, self, controller.sounds)
+        if controls["shoot"] and self.gun_cooldown == 0:
+            if self.power >= 40 and not self.reload: ## TODO - these magic numbers are gunPower
+                controller.sound_ctrl.play_sound(controller.sounds["self_shoot"])
+                bulletspeed = 20
+                self.gun_cooldown = 20
+                self.level.projectiles.append(Bullet(*self.view.held_pos, self.view.aim, bulletspeed, self))
+                self.power -= 40 ## TODO - magic number
+                if self.power < 40:
+                    self.reload = True
+            else:
+                controller.sound_ctrl.play_sound(controller.sounds["click"])
+                self.gun_cooldown = 30
+
+        if self.gun_cooldown > 0:
+            self.gun_cooldown -= 1
+        if controls["reload"] and self.gun_cooldown == 0:
+                self.reload = True
+
+        if self.reload:
+            self.power += self.reload_speed
+            if self.power > self.max_power:
+                self.power = self.max_power
+            if self.power == self.max_power:
+                self.reload = False
+                self.gun_cooldown = 0
+
+        if self.pos.y < -2000:
+            self.hp = 0
+
+        if self.hp <= 0:
+            self.kill()
+            self.level.game.achievement_handler.trigger("StillAlive")
+
+        return True
 
     def render(self, camera_pos):
         super().render(camera_pos)
