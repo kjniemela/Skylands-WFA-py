@@ -79,13 +79,8 @@ from view import views
 controller.sound_ctrl.load_music("assets/music/Skylands Theme Start.ogg")
 controller.sound_ctrl.play_music()
 
-# timers.set_condition(
-#     lambda:
-#         views.set_view("main_menu")
-#     ,
-#     lambda:
-#         intro_music_channel == None or not intro_music_channel.get_busy()
-# )
+if config["debug"]:
+    from game import game_manager
 
 ## TODO ALL OTHER LOADING HERE
 
@@ -116,14 +111,14 @@ while run:
             mouseY -= controller.menu_offsets[1]
             mouseX *= DISPLAY_WIDTH / controller.win_size[0]
             mouseY *= DISPLAY_HEIGHT / controller.win_size[1]
-            controller.mouse_pos = mouseX, mouseY
+            controller.mouse_pos = Vec(mouseX, mouseY)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseX, mouseY = event.pos
             mouseX -= controller.menu_offsets[0]
             mouseY -= controller.menu_offsets[1]
             mouseX *= DISPLAY_WIDTH / controller.win_size[0]
             mouseY *= DISPLAY_HEIGHT / controller.win_size[1]
-            controller.mouse_pos = mouseX, mouseY
+            controller.mouse_pos = Vec(mouseX, mouseY)
             views.handle_event(event)
         elif event.type == pygame.VIDEORESIZE:
             if event.w / DISPLAY_WIDTH > event.h / DISPLAY_HEIGHT:
@@ -147,9 +142,10 @@ while run:
     ## If in debug mode, show debug data
     if config["debug"]:
         pygame.display.set_caption(
-            "Skylands %d.%d.%d - Mouse Pos: %d / %d"
+            "Skylands %d.%d.%d - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
             % (
                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
-                controller.mouse_pos[0], controller.mouse_pos[1]
+                controller.mouse_pos[0], controller.mouse_pos[1],
+                game_manager.camera_pos.x + controller.mouse_pos.x, game_manager.camera_pos.y - controller.mouse_pos.y
             )
         )
