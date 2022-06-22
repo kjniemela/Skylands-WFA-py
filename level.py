@@ -106,6 +106,7 @@ class Level:
 
             collided = False
             avg_col_vec = Vec(0, 0)
+            ground_normal = Vec(0, 0)
 
             for surface in self.surfaces:
                 verticies = entity.get_hitbox()
@@ -141,10 +142,11 @@ class Level:
             if collided:
                 # print(entity.vel, -avg_col_vec, entity.vel.normalized() @ -avg_col_vec)
                 # print(avg_col_vec * (entity.vel.magnitude() * (entity.vel.normalized() @ -avg_col_vec)))
-                entity.vel += avg_col_vec * (entity.vel.magnitude() * (entity.vel.normalized() @ -avg_col_vec))
+                ground_normal = avg_col_vec * max((entity.vel.magnitude() * (entity.vel.normalized() @ -avg_col_vec)), 0)
+                entity.vel += ground_normal
 
             entity.touching_platform = collided
-            entity.ground_normal = avg_col_vec
+            entity.ground_normal = ground_normal
 
         for projectile in self.projectiles:
             if not projectile.update(): ## TODO or projectile.get_touching(self):

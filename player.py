@@ -71,8 +71,6 @@ class Player(EntityBiped):
             self.vel.x *= 0.6
         if abs(self.vel.x) < 0.01:
             self.vel.x = 0
-        if self.falling and not False: ## FLIGHT CHECK HERE TODO ??
-            self.vel.y -= self.level.gravity
 
         if False: ## FLIGHT CHECK HERE TODO ??
             if keys[controlsMap["up"]]:
@@ -98,7 +96,7 @@ class Player(EntityBiped):
             self.level.__init__(self.level.level_name, self, controller.sounds)
         if controls["shoot"] and self.gun_cooldown == 0:
             if self.power >= 40 and not self.reload: ## TODO - these magic numbers are gunPower
-                controller.sound_ctrl.play_sound(controller.sounds["self_shoot"])
+                controller.sound_ctrl.play_sound(controller.sounds["player_shoot"])
                 bulletspeed = 20
                 self.gun_cooldown = 20
                 self.level.projectiles.append(Bullet(*self.view.held_pos, self.view.aim, bulletspeed, self))
