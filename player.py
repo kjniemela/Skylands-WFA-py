@@ -49,9 +49,11 @@ class Player(EntityBiped):
         if not (self.walljump and self.wallJumpTime < 5):
             if controls["left"]:
                 self.walk(-1)
+                if not self.touching_platform: self.vel.x *= 0.648
 
             if controls["right"]:
                 self.walk(1)
+                if not self.touching_platform: self.vel.x *= 0.648
 
         if self.walljump and not self.falling:
             self.walljump = False
@@ -59,8 +61,11 @@ class Player(EntityBiped):
         elif self.walljump:
             self.wallJumpTime += 1
 
-        if not self.walljump and not (controls["right"] or controls["left"]):
+        if self.touching_platform:
             self.vel.x *= 0.6
+        else:
+            self.vel.x *= 0.925
+
         if abs(self.vel.x) < 0.01:
             self.vel.x = 0
 

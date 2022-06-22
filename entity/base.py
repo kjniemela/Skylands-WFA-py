@@ -86,7 +86,7 @@ class Entity:
                 speed /= 4
 
             self.vel.x += speed
-            self.vel.x *= 0.6 ## TODO - magic number for friction
+            # self.vel.x *= 0.6 ## TODO - magic number for friction
 
 
     def render(self, camera_pos):
