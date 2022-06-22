@@ -28,7 +28,7 @@ class WindowController:
         self.player_textures = {}
         self.items = {}
 
-        self.mouse_pos = (0, 0)
+        self.mouse_pos = Vec(0, 0)
         self.menu_offsets = (0, 0)
         self.win_size = (DISPLAY_WIDTH * 2, DISPLAY_HEIGHT * 2)
         self.setup_window()

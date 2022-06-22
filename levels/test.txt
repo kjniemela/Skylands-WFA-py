@@ -2,7 +2,51 @@ texture "jungle2" "levels/narbadhir1/jungle2.png"
 background "jungle2" 0 0 1067 527 0
 
 let surf1 : surface (-200) (-200) 200 (-200)
-surface 200 (-200) 200 0
+surface 200 (-200) 200 (-150)
+surface (-200) (-300) (-200) (-200)
+surface (-190) (-203) (-190) (-300)
+surface (-187) (-300) (-203) (-300)
+surface 200 (-150) 300 (-150)
+
+surface (-100) (-120) 0 (-120)
+surface (-150) (-100) (-50) (-40)
+
+surface 200 (-50) 300 (-50)
+
+surface (-400) (-325) (-300) (-325)
+surface (-400) (-250) (-300) (-250)
+surface (-400) (-100) (-300) (-175)
+
+surface (-400) (-400) 0 (-400)
+surface 0 (-400) (400) (-400)
+
 
 let test : (1 + 2) * 5
 
+let entity1 : entity "shoaldier" 100 (-140)
+
+send "spawn" with
+    x : 0
+    y : (-100)
+end
+
+on hurt @ entity1 with damage do
+  let a : (1 + 2) * 5
+  let x : 100
+
+  if (damage > 5) and (damage < x) then
+    send "slide_door" with
+      door : surf1
+      speed : 100 + damage
+    end
+  end
+  send "play_sound" with sound : "ouch" end
+  send "test_event"
+end
+
+send hurt @ entity1 with damage : 0 end
+send hurt @ entity1 with damage : 60 end
+send hurt @ entity1 with damage : 120 end
+
+let test2 : hurt @ entity1
+let x : 1
