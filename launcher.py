@@ -13,6 +13,8 @@ except FileNotFoundError:
 ## Callbacks
 def check():
     global update_window
+    global button_install
+    global button_cancel
 
     version_file_link = "https://raw.githubusercontent.com/kjniemela/Skylands-WFA/master/version.txt"
     f = urllib.request.urlopen(version_file_link)
@@ -101,11 +103,17 @@ def install_latest():
     button = tk.Button(top, text="Ok", command=update_window.destroy)
     button.pack()
 
-def launch():
+def launch(flags=[]):
     print("Launching Skylands WFA version", cur_version)
     python_dir = "/".join(os.__file__.replace("\\", "/").split("/")[:-2])
-    subprocess.Popen(python_dir + "/pythonw main.py", cwd="Skylands")
+    cmd = [python_dir + "/pythonw", "main.py"]
+    cmd += flags
+    print(cmd)
+    subprocess.Popen(cmd, cwd="Skylands")
     exit() ## TODO maybe use sys.exit? - or have the launcher continue in the background
+
+def launch_debug():
+    launch(flags=["-D"])
 
 def settings():
     print("SETTINGS")
@@ -132,6 +140,8 @@ launch_btn = tk.Button(
     state=tk.NORMAL if cur_version != None else tk.DISABLED
 )
 launch_btn.pack(side=tk.LEFT)
+debug_btn = tk.Button(btn_frame, text="Launch in Debug Mode", command=launch_debug)
+debug_btn.pack(side=tk.LEFT)
 settings_btn = tk.Button(btn_frame, text="Settings", command=settings)
 settings_btn.pack(side=tk.LEFT)
 
