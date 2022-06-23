@@ -75,7 +75,7 @@ class Level:
         #         self.player.set_spawn(int(line[1]), int(line[2]))
 
     def start(self):
-        f = open(resource_path("levels/%s.txt" % (self.level_name)))
+        f = open(resource_path("levels/%s.sky" % (self.level_name)))
         data = f.read()
         f.close()
 
