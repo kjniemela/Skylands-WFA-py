@@ -46,7 +46,7 @@ class WindowController:
 
     def cl_intro(self):
         print(ascii_icon)
-        print("Skylands: Worlds from Above v%d.%d.%d" % self.version)
+        print("Skylands: Worlds from Above v%s.%s.%s" % self.version)
 
     def draw(self, size, offset):
         pygame.transform.scale(self.win, size, self.win2)
@@ -65,7 +65,7 @@ class WindowController:
 
     def set_version(self, major, minor, patch):
         self.version = major, minor, patch
-        pygame.display.set_caption("Skylands %d.%d.%d" % self.version)
+        pygame.display.set_caption("Skylands %s.%s.%s" % self.version)
 
     def setup_window(self):
         ## Set up pygame window

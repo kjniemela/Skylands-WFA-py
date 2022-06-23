@@ -1,10 +1,15 @@
 from utils import *
 from config import config
 
-## Set Version Constants
-VERSION_MAJOR = 0
-VERSION_MINOR = 3
-VERSION_PATCH = 4
+## Load version and set constants
+f = open(resource_path("version.txt"))
+version_string = f.read()
+f.close()
+(
+    VERSION_MAJOR,
+    VERSION_MINOR,
+    VERSION_PATCH
+) = version_string.split(".")
 
 ## Handle command line args
 i = 0
@@ -156,7 +161,7 @@ while run:
     ## If in debug mode, show debug data
     if config["debug"]:
         pygame.display.set_caption(
-            "Skylands %d.%d.%d - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
+            "Skylands %s.%s.%s - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
             % (
                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
                 controller.mouse_pos[0], controller.mouse_pos[1],
