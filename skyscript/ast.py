@@ -1,6 +1,6 @@
 from config import config
 from vec import Vec
-from platform import Surface
+from world.platform import Surface
 
 from skyscript.lexer import Token
 
