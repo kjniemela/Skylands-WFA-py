@@ -47,7 +47,12 @@ def check():
 
 def install_latest():
     global update_window
+    global button_install
+    global button_cancel
     global cur_version
+
+    button_install.config(state=tk.DISABLED)
+    button_cancel.config(state=tk.DISABLED)
 
     filepaths_link = "https://raw.githubusercontent.com/kjniemela/Skylands-WFA/master/filepaths"
     f = urllib.request.urlopen(filepaths_link)
@@ -100,7 +105,7 @@ def launch():
     print("Launching Skylands WFA version", cur_version)
     python_dir = "/".join(os.__file__.replace("\\", "/").split("/")[:-2])
     subprocess.Popen(python_dir + "/pythonw main.py", cwd="Skylands")
-    exit() ## Maybe use sys.exit?
+    exit() ## TODO maybe use sys.exit? - or have the launcher continue in the background
 
 def settings():
     print("SETTINGS")
@@ -109,6 +114,8 @@ master = tk.Tk()
 master.title('Skylands Launcher')
 
 update_window = None
+button_install = None
+button_cancel = None
 
 greeting = tk.Label(master, text="Skylands WFA - Launcher", font=("Helvetica", 24))
 greeting.pack(padx=48, pady=48)
