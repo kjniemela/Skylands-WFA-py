@@ -1,7 +1,7 @@
 from utils import *
 from vec import Vec
 from window import controller
-from level import Level
+from world.level import Level
 from player import Player
 
 class AchievementRenderer:

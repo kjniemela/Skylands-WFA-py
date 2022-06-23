@@ -57,7 +57,7 @@ while i < len(sys.argv):
             arg = sys.argv[i]
             config["debug"] = True
             config["verbose"] = True
-            from level import Level
+            from world.level import Level
             from player import Player
             from game import game_manager
             level = Level(game_manager, arg, {})
@@ -161,7 +161,7 @@ while run:
     ## If in debug mode, show debug data
     if config["debug"]:
         pygame.display.set_caption(
-            "Skylands %s.%s.%s - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
+            "Skylands %s.%s.%d - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
             % (
                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
                 controller.mouse_pos[0], controller.mouse_pos[1],

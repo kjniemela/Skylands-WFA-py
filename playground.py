@@ -1,4 +1,4 @@
-from level import Level
+from world.level import Level
 from skyscript.interpreter import Interpreter
 from player import Player
 from vec import Vec
