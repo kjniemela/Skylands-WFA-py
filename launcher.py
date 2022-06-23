@@ -3,6 +3,17 @@ import urllib.request
 import subprocess
 import os
 
+## Update self
+print("Updating launcher...")
+link = "https://raw.githubusercontent.com/kjniemela/Skylands-WFA/master/launcher.py"
+f = urllib.request.urlopen(link)
+new_launcher = f.read()
+f.close()
+
+f = open("launcher.py", "wb")
+f.write(new_launcher)
+f.close()
+
 try:
     f = open("Skylands/version.txt")
     cur_version = f.read()
