@@ -6,7 +6,7 @@ from window import controller
 from entity.base import Entity
 from entity.model.base import Model
 from entity.view.biped import ViewBiped
-from projectile import Bullet
+from world.projectile import Bullet
 
 class EntityBiped(Entity):
     def __init__(self, level, pos):
