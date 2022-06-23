@@ -2,8 +2,15 @@ from utils import *
 from vec import Vec
 from window import controller
 
+## Default head texture in case entity is loaded directly
+entity_textures = {
+    "head": controller.load_entity_texture("player", "head.png"),
+}
+
 class View:
     def __init__(self):
+        self.textures = entity_textures
+
         self.facing = 1
         self.aim = 0
         
@@ -16,7 +23,6 @@ class View:
     def render(self, pos, camera_pos):
 
         win = controller.win
-        entity_textures = controller.player_textures ## TODO - THIS SHOULD FETCH THE CORRECT ENTITY TEXTURES!
         ## TODO - refactor code so that these are not needed
         facing = self.facing
         x, y = pos
@@ -31,6 +37,6 @@ class View:
             self.facing = 1
 
         if facing == -1:
-            blitRotateCenter(win, entity_textures["head"][-1], min(max(head_rot_left, -45), 45), (x,-y-(20)), (camera_x,camera_y))
+            blitRotateCenter(win, self.textures["head"][-1], min(max(head_rot_left, -45), 45), (x,-y-(20)), (camera_x,camera_y))
         elif facing == 1:
-            blitRotateCenter(win, entity_textures["head"][1], min(max(head_rot, -45), 45), (x,-y-(20)), (camera_x,camera_y))
+            blitRotateCenter(win, self.textures["head"][1], min(max(head_rot, -45), 45), (x,-y-(20)), (camera_x,camera_y))

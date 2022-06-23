@@ -63,8 +63,6 @@ while i < len(sys.argv):
         elif flag == "-L":
             i += 1
             arg = sys.argv[i]
-            config["debug"] = True
-            config["verbose"] = True
             config["displayMenu"] = False
             from game import game_manager
             game_manager.set_level(arg)
@@ -73,6 +71,7 @@ while i < len(sys.argv):
 
         elif flag == "-v":
             config["debug"] = True
+            config["verbose"] = True
 
         i += 1
     except IndexError:

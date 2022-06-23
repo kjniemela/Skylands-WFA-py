@@ -5,9 +5,6 @@ from window import controller
 from entity.biped import EntityBiped
 
 class Player(EntityBiped):
-
-    textures = controller.player_textures
-
     def __init__(self, level, pos):
         super().__init__(level, pos)
         
@@ -16,8 +13,6 @@ class Player(EntityBiped):
         self.wallJumpTime = 0
         self.quest = "B116"
         self.gems = 0
-
-        print(self.textures)
 
     def set_spawn(self, pos):
         self.pos = pos
