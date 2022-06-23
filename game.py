@@ -144,18 +144,18 @@ class GameManager:
 
     def render_hud(self):
         win = controller.win
-        player_textures = controller.player_textures
+        hud_textures = controller.hud_textures
 
-        win.blit(player_textures["health"], (435 - (142 * (self.player.hp / self.player.max_hp)), 28))
-        win.blit(player_textures["power"], (443 - (110 * (self.player.power / self.player.max_power)), 40))     
-        win.blit(player_textures["gem_icon"][int((time() * 16) % 9)], (10, 10))
+        win.blit(hud_textures["health"], (435 - (142 * (self.player.hp / self.player.max_hp)), 28))
+        win.blit(hud_textures["power"], (443 - (110 * (self.player.power / self.player.max_power)), 40))     
+        win.blit(hud_textures["gem_icon"][int((time() * 16) % 9)], (10, 10))
         win.blit(controller.fonts["gemCount"].render('x%d' % (self.player.gems), True, (91, 183, 0)) , (50, 22))
         if self.player.quest != "":
-            win.blit(player_textures["directive"], (55,305))
-            win.blit(player_textures["dir_letters"][self.player.quest[0]], (200,315))
-            win.blit(player_textures["dir_numbers"][self.player.quest[1]], (220,315))
-            win.blit(player_textures["dir_numbers"][self.player.quest[2]], (235,315))
-            win.blit(player_textures["dir_numbers"][self.player.quest[3]], (250,315))
+            win.blit(hud_textures["directive"], (55,305))
+            win.blit(hud_textures["dir_letters"][self.player.quest[0]], (200,315))
+            win.blit(hud_textures["dir_numbers"][self.player.quest[1]], (220,315))
+            win.blit(hud_textures["dir_numbers"][self.player.quest[2]], (235,315))
+            win.blit(hud_textures["dir_numbers"][self.player.quest[3]], (250,315))
 
     def handle_keypress(self, key):
         if key in self.keys_controls_map:

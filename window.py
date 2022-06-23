@@ -131,7 +131,7 @@ class WindowController:
             self.load_texture("assets/fadeBlack.png").convert()
         )
 
-        ## Player Textures
+        ## Preload Player Textures
         player_walk_frames = [self.load_texture("assets/player/body_walk%s.png" % frame) for frame in range(1, 9)]
         player_idle = self.load_texture("assets/player/body_idle.png")
         player_sneak = self.load_texture("assets/player/body_duck.png")
@@ -149,6 +149,9 @@ class WindowController:
             "arm_far": {1: player_arm_far, -1: pygame.transform.flip(player_arm_far, True, False)},
             "hand_near": {1: player_hand_near, -1: pygame.transform.flip(player_hand_near, True, False)},
             "hand_far": {1: player_hand_far, -1: pygame.transform.flip(player_hand_far, True, False)},
+        }
+
+        self.hud_textures = {
             "power": self.load_texture("assets/power.png"),
             "health": self.load_texture("assets/health.png"),
             "gem_icon": [pygame.image.load(resource_path("assets/gem%s.png" % frame)) for frame in range(1, 10)],
