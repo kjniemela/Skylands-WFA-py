@@ -17,7 +17,7 @@ while i < len(sys.argv):
     try:
         flag = sys.argv[i]
         if flag == "-h":
-            print("Skylands %i.%i.%i" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
+            print("Skylands %s.%s.%s" % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH))
             print("usage: python main.py [options]")
             print("Options and arguments:")
             print("  -h              print this message and exit")
@@ -161,7 +161,7 @@ while run:
     ## If in debug mode, show debug data
     if config["debug"]:
         pygame.display.set_caption(
-            "Skylands %s.%s.%d - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
+            "Skylands %s.%s.%s - Mouse Pos: %d / %d - World Mouse Pos: %d / %d"
             % (
                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
                 controller.mouse_pos[0], controller.mouse_pos[1],
