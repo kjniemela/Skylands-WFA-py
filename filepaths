@@ -145,7 +145,6 @@ entity/model/base.py
 entity/view/base.py
 entity/view/biped.py
 fade.py
-filepaths
 game.py
 levels/lab.txt
 levels/narbadhir1 - Copy.txt

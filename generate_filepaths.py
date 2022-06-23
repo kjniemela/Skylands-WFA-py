@@ -18,6 +18,7 @@ ignore = [
     "Skylands WFA.lnk",
     "generate_filepaths.py",
     "launcher.py",
+    "filepaths",
 ]
 
 filepaths = []
