@@ -12,7 +12,6 @@ class EntityBiped(Entity):
     def __init__(self, level, pos):
         super().__init__(level, pos)
 
-        self.model = Model()
         self.view = ViewBiped()
 
         self.gun_cooldown = 0
@@ -21,9 +20,6 @@ class EntityBiped(Entity):
 
         self.shoot_sound = controller.sounds["player_shoot"]
         self.click_sound = controller.sounds["click"]
-
-        self.pos = pos
-        self.vel = Vec(0, 0)
 
     def update(self):
 
@@ -34,6 +30,8 @@ class EntityBiped(Entity):
             if self.power == self.max_power:
                 self.reload = False
                 self.gun_cooldown = 0
+        if self.gun_cooldown > 0:
+            self.gun_cooldown -= 1
 
         return super().update()
 

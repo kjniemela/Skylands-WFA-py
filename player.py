@@ -95,8 +95,6 @@ class Player(EntityBiped):
         if controls["shoot"]:
             self.shoot()
 
-        if self.gun_cooldown > 0:
-            self.gun_cooldown -= 1
         if controls["reload"] and self.gun_cooldown == 0:
                 self.reload = True
 

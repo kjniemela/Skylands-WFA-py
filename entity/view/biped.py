@@ -46,11 +46,11 @@ class ViewBiped(View):
 
         self.components = {
             **self.components,
-            "torso": Component(entity_biped_textures["torso"], Vec(20, -12), Vec(20, -12), Vec(0, 0)),
-            "arm_near": Component(entity_biped_textures["arm_near"], Vec(30, -5), Vec(10, -5), Vec(0, 4)),
-            "arm_far": Component(entity_biped_textures["arm_far"], Vec(10, -5), Vec(30, -5), Vec(0, 4)),
-            "hand_near": Component(entity_biped_textures["hand_near"], Vec(0, -12), Vec(0, -12), Vec(0, 8)),
-            "hand_far": Component(entity_biped_textures["hand_far"], Vec(1, -12), Vec(-1, -12), Vec(0, 8)),
+            "torso": Component(self.textures["torso"], Vec(20, -12), Vec(20, -12), Vec(0, 0)),
+            "arm_near": Component(self.textures["arm_near"], Vec(30, -5), Vec(10, -5), Vec(0, 4)),
+            "arm_far": Component(self.textures["arm_far"], Vec(10, -5), Vec(30, -5), Vec(0, 4)),
+            "hand_near": Component(self.textures["hand_near"], Vec(0, -12), Vec(0, -12), Vec(0, 8)),
+            "hand_far": Component(self.textures["hand_far"], Vec(1, -12), Vec(-1, -12), Vec(0, 8)),
         }
 
         self.components["hand_near"].set_parent(self.components["arm_near"])

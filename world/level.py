@@ -6,6 +6,7 @@ from platform import *
 
 from entity.base import Entity
 from entity.biped import EntityBiped
+from entity.shoaldier import EntityShoaldier
 
 # from skyscript.skyscript import SkyScript
 from skyscript.interpreter import Interpreter
@@ -38,7 +39,7 @@ class Level:
         self.gravity = 0.5
 
         self.entity_type_map = {
-            "shoaldier": EntityBiped ## TODO - give this its own class
+            "shoaldier": EntityShoaldier ## TODO - give this its own class
         }
 
         self.interpreter = Interpreter(self)
