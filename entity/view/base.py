@@ -32,10 +32,11 @@ class View:
 
     def render_component(self, component_name, angle, pos, camera_pos):
         component = self.components[component_name]
+        component.set_angle(angle)
         blitRotateAround(
             controller.win,
             component.texture[self.facing],
-            angle * self.facing,
+            component.get_angle() * self.facing,
             pos + component.get_offset(self.facing),
             camera_pos,
             component.pivot
