@@ -3,6 +3,7 @@ from vec import Vec
 from window import controller
 
 from entity.view.base import View
+from entity.view.component import Component
 
 ## Default textures in case entityBiped is loaded directly
 entity_biped_textures = {
@@ -18,8 +19,8 @@ entity_biped_textures = {
 }
 
 class ViewBiped(View):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, is_super=False):
+        super().__init__(is_super=True)
 
         self.textures = {
             **self.textures,
@@ -37,22 +38,28 @@ class ViewBiped(View):
         # position of item held by entity
         self.held_pos = Vec(0, 0)
 
-    def render(self, pos, camera_pos):
+        if not is_super: ## small, probably unnecessary optimization
+            self.def_components()
 
-        win = controller.win
-        # self.textures = controller.player_textures ## TODO - THIS SHOULD FETCH THE CORRECT ENTITY TEXTURES!
-        ## TODO - refactor code so that these are not needed
-        facing = self.facing
-        x, y = pos
-        camera_x, camera_y = camera_pos
+    def def_components(self):
+        super().def_components()
+
+        self.components = {
+            **self.components,
+            "torso": Component(entity_biped_textures["torso"], Vec(20, -12), Vec(20, -12), Vec(0, 0)),
+            "arm_near": Component(entity_biped_textures["arm_near"], Vec(30, -5), Vec(10, -5), Vec(0, 4)),
+            "arm_far": Component(entity_biped_textures["arm_far"], Vec(10, -5), Vec(30, -5), Vec(0, 4)),
+        }
+
+    def render(self, pos, camera_pos):
         
         if self.walk_frame + 1 >= 32:
             self.walk_frame = 0
         if self.walk_frame < 0:
             self.walk_frame = 30
 
-        self.right_arm = self.aim-(15*facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
-        self.left_arm = (Sin(time()*40)*10)-90-(5*facing)
+        self.right_arm = 45# self.aim-(15*self.facing)#(Sin((time()+1)*40)*10)-90-(5*self.facing)#
+        self.left_arm = (Sin(time()*40)*10)-5
         self.right_hand = 15
         self.left_hand = 10
 
@@ -72,23 +79,13 @@ class ViewBiped(View):
         #     hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
         #     blitRotateCenter(win, self.textures["hand_far"][1], self.left_arm+self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
 
-        # if facing == -1:
-        #     blitRotateCenter(win, self.textures["leg_far"][-1], self.right_arm, (x-(3),-y-(2)), (camera_x,camera_y))
-        #     hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
-        #     hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
-        #     self.held_pos.x = (hand_x+(8))+(Cos(-(self.right_arm-self.right_hand))*(15))
-        #     self.held_pos.y = hand_y+(Sin(-(self.right_arm-self.right_hand))*(16))
-        #     # blitRotateCenter(win, self.textures["hand_far"][-1], self.right_arm-self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
-        #     # blitRotateCenter(win, controller.items["GDFSER"][-1], self.right_arm-self.right_hand, (self.held_pos.x,self.held_pos.y), (camera_x,camera_y))
-        # elif facing == 1:
-        #     blitRotateCenter(win, self.textures["leg_far"][1], self.left_arm, (x+(15),-y-(2)), (camera_x,camera_y))
-        #     hand_x = (x+(11))+(Cos(-self.left_arm)*(11))
-        #     hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
-        #     # blitRotateCenter(win, self.textures["hand_far"][1], self.left_arm+self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
+        self.render_component("arm_far", self.right_arm if self.facing == 1 else self.left_arm, pos, camera_pos)
 
-        # blitRotateCenter(win, self.textures['torso'][self.facing], 0, (x + 11, -y), (camera_x, camera_y))
+        self.render_component("torso", 0, pos, camera_pos)
 
         super().render(pos, camera_pos)
+
+        self.render_component("arm_near", self.left_arm if self.facing == 1 else self.right_arm, pos, camera_pos)
 
         # if facing == -1:
         #     blitRotateCenter(win, self.textures["arm_near"][-1], -self.left_arm, (x+17,-y-0), (camera_x,camera_y))

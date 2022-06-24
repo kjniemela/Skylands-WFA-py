@@ -10,7 +10,7 @@ entity_textures = {
 }
 
 class View:
-    def __init__(self):
+    def __init__(self, is_super=False):
         self.textures = entity_textures
 
         self.facing = 1
@@ -22,19 +22,21 @@ class View:
             "jumping": False,
         }
 
-        self.components = {
-            "head": Component(entity_textures["head"], Vec(20, 0), Vec(20, 0), Vec(0, -10)),
-        }
+        if not is_super: ## small, probably unnecessary optimization
+            self.def_components()
 
-        self.head_offset = Vec(0, 20)
+    def def_components(self):
+        self.components = {
+            "head": Component(self.textures["head"], Vec(19, 2), Vec(21, 2), Vec(0, -9)),
+        }
 
     def render_component(self, component_name, angle, pos, camera_pos):
         component = self.components[component_name]
         blitRotateAround(
             controller.win,
             component.texture[self.facing],
-            angle,
-            pos + component.offset[self.facing],
+            angle * self.facing,
+            pos + component.get_offset(self.facing),
             camera_pos,
             component.pivot
         )
@@ -48,6 +50,6 @@ class View:
         else:
             self.facing = 1
 
-        if self.facing == -1: head_rot = ((360+(head_rot))%360)-180
+        if self.facing == -1: head_rot = -(((360+(head_rot))%360)-180)
 
         self.render_component("head", min(max(head_rot, -45), 45), pos, camera_pos)
