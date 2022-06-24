@@ -12,7 +12,6 @@ class EntityBiped(Entity):
     def __init__(self, level, pos):
         super().__init__(level, pos)
 
-        self.model = Model()
         self.view = ViewBiped()
 
         self.gun_cooldown = 0
@@ -21,9 +20,6 @@ class EntityBiped(Entity):
 
         self.shoot_sound = controller.sounds["player_shoot"]
         self.click_sound = controller.sounds["click"]
-
-        self.pos = pos
-        self.vel = Vec(0, 0)
 
     def update(self):
 
@@ -34,6 +30,8 @@ class EntityBiped(Entity):
             if self.power == self.max_power:
                 self.reload = False
                 self.gun_cooldown = 0
+        if self.gun_cooldown > 0:
+            self.gun_cooldown -= 1
 
         return super().update()
 
@@ -49,7 +47,9 @@ class EntityBiped(Entity):
                 controller.sound_ctrl.play_sound(self.shoot_sound)
                 bulletspeed = 20
                 self.gun_cooldown = 20
-                self.level.projectiles.append(Bullet(*self.view.held_pos.screen_coords(), self.view.aim, bulletspeed, self))
+                ## TODO - it can be argued whether the bullet should orginate from the center of the player or
+                ## from the rendered position of the gun
+                self.level.projectiles.append(Bullet(self.get_center(), self.view.aim, bulletspeed, self))
                 self.power -= 40 ## TODO - magic number
                 if self.power < 40:
                     self.reload = True

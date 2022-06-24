@@ -4,7 +4,7 @@ import math
 from time import time
 from random import randint
 
-from vec import Vec
+from vec import Vec, Sin, Cos
 
 if sys.version_info[0] == 2:
     print("Fatal Error: Skylands WFA is not compatible with python %i.%i.%i. Please use python 3." % (
@@ -42,18 +42,21 @@ def resource_path(relative_path):
 def distance(x1, y1, x2, y2):
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
-def Sin(x):
-    return math.sin(math.radians(x))
-
-def Cos(x):
-    return math.cos(math.radians(x))
-
 def blitRotateCenter(surf, image, angle, pos, camPos):
+
+    raise Exception("YOU SHOULD NOT BE USING blitRotateCenter! Use blitRotateAround!")
 
     rotated_image = pygame.transform.rotate(image, angle)
     new_rect = rotated_image.get_rect(center = image.get_rect().center)
 
     surf.blit(rotated_image, (new_rect.topleft[0] + pos[0] - camPos[0], new_rect.topleft[1] + pos[1] + camPos[1]))
+
+def blitRotateAround(surf, image, angle, pos, camera_pos, pivot):
+
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center = (-pivot).rotate(angle).screen_coords())
+
+    surf.blit(rotated_image, (new_rect.topleft[0] + pos.x - camera_pos.x, new_rect.topleft[1] - pos.y + camera_pos.y))
 
 def screen_coords(point, camX, camY):
     return (point[0]-camX, -(point[1]-camY))

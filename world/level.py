@@ -6,6 +6,7 @@ from platform import *
 
 from entity.base import Entity
 from entity.biped import EntityBiped
+from entity.shoaldier import EntityShoaldier
 
 # from skyscript.skyscript import SkyScript
 from skyscript.interpreter import Interpreter
@@ -38,7 +39,7 @@ class Level:
         self.gravity = 0.5
 
         self.entity_type_map = {
-            "shoaldier": EntityBiped ## TODO - give this its own class
+            "shoaldier": EntityShoaldier ## TODO - give this its own class
         }
 
         self.interpreter = Interpreter(self)
@@ -192,7 +193,9 @@ class Level:
             entity.render(camera_pos)
 
         for projectile in self.projectiles:
-            pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
+            start_pos = projectile.pos - camera_pos
+            end_pos = (projectile.pos + projectile.vel) - camera_pos
+            pygame.draw.line(win, (83, 191, 179, 0.1), start_pos.screen_coords(), end_pos.screen_coords(), 5)
             # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
 
         for overlay in self.overlays:

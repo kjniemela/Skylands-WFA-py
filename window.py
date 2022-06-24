@@ -1,3 +1,4 @@
+from cgitb import text
 from utils import *
 from sound import SoundController
 from fade import Fade
@@ -59,6 +60,12 @@ class WindowController:
         self.items[name] = {}
         self.items[name][1] = texture_right
         self.items[name][-1] = texture_left
+
+    def load_entity_texture(self, entity, filename):
+        texture_right = pygame.image.load(resource_path("assets/%s/%s" % (entity, filename)))
+        texture_left = pygame.transform.flip(texture_right, True, False)
+        return {1: texture_right, -1: texture_left}
+
 
     def load_texture(self, path):
         return pygame.image.load(resource_path(path))
@@ -131,24 +138,27 @@ class WindowController:
             self.load_texture("assets/fadeBlack.png").convert()
         )
 
-        ## Player Textures
-        player_walk_frames = [self.load_texture("assets/player/body_walk%s.png" % frame) for frame in range(1, 9)]
-        player_idle = self.load_texture("assets/player/body_idle.png")
-        player_sneak = self.load_texture("assets/player/body_duck.png")
-        player_head = self.load_texture("assets/player/head.png")
-        player_arm_near = self.load_texture("assets/player/arm_near.png")
-        player_arm_far = self.load_texture("assets/player/arm_far.png")
-        player_hand_near = self.load_texture("assets/player/hand_near.png")
-        player_hand_far = self.load_texture("assets/player/hand_far.png")
-        self.player_textures = {
-            "walk": {1: player_walk_frames, -1: [pygame.transform.flip(texture, True, False) for texture in player_walk_frames]},
-            "idle": {1: player_idle, -1: pygame.transform.flip(player_idle, True, False)},
-            "sneak": {1: player_sneak, -1: pygame.transform.flip(player_sneak, True, False)},
-            "head": {1: player_head, -1: pygame.transform.flip(player_head, True, False)},
-            "arm_near": {1: player_arm_near, -1: pygame.transform.flip(player_arm_near, True, False)},
-            "arm_far": {1: player_arm_far, -1: pygame.transform.flip(player_arm_far, True, False)},
-            "hand_near": {1: player_hand_near, -1: pygame.transform.flip(player_hand_near, True, False)},
-            "hand_far": {1: player_hand_far, -1: pygame.transform.flip(player_hand_far, True, False)},
+        # ## Preload Player Textures
+        # player_walk_frames = [self.load_texture("assets/player/body_walk%s.png" % frame) for frame in range(1, 9)]
+        # player_idle = self.load_texture("assets/player/body_idle.png")
+        # player_sneak = self.load_texture("assets/player/body_duck.png")
+        # player_head = self.load_texture("assets/player/head.png")
+        # player_arm_near = self.load_texture("assets/player/arm_near.png")
+        # player_arm_far = self.load_texture("assets/player/arm_far.png")
+        # player_hand_near = self.load_texture("assets/player/hand_near.png")
+        # player_hand_far = self.load_texture("assets/player/hand_far.png")
+        # self.player_textures = {
+        #     "walk": {1: player_walk_frames, -1: [pygame.transform.flip(texture, True, False) for texture in player_walk_frames]},
+        #     "idle": {1: player_idle, -1: pygame.transform.flip(player_idle, True, False)},
+        #     "sneak": {1: player_sneak, -1: pygame.transform.flip(player_sneak, True, False)},
+        #     "head": {1: player_head, -1: pygame.transform.flip(player_head, True, False)},
+        #     "arm_near": {1: player_arm_near, -1: pygame.transform.flip(player_arm_near, True, False)},
+        #     "arm_far": {1: player_arm_far, -1: pygame.transform.flip(player_arm_far, True, False)},
+        #     "hand_near": {1: player_hand_near, -1: pygame.transform.flip(player_hand_near, True, False)},
+        #     "hand_far": {1: player_hand_far, -1: pygame.transform.flip(player_hand_far, True, False)},
+        # }
+
+        self.hud_textures = {
             "power": self.load_texture("assets/power.png"),
             "health": self.load_texture("assets/health.png"),
             "gem_icon": [pygame.image.load(resource_path("assets/gem%s.png" % frame)) for frame in range(1, 10)],
