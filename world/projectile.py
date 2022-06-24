@@ -1,21 +1,20 @@
 from utils import *
 
 class Bullet:
-    def __init__(self, x, y, d, speed, owner):
-        self.x = x
-        self.y = y
+    def __init__(self, pos, d, speed, owner):
+        self.pos = pos
         self.d = d
         self.owner = owner
-        self.xVel = (Cos(d)*(speed))#+owner.xVel
-        self.yVel = (Sin(d)*(speed))#+owner.yVel
-        self.speed = speed
+        self.vel = Vec(
+            (Cos(d)*(speed)),
+            (Sin(d)*(speed))
+        )
         self.age = 0
 
     def update(self):
-        self.x += self.xVel
-        self.y += self.yVel
+        self.pos += self.vel
         self.age += 1
-        #self.yVel -= 1
+        #self.vel.y -= self.owner.level.gravity
 
         return 0 < self.age < 100
 

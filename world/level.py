@@ -192,7 +192,9 @@ class Level:
             entity.render(camera_pos)
 
         for projectile in self.projectiles:
-            pygame.draw.line(win, (83, 191, 179, 0.1), ((projectile.x-camX),-(projectile.y-camY)), ((projectile.x-camX-projectile.xVel),-(projectile.y-camY-projectile.yVel)), 5)
+            start_pos = projectile.pos - camera_pos
+            end_pos = (projectile.pos + projectile.vel) - camera_pos
+            pygame.draw.line(win, (83, 191, 179, 0.1), start_pos.screen_coords(), end_pos.screen_coords(), 5)
             # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
 
         for overlay in self.overlays:

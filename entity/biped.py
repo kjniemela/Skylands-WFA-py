@@ -49,7 +49,9 @@ class EntityBiped(Entity):
                 controller.sound_ctrl.play_sound(self.shoot_sound)
                 bulletspeed = 20
                 self.gun_cooldown = 20
-                self.level.projectiles.append(Bullet(*self.view.held_pos.screen_coords(), self.view.aim, bulletspeed, self))
+                ## TODO - it can be argued whether the bullet should orginate from the center of the player or
+                ## from the rendered position of the gun
+                self.level.projectiles.append(Bullet(self.get_center(), self.view.aim, bulletspeed, self))
                 self.power -= 40 ## TODO - magic number
                 if self.power < 40:
                     self.reload = True

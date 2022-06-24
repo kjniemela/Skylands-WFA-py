@@ -81,5 +81,11 @@ class Vec:
 
         return self
 
+    def rotated(self, theta):
+        x = self.x*Cos(theta) - self.y*Sin(theta)
+        y = self.x*Sin(theta) + self.y*Cos(theta)
+
+        return Vec(x, y)
+
     def screen_coords(self):
         return (self.x, -self.y)

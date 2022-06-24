@@ -36,8 +36,8 @@ class Entity:
     def get_uuid(self):
         return "entity" + str(self.id)
 
-    def get_held_pos(self):
-        return self.view.held_pos
+    def get_center(self):
+        return self.pos + Vec(self.model.x_offset, 0) + Vec(self.model.width / 2, 0)
 
     def get_hitbox(self):
         height_body = self.model.height_body - (self.model.sneak_height_diff if self.view.states["sneaking"] else 0)
