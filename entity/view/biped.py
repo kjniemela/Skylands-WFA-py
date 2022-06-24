@@ -6,10 +6,15 @@ from entity.view.base import View
 
 ## Default textures in case entityBiped is loaded directly
 entity_biped_textures = {
+    "torso": controller.load_entity_texture("player", "torso.png"),
     "arm_near": controller.load_entity_texture("player", "arm_near.png"),
     "arm_far": controller.load_entity_texture("player", "arm_far.png"),
     "hand_near": controller.load_entity_texture("player", "hand_near.png"),
     "hand_far": controller.load_entity_texture("player", "hand_far.png"),
+    "leg_near": controller.load_entity_texture("shoaldier", "leg_near.png"),
+    "leg_far": controller.load_entity_texture("shoaldier", "leg_far.png"),
+    "foot_near": controller.load_entity_texture("shoaldier", "foot_near.png"),
+    "foot_far": controller.load_entity_texture("shoaldier", "foot_far.png"),
 }
 
 class ViewBiped(View):
@@ -53,40 +58,48 @@ class ViewBiped(View):
 
         # arm position is a bit buggy
         
-        if facing == -1:
-            blitRotateCenter(win, self.textures["arm_far"][-1], self.right_arm, (x-(3),-y-(2)), (camera_x,camera_y))
-            hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
-            self.held_pos.x = (hand_x+(8))+(Cos(-(self.right_arm-self.right_hand))*(15))
-            self.held_pos.y = hand_y+(Sin(-(self.right_arm-self.right_hand))*(16))
-            blitRotateCenter(win, self.textures["hand_far"][-1], self.right_arm-self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
-            blitRotateCenter(win, controller.items["GDFSER"][-1], self.right_arm-self.right_hand, (self.held_pos.x,self.held_pos.y), (camera_x,camera_y))
-        elif facing == 1:
-            blitRotateCenter(win, self.textures["arm_far"][1], self.left_arm, (x+(15),-y-(2)), (camera_x,camera_y))
-            hand_x = (x+(11))+(Cos(-self.left_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
-            blitRotateCenter(win, self.textures["hand_far"][1], self.left_arm+self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
+        # if facing == -1:
+        #     blitRotateCenter(win, self.textures["arm_far"][-1], self.right_arm, (x-(3),-y-(2)), (camera_x,camera_y))
+        #     hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
+        #     hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
+        #     self.held_pos.x = (hand_x+(8))+(Cos(-(self.right_arm-self.right_hand))*(15))
+        #     self.held_pos.y = hand_y+(Sin(-(self.right_arm-self.right_hand))*(16))
+        #     blitRotateCenter(win, self.textures["hand_far"][-1], self.right_arm-self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
+        #     blitRotateCenter(win, controller.items["GDFSER"][-1], self.right_arm-self.right_hand, (self.held_pos.x,self.held_pos.y), (camera_x,camera_y))
+        # elif facing == 1:
+        #     blitRotateCenter(win, self.textures["arm_far"][1], self.left_arm, (x+(15),-y-(2)), (camera_x,camera_y))
+        #     hand_x = (x+(11))+(Cos(-self.left_arm)*(11))
+        #     hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
+        #     blitRotateCenter(win, self.textures["hand_far"][1], self.left_arm+self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
 
-        # if self.states["sneaking"]:
-        #     win.blit(self.textures["sneak"][facing], (x-camera_x+3,-(y-camera_y)) if self.facing < 0 else (x-camera_x-7,-(y-camera_y)))
-        # else:
-        #     if self.states["moving"]:
-        #         win.blit(self.textures["walk"][facing][self.view.walk_frame//4], (x-camera_x,-(y-camera_y)))
-        #     else:
-        #         win.blit(self.textures["idle"][facing], (x-camera_x,-(y-camera_y)))
+        # if facing == -1:
+        #     blitRotateCenter(win, self.textures["leg_far"][-1], self.right_arm, (x-(3),-y-(2)), (camera_x,camera_y))
+        #     hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
+        #     hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
+        #     self.held_pos.x = (hand_x+(8))+(Cos(-(self.right_arm-self.right_hand))*(15))
+        #     self.held_pos.y = hand_y+(Sin(-(self.right_arm-self.right_hand))*(16))
+        #     # blitRotateCenter(win, self.textures["hand_far"][-1], self.right_arm-self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
+        #     # blitRotateCenter(win, controller.items["GDFSER"][-1], self.right_arm-self.right_hand, (self.held_pos.x,self.held_pos.y), (camera_x,camera_y))
+        # elif facing == 1:
+        #     blitRotateCenter(win, self.textures["leg_far"][1], self.left_arm, (x+(15),-y-(2)), (camera_x,camera_y))
+        #     hand_x = (x+(11))+(Cos(-self.left_arm)*(11))
+        #     hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
+        #     # blitRotateCenter(win, self.textures["hand_far"][1], self.left_arm+self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
+
+        # blitRotateCenter(win, self.textures['torso'][self.facing], 0, (x + 11, -y), (camera_x, camera_y))
 
         super().render(pos, camera_pos)
 
-        if facing == -1:
-            blitRotateCenter(win, self.textures["arm_near"][-1], -self.left_arm, (x+17,-y-0), (camera_x,camera_y))
-            hand_x = (x+(12))-(Cos(-self.left_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
-            blitRotateCenter(win, self.textures["hand_near"][-1], -self.left_arm-self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
-        elif facing == 1:
-            blitRotateCenter(win, self.textures["arm_near"][1], self.right_arm, (x-2,-y-(2)), (camera_x,camera_y))
-            hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
-            hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
-            self.held_pos.x = (hand_x+(8))+(Cos(-(self.right_arm+self.right_hand))*(15))
-            self.held_pos.y = hand_y+(Sin(-(self.right_arm+self.right_hand))*(16))
-            blitRotateCenter(win, controller.items["GDFSER"][1], self.right_arm+self.right_hand, (self.held_pos.x,self.held_pos.y), (camera_x,camera_y))
-            blitRotateCenter(win, self.textures["hand_near"][1], self.right_arm+self.right_hand, (hand_x,hand_y), (camera_x,camera_y))
+        # if facing == -1:
+        #     blitRotateCenter(win, self.textures["arm_near"][-1], -self.left_arm, (x+17,-y-0), (camera_x,camera_y))
+        #     hand_x = (x+(12))-(Cos(-self.left_arm)*(11))
+        #     hand_y = (-y-(0))+(Sin(-self.left_arm)*(11))
+        #     blitRotateCenter(win, self.textures["hand_near"][-1], -self.left_arm-self.left_hand, (hand_x,hand_y), (camera_x,camera_y))
+        # elif facing == 1:
+        #     blitRotateCenter(win, self.textures["arm_near"][1], self.right_arm, (x-2,-y-(2)), (camera_x,camera_y))
+        #     hand_x = (x-(8))+(Cos(-self.right_arm)*(11))
+        #     hand_y = (-y-(0))+(Sin(-self.right_arm)*(11))
+        #     self.held_pos.x = (hand_x+(8))+(Cos(-(self.right_arm+self.right_hand))*(15))
+        #     self.held_pos.y = hand_y+(Sin(-(self.right_arm+self.right_hand))*(16))
+        #     blitRotateCenter(win, controller.items["GDFSER"][1], self.right_arm+self.right_hand, (self.held_pos.x,self.held_pos.y), (camera_x,camera_y))
+        #     blitRotateCenter(win, self.textures["hand_near"][1], self.right_arm+self.right_hand, (hand_x,hand_y), (camera_x,camera_y))

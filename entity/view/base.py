@@ -2,6 +2,8 @@ from utils import *
 from vec import Vec
 from window import controller
 
+from entity.view.component import Component
+
 ## Default head texture in case entity is loaded directly
 entity_textures = {
     "head": controller.load_entity_texture("player", "head.png"),
@@ -20,23 +22,32 @@ class View:
             "jumping": False,
         }
 
+        self.components = {
+            "head": Component(entity_textures["head"], Vec(20, 0), Vec(20, 0), Vec(0, -10)),
+        }
+
+        self.head_offset = Vec(0, 20)
+
+    def render_component(self, component_name, angle, pos, camera_pos):
+        component = self.components[component_name]
+        blitRotateAround(
+            controller.win,
+            component.texture[self.facing],
+            angle,
+            pos + component.offset[self.facing],
+            camera_pos,
+            component.pivot
+        )
+
     def render(self, pos, camera_pos):
 
-        win = controller.win
-        ## TODO - refactor code so that these are not needed
-        facing = self.facing
-        x, y = pos
-        camera_x, camera_y = camera_pos
-
         head_rot = self.aim
-        head_rot_left = ((360+(head_rot))%360)-180
         
         if abs(head_rot)> 90:
             self.facing = -1
         else:
             self.facing = 1
 
-        if facing == -1:
-            blitRotateCenter(win, self.textures["head"][-1], min(max(head_rot_left, -45), 45), (x,-y-(20)), (camera_x,camera_y))
-        elif facing == 1:
-            blitRotateCenter(win, self.textures["head"][1], min(max(head_rot, -45), 45), (x,-y-(20)), (camera_x,camera_y))
+        if self.facing == -1: head_rot = ((360+(head_rot))%360)-180
+
+        self.render_component("head", min(max(head_rot, -45), 45), pos, camera_pos)

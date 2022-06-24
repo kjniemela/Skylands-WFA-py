@@ -1,5 +1,11 @@
 import math
 
+def Sin(x):
+    return math.sin(math.radians(x))
+
+def Cos(x):
+    return math.cos(math.radians(x))
+
 class Vec:
     def __init__(self, x, y):
         self.x = x
@@ -67,6 +73,13 @@ class Vec:
             return self / self.magnitude()
         except ZeroDivisionError:
             return self ## TODO - what should this return??
+
+    def rotate(self, theta):
+        x, y = self.x, self.y
+        self.x = x*Cos(theta) - y*Sin(theta)
+        self.y = x*Sin(theta) + y*Cos(theta)
+
+        return self
 
     def screen_coords(self):
         return (self.x, -self.y)
