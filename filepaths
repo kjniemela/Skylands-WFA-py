@@ -92,6 +92,7 @@ assets/player/body_walk8.png
 assets/player/hand_far.png
 assets/player/hand_near.png
 assets/player/head.png
+assets/player/torso.png
 assets/playMenu.png
 assets/power.png
 assets/reboot.png
@@ -142,8 +143,11 @@ cutscenes/reboot.txt
 entity/base.py
 entity/biped.py
 entity/model/base.py
+entity/shoaldier.py
 entity/view/base.py
 entity/view/biped.py
+entity/view/component.py
+entity/view/shoaldier.py
 fade.py
 game.py
 levels/lab.txt

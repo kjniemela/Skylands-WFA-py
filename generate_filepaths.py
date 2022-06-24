@@ -15,6 +15,7 @@ ignore = [
     "entity/view/__pycache__",
     "entity/model/__pycache__",
     "skyscript/__pycache__",
+    "world/__pycache__",
     "README.md",
     "Skylands WFA.lnk",
     "Skylands",
