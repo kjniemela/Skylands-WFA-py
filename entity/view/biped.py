@@ -71,11 +71,11 @@ class ViewBiped(View):
         self.left_hand = 10
 
         self.render_component("arm_far", self.left_arm if self.facing == 1 else self.right_arm, pos, camera_pos)
+        self.render_component("hand_far", self.left_hand if self.facing == 1 else self.right_hand, pos, camera_pos)
         if self.facing == -1:
             hand_angle = -self.components["hand_far"].get_angle()
             self.held_pos = pos + self.components["hand_far"].get_offset(-1) + Vec(0, -20).rotate(hand_angle)
             blitRotateAround(controller.win, controller.items["GDFSER"][-1], hand_angle - 90, self.held_pos, camera_pos, Vec(0, 0))
-        self.render_component("hand_far", self.left_hand if self.facing == 1 else self.right_hand, pos, camera_pos)
 
         self.render_component("torso", 0, pos, camera_pos)
 
