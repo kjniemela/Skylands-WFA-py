@@ -1,6 +1,6 @@
 from config import config
 from vec import Vec
-from world.platform import Surface
+from world.platform import Surface, Platform
 
 from skyscript.lexer import Token
 
@@ -291,6 +291,13 @@ class ProcExp(Exp):
             surface = Surface(Vec(args[0], args[1]), Vec(args[2], args[3]))
             env.level.add_surface(surface)
             return surface
+        elif self.proc == Token.BACKGROUND:
+            background = Platform(args[0], Vec(args[1], args[2]), args[3], args[4], args[5], Vec(args[6], args[7]))
+            env.level.add_background(background)
+            return background
+        elif self.proc == Token.TEXTURE:
+            env.level.load_texture(args[0], args[1])
+            return None
 
     def display(self, indent=0):
         rep = "ProcExp(\n"

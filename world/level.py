@@ -96,6 +96,12 @@ class Level:
     def add_surface(self, surface):
         self.surfaces.append(surface)
 
+    def add_background(self, background):
+        self.background.append(background)
+
+    def load_texture(self, name, path):
+        self.textures[name] = controller.load_texture("assets/%s" % (path))
+
     def update(self):
         for entity in self.entities:
             ## Apply gravity - TODO should this be done elsewhere?
@@ -175,11 +181,11 @@ class Level:
                 pygame.draw.rect(win, backdr[0], (backdr[1][0]-camX-backdr[1][2]/2, -(backdr[1][1]-camY)-backdr[1][3]/2, *backdr[1][2:]))
 
         for backg in self.background:
-            if distance(*self.player.pos, backg.x, backg.y) < max(backg.w/2, backg.h/2)+400:
+            if (self.player.pos - backg.center).magnitude() < max(backg.w/2, backg.h/2)+400:
                 if backg.d == 0:
-                    win.blit(self.textures[backg.texture], (backg.x-(backg.w/2)-camX, -(backg.y+(backg.h/2)-camY)))
+                    win.blit(self.textures[backg.texture], (backg.top_left - camera_pos).screen_coords())
                 else:
-                    blitRotateCenter(win, self.textures[backg.texture], backg.d, (backg.x-(backg.w/2),-(backg.y+(backg.h/2))), (camX,camY))
+                    blitRotateAround(win, self.textures[backg.texture], backg.d, backg.center, camera_pos, backg.pivot)
 
         for platform in self.platforms:
             if platform.visible:

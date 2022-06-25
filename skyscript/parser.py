@@ -58,8 +58,10 @@ class Parser:
             width = self.__parse_exp()
             height = self.__parse_exp()
             direction = self.__parse_exp()
+            pivot_x = self.__parse_exp()
+            pivot_y = self.__parse_exp()
 
-            return ProcExp(token, [name, x, y, width, height, direction])
+            return ProcExp(token, [name, x, y, width, height, direction, pivot_x, pivot_y])
         elif token == Token.SURFACE:
             x1 = self.__parse_exp()
             y1 = self.__parse_exp()
