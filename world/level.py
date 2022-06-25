@@ -96,6 +96,9 @@ class Level:
     def add_surface(self, surface):
         self.surfaces.append(surface)
 
+    def add_overlay(self, overlay):
+        self.overlays.append(overlay)
+
     def add_background(self, background):
         self.background.append(background)
 
@@ -182,10 +185,7 @@ class Level:
 
         for backg in self.background:
             if (self.player.pos - backg.center).magnitude() < max(backg.w/2, backg.h/2)+400:
-                if backg.d == 0:
-                    win.blit(self.textures[backg.texture], (backg.top_left - camera_pos).screen_coords())
-                else:
-                    blitRotateAround(win, self.textures[backg.texture], backg.d, backg.center, camera_pos, backg.pivot)
+                win.blit(self.textures[backg.texture], (backg.top_left - camera_pos).screen_coords())
 
         for platform in self.platforms:
             if platform.visible:
@@ -205,13 +205,10 @@ class Level:
             # blitRotateCenter(win, bullet, projectile.d, (projectile.x-6,-projectile.y-3), (camX,camY))
 
         for overlay in self.overlays:
-            if distance(*self.player.pos, overlay.x, overlay.y) < max(overlay.w/2, overlay.h/2)+400:
-                if overlay.d == 0:
-                    win.blit(self.textures[overlay.texture], (overlay.x-(overlay.w/2)-camX, -(overlay.y+(overlay.h/2)-camY)))
-                else:
-                    blitRotateCenter(win, self.textures[overlay.texture], overlay.d, (overlay.x-(overlay.w/2),-(overlay.y+(overlay.h/2))), (camX,camY))
+            if (self.player.pos - overlay.center).magnitude() < max(overlay.w/2, overlay.h/2)+400:
+                win.blit(self.textures[overlay.texture], (overlay.top_left - camera_pos).screen_coords())
         
         ## TODO - debug rendering
         if config["debug"]:
             for surface in self.surfaces:
-                pygame.draw.line(win, (0, 0, 0), (surface.p-camera_pos).screen_coords(), (surface.q-camera_pos).screen_coords(), 5)
+                pygame.draw.line(win, (0, 0, 0, 0.5), (surface.p-camera_pos).screen_coords(), (surface.q-camera_pos).screen_coords(), 5)

@@ -295,6 +295,10 @@ class ProcExp(Exp):
             background = Platform(args[0], Vec(args[1], args[2]), args[3], args[4])
             env.level.add_background(background)
             return background
+        elif self.proc == Token.OVERLAY:
+            overlay = Platform(args[0], Vec(args[1], args[2]), args[3], args[4])
+            env.level.add_overlay(overlay)
+            return overlay
         elif self.proc == Token.TEXTURE:
             env.level.load_texture(args[0], args[1])
             return None

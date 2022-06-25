@@ -44,6 +44,7 @@ class Token(Enum):
     SURFACE = auto()
     TEXTURE = auto()
     BACKGROUND = auto()
+    OVERLAY = auto()
 
 class Lexer:
     def __init__(self):
@@ -118,6 +119,8 @@ class Lexer:
                     self.__push(Token.SURFACE)
                 elif self.value == "texture":
                     self.__push(Token.TEXTURE)
+                elif self.value == "overlay":
+                    self.__push(Token.OVERLAY)
                 elif self.value == "background":
                     self.__push(Token.BACKGROUND)
                 else:
