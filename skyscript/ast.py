@@ -292,7 +292,7 @@ class ProcExp(Exp):
             env.level.add_surface(surface)
             return surface
         elif self.proc == Token.BACKGROUND:
-            background = Platform(args[0], Vec(args[1], args[2]), args[3], args[4], args[5], Vec(args[6], args[7]))
+            background = Platform(args[0], Vec(args[1], args[2]), args[3], args[4])
             env.level.add_background(background)
             return background
         elif self.proc == Token.TEXTURE:

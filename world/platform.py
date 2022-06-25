@@ -17,7 +17,7 @@ class Surface:
 
 
 class Platform:
-    def __init__(self, texture, pos, w, h, d, pivot):
+    def __init__(self, texture, pos, w, h, d=0, pivot=None):
         self.texture = texture
         self.center = pos
         self.pivot = pivot
