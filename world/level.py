@@ -48,32 +48,10 @@ class Level:
         # for line in data:
         #     if line[0] == "cutscene":
         #         self.cutscene = line[1]
-        #     elif line[0] == "texture":
-        #         self.textures[line[1]] = controller.load_texture("assets/%s" % (line[2]))
         #     elif line[0] == "music":
         #         controller.sound_ctrl.load_music("assets/%s" % (' '.join(line[2:])))
-        #     elif line[0] == 'plat':
-        #         self.platforms.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
-        #         if len(line) > 7:
-        #             self.controls[line[7]] = self.platforms[-1]
-        #     elif line[0] == 'platc':
-        #         self.platforms.append(Platform(line[1], int(line[2]) + (int(line[4])//2), int(line[3])-(int(line[5])//2), int(line[4]), int(line[5]), int(line[6]), line[1] != "none"))
-        #         if len(line) > 7:
-        #             self.controls[line[7]] = self.platforms[-1]
-        #     elif line[0] == 'cline':
-        #         self.surfaces.append(Surface(Vec(int(line[1]), int(line[2])), Vec(int(line[3]), int(line[4]))))
-        #     elif line[0] == 'overlay':
-        #         self.overlays.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
-        #     elif line[0] == 'backg':
-        #         self.background.append(Platform(line[1], int(line[2]), int(line[3]), int(line[4]), int(line[5]), int(line[6])))
         #     elif line[0] == 'backdr':
         #         self.backdrop.append(((int(line[1]), int(line[2]), int(line[3])), (int(line[4]), int(line[5]), int(line[6]), int(line[7]))))
-        #     elif line[0] == 'entity':
-        #         self.entities.append(self.entity_type_map[line[1]](Vec(int(line[2]), int(line[3]))))
-        #         if len(line) > 4:
-        #             self.controls[line[4]] = self.entities[-1]
-        #     elif line[0] == 'spawn':
-        #         self.player.set_spawn(int(line[1]), int(line[2]))
 
     def start(self):
         f = open(resource_path("levels/%s.sky" % (self.level_name)))
@@ -211,4 +189,6 @@ class Level:
         ## TODO - debug rendering
         if config["debug"]:
             for surface in self.surfaces:
-                pygame.draw.line(win, (0, 0, 0, 0.5), (surface.p-camera_pos).screen_coords(), (surface.q-camera_pos).screen_coords(), 5)
+                pygame.draw.line(win, (0, 0, 0), (surface.p-camera_pos).screen_coords(), (surface.q-camera_pos).screen_coords(), 5)
+                midpoint = (surface.p + (surface.dst / 2))
+                pygame.draw.line(win, (255, 0, 0), (midpoint-camera_pos).screen_coords(), ((midpoint+(surface.normal*20))-camera_pos).screen_coords(), 2)

@@ -22,12 +22,17 @@ class Interpreter:
 
         self.funcs = {
             "spawn": BuiltinEvent(self.__builtin_spawn),
+            "config": BuiltinEvent(self.__builtin_config),
         }
 
         self.scope = LookupTable()
 
     def __builtin_spawn(self, kwargs):
         self.level.player.set_spawn(Vec(**kwargs))
+
+    def __builtin_config(self, kwargs):
+        for key in kwargs:
+            config[key] = bool(kwargs[key])
 
     def add_func(self, event, stm):
         if type(event) == Event:
