@@ -41,7 +41,6 @@ class Player(EntityBiped):
     def kill(self):
         super().kill()
 
-        ## TODO - MAKE RESPAWNING WORK AGAIN!
         self.__init__(self.level, self.spawnpoint)
 
     def update(self):
@@ -87,7 +86,7 @@ class Player(EntityBiped):
                     self.unsneak()
                     
         if controls["reset"]:
-            self.kill()
+            # self.kill()
             self.level.__init__(self.level.game, self.level.level_name, controller.sounds)
             self.level.set_player(self)
             self.level.start()

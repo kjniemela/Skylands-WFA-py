@@ -51,15 +51,14 @@ class Parser:
             path = self.__parse_exp()
 
             return ProcExp(token, [name, path])
-        elif token == Token.BACKGROUND:
+        elif token == Token.BACKGROUND or token == Token.OVERLAY:
             name = self.__parse_exp()
             x = self.__parse_exp()
             y = self.__parse_exp()
             width = self.__parse_exp()
             height = self.__parse_exp()
-            direction = self.__parse_exp()
 
-            return ProcExp(token, [name, x, y, width, height, direction])
+            return ProcExp(token, [name, x, y, width, height])
         elif token == Token.SURFACE:
             x1 = self.__parse_exp()
             y1 = self.__parse_exp()

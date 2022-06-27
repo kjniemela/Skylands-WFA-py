@@ -1,0 +1,80 @@
+send "config" with
+    debug : 1
+end
+
+texture "lab1" "levels/lab/lab1.png"
+texture "lab2" "levels/lab/lab2.png"
+texture "lab3" "levels/lab/lab3.png"
+texture "lab4" "levels/lab/lab4.png"
+texture "lab_back1" "levels/lab/lab_back1.png"
+texture "lab_back2" "levels/lab/lab_back2.png"
+texture "lab_back3" "levels/lab/lab_back3.png"
+texture "lab_back4" "levels/lab/lab_back4.png"
+
+overlay "lab1" (-375) 313 750 627
+overlay "lab2" 375 313 750 627
+overlay "lab3" (-375) (-313) 750 627
+overlay "lab4" 375 (-313) 750 627
+background "lab_back1" (-375) 348 750 562
+background "lab_back2" 375 348 750 562
+background "lab_back3" (-375) (-201) 750 562
+background "lab_back4" 375 (-201) 750 562
+
+surface (-648) (-384) (-585) (-384)
+surface (-741) (-332) (-681) (-332)
+surface (-657) (-254) (-613) (-220)
+surface (-613) (-220) (-572) (-254)
+surface (-572) (-254) (-657) (-254)
+surface (-680) (-332) (-680) (-406)
+surface (-680) (-406) (-648) (-406)
+surface (-648) (-408) (-648) (-384)
+
+surface (-585) (-384) (-585) (-408)
+surface (-685) (-406) (-454) (-406)
+surface (-454) (-406) (-454) (-340)
+surface (-454) (-338) (-370) (-338)
+surface (-370) (-340) (-370) (-406)
+surface (-370) (-406) (-305) (-406)
+surface (-305) (-406) (-305) (-285)
+surface (-305) (-283) (-247) (-283)
+surface (-247) (-283) (-247) (-114)
+surface (-240) (-114) (-240) (-406)
+
+surface (-741) (-143) (-741) (-332)
+surface (-687) (-120) (-741) (-143)
+surface (-741) (-118) (-687) (-118)
+surface (-741) (77) (-741) (-118)
+
+surface (-560) (-82) (-453) (-82)
+surface (-453) (-84) (-508) (-120)
+surface (-508) (-120) (-560) (-84)
+
+surface (-330) (-73) (-152) (-73)
+surface (-152) (-75) (-243) (-113)
+surface (-243) (-113) (-330) (-75)
+
+surface (-92) (-156) (25) (-156)
+surface (-23) (-156) (-23) (79)
+
+surface (-210) (-340) (-92) (-340)
+
+surface (-40) (-336) (75) (-336)
+
+surface (-240) (-406) (750) (-406)
+
+surface (247) (-406) (247) (-333)
+surface (247) (-333) (180) (-333)
+
+surface (104) (-257) (180) (-257)
+surface (-17) (79) (-17) (-156)
+surface (2) (-157) (2) (-190)
+
+send "#spawn" with
+    x : (-640)
+    y : (-310)
+end
+
+send "#spawn" with
+    x : (-500)
+    y : (-25)
+end

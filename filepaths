@@ -150,6 +150,7 @@ entity/view/component.py
 entity/view/shoaldier.py
 fade.py
 game.py
+levels/lab.sky
 levels/lab.txt
 levels/narbadhir1 - Copy.txt
 levels/narbadhir1.txt
